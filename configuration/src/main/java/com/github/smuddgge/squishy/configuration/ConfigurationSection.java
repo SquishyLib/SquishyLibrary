@@ -14,8 +14,18 @@ import java.util.Map;
 public interface ConfigurationSection {
 
     /**
+     * The original configuration section that
+     * this section was found in.
+     *
+     * @return The base section.
+     */
+    @NotNull
+    ConfigurationSection getBaseSection();
+
+    /**
      * Used to get the location of this configuration section
      * from the original configuration file or base section.
+     * <li>If this is the base section it will return a empty string.</li>
      *
      * @return The dot path.
      */
@@ -26,13 +36,22 @@ public interface ConfigurationSection {
      * Used to get the location of a configuration section
      * at a higher level then this one from the original
      * configuration file or base section.
+     * <li>If you are getting the path from base to base, it will return a empty string.</li>
      *
      * @param path The location from this configuration section
      *             to another higher section.
      * @return The dot path.
      */
     @NotNull
-    String getPathFromBase(String path);
+    String getPathFromBase(@Nullable String path);
+
+    /**
+     * Used to get the configuration section as a map.
+     *
+     * @return A map representing the configuration section.
+     */
+    @NotNull
+    Map<String, Object> getMap();
 
     /**
      * Used to set a value in this section and apply it to the base section.
@@ -157,7 +176,7 @@ public interface ConfigurationSection {
      * <li>If the path is null it will return the alternative value.
      * This is because this is a section and not a string.</li>
      *
-     * @param path        The location of the string in the configuration section.
+     * @param path        The location of the string in the section.
      * @param alternative The alternative value.
      * @return The requested string.
      */
@@ -236,247 +255,344 @@ public interface ConfigurationSection {
      */
     int getInteger(@Nullable String path, int alternative);
 
-    // TODO
-
     /**
      * Used to get an integer.
      * Will attempt to convert doubles and longs to int.
-     * <ul>
-     *     <li>If the path does not exist it will return -1.</li>
-     *     <li>If the value is not a integer it will return -1.</li>
-     * </ul>
+     * <li>If the path does not exist it will return the alternative value.</li>
+     * <li>If the value is a long it will convert the long into a integer.</li>
+     * <li>If the value is a double it will convert the double into a integer.</li>
+     * <li>If the value is a float it will convert the float into a integer.</li>
+     * <li>If the value is not a integer and not listed above it will return the alternative value..</li>
      *
-     * @param path The location of the integer in the configuration section.
+     * @param path The location of the integer in the section.
      * @return The requested integer.
      */
     int getInteger(@Nullable String path);
 
     /**
      * Used to check if a value is an integer.
-     * This won't return true if its double or long but
-     * this library will try to convert it if the
-     * {@link this#getInteger(String)} is called.
      *
-     * @param path The instance of the path.
+     * @param path The location from this section.
      * @return True if the value is an integer.
      */
-    boolean isInteger(String path);
+    boolean isInteger(@Nullable String path);
 
     /**
      * Used to get a long.
-     * <ul>
-     *      <li>If the path does not exist it will return the alternative value.</li>
-     *      <li>If the value is not a integer it will return the alternative value.</li>
-     *     <li>If the value is a integer it will be converted into a long</li>
-     * </ul>
+     * <li>If the value is a integer it will be converted into a long</li>
+     * <li>If the value is a double it will be converted into a long</li>
+     * <li>If the value is a float it will be converted into a long</li>
+     * <li>If the path does not exist it will return the alternative value.</li>
+     * <li>If the value is not a long it will return the alternative value.</li>
      *
-     * @param path        The location of the long in the configuration section.
+     * @param path        The location of the long in the section.
      * @param alternative The alternative value.
      * @return The requested long.
      */
-    long getLong(String path, long alternative);
+    long getLong(@Nullable String path, long alternative);
 
     /**
      * Used to get a long.
-     * <ul>
-     *     <li>If the path does not exist it will return -1.</li>
-     *     <li>If the value is not a integer it will return -1.</li>
-     *     <li>If the value is a integer it will be converted into a long</li>
-     * </ul>
+     * <li>If the value is a integer it will be converted into a long</li>
+     * <li>If the value is a double it will be converted into a long</li>
+     * <li>If the value is a float it will be converted into a long</li>
+     * <li>If the path does not exist it will return -1.</li>
+     * <li>If the value is not a long it will return -1.</li>
      *
-     * @param path The location of the long in the configuration section.
+     * @param path The location of the long in the section.
      * @return The requested long.
      */
-    long getLong(String path);
+    long getLong(@Nullable String path);
 
     /**
      * Used to check if a value is a long.
      *
-     * @param path The instance of the path.
+     * @param path The location from this section.
      * @return True if the value is a long.
      */
-    boolean isLong(String path);
+    boolean isLong(@Nullable String path);
 
     /**
      * Used to get a double.
-     * <ul>
-     *      <li>If the path does not exist it will return the alternative value.</li>
-     *      <li>If the value is not a integer it will return the alternative value.</li>
-     *      <li>If the value is a integer it will be converted into a double</li>
-     * </ul>
+     * <li>If the value is a integer it will be converted into a double</li>
+     * <li>If the value is a long it will be converted into a double</li>
+     * <li>If the value is a float it will be converted into a double</li>
+     * <li>If the path does not exist it will return the alternative value.</li>
+     * <li>If the value is not a double it will return the alternative value.</li>
      *
-     * @param path        The location of the double in the configuration section.
+     * @param path        The location of the double in the section.
      * @param alternative The alternative value.
      * @return The requested double.
      */
-    double getDouble(String path, double alternative);
+    double getDouble(@Nullable String path, double alternative);
 
     /**
      * Used to get a double.
-     * <ul>
-     *     <li>If the path does not exist it will return -1.</li>
-     *     <li>If the value is not a integer it will return -1.</li>
-     *     <li>If the value is a integer it will be converted into a double</li>
-     * </ul>
+     * <li>If the value is a integer it will be converted into a double</li>
+     * <li>If the value is a long it will be converted into a double</li>
+     * <li>If the value is a float it will be converted into a double</li>
+     * <li>If the path does not exist it will return -1.</li>
+     * <li>If the value is not a double it will return -1.</li>
      *
-     * @param path The location of the double in the configuration section.
+     * @param path The location of the double in the section.
      * @return The requested double.
      */
-    double getDouble(String path);
+    double getDouble(@Nullable String path);
 
     /**
      * Used to check if a value is a double.
      *
-     * @param path The instance of the path.
+     * @param path The location from this section.
      * @return True if the value is a double.
      */
-    boolean isDouble(String path);
+    boolean isDouble(@Nullable String path);
+
+    /**
+     * Used to get a float.
+     * <li>If the value is a integer it will be converted into a float</li>
+     * <li>If the value is a long it will be converted into a float</li>
+     * <li>If the value is a double it will be converted into a float</li>
+     * <li>If the path does not exist it will return the alternative value.</li>
+     * <li>If the value is not a float it will return the alternative value.</li>
+     *
+     * @param path        The location of the float in the section.
+     * @param alternative The alternative value.
+     * @return The requested float.
+     */
+    float getFloat(@Nullable String path, double alternative);
+
+    /**
+     * Used to get a float.
+     * <li>If the value is a integer it will be converted into a float</li>
+     * <li>If the value is a long it will be converted into a float</li>
+     * <li>If the value is a double it will be converted into a float</li>
+     * <li>If the path does not exist it will return -1.</li>
+     * <li>If the value is not a integer it will return -1.</li>
+     *
+     * @param path The location of the float in the section.
+     * @return The requested float.
+     */
+    float getFloat(@Nullable String path);
+
+    /**
+     * Used to check if a value is a float.
+     *
+     * @param path The location from this section.
+     * @return True if the value is a float.
+     */
+    boolean isFloat(@Nullable String path);
 
     /**
      * Used to get a boolean.
-     * <ul>
-     *     <li>If the path does not exist it will return the alternative value.</li>
-     *     <li>If the value is not a boolean it will return the alternative value.</li>
-     * </ul>
+     * <li>If the path does not exist it will return the alternative value.</li>
+     * <li>If the value is not a boolean it will return the alternative value.</li>
      *
-     * @param path        The location of the boolean in the configuration section.
+     * @param path        The location of the boolean in the section.
      * @param alternative The alternative value.
      * @return The requested boolean.
      */
-    boolean getBoolean(String path, boolean alternative);
+    boolean getBoolean(@Nullable String path, boolean alternative);
 
     /**
      * Used to get a boolean.
-     * <ul>
-     *     <li>If the path does not exist it will return false.</li>
-     *     <li>If the value is not a boolean it will return false.</li>
-     * </ul>
+     * <li>If the path does not exist it will return false.</li>
+     * <li>If the value is not a boolean it will return false.</li>
      *
-     * @param path The location of the boolean in the configuration section.
+     * @param path The location of the boolean in the section.
      * @return The requested boolean.
      */
-    boolean getBoolean(String path);
+    boolean getBoolean(@Nullable String path);
 
     /**
      * Used to check if a value is a boolean.
      *
-     * @param path The instance of the path.
+     * @param path The location from the section.
      * @return True if the value is a boolean.
      */
-    boolean isBoolean(String path);
+    boolean isBoolean(@Nullable String path);
 
     /**
      * Used to get a list.
-     * <ul>
-     *     <li>If the path does not exist it will return the alternative value.</li>
-     *     <li>If the value is not a list it will return the alternative value.</li>
-     * </ul>
+     * <li>If the path does not exist it will return the alternative value.</li>
+     * <li>If the value is not a list it will return the alternative value.</li>
      *
-     * @param path        The location of the list in this configuration section.
+     * @param path        The location of the list in this section.
      * @param alternative The alternative list.
      * @return The requested list.
      */
-    List<?> getList(String path, List<?> alternative);
+    List<?> getList(@Nullable String path, @Nullable List<?> alternative);
 
     /**
      * Used to get a list.
-     * <ul>
-     *     <li>If the path does not exist it will return null.</li>
-     *     <li>If the value is not a list it will return null.</li>
-     * </ul>
+     * <li>If the path does not exist it will return null.</li>
+     * <li>If the value is not a list it will return null.</li>
      *
-     * @param path The location of the list in this configuration section.
+     * @param path The location of the list in this section.
      * @return The requested list.
      */
-    List<?> getList(String path);
+    @Nullable
+    List<?> getList(@Nullable String path);
 
     /**
      * Used to check if a value is a list.
      *
-     * @param path The instance of the path.
+     * @param path The location from this section.
      * @return True if the value is a list.
      */
-    boolean isList(String path);
+    boolean isList(@Nullable String path);
 
     /**
      * Used to get a list of strings.
-     * <ul>
-     *     <li>If the path does not exist it will return the alternative value.</li>
-     *     <li>If the value is not a string list it will return the alternative value.</li>
-     * </ul>
+     * <li>If the path does not exist it will return the alternative value.</li>
+     * <li>If the value is not a string list it will return the alternative value.</li>x
      *
-     * @param path        The location of the string list in this configuration section.
+     * @param path        The location of the string list in this section.
      * @param alternative The alternative string list.
      * @return The requested list of strings.
      */
-    List<String> getListString(String path, List<String> alternative);
+    List<String> getListString(@Nullable String path, @Nullable List<String> alternative);
 
     /**
      * Used to get a list of strings.
-     * <ul>
-     *     <li>If the path does not exist it will return null.</li>
-     *     <li>If the value is not a string list it will return null.</li>
-     * </ul>
+     * <li>If the path does not exist it will return null.</li>
+     * <li>If the value is not a string list it will return null.</li>
      *
-     * @param path The location of the string list in this configuration section.
+     * @param path The location of the string list in this section.
      * @return The requested list of strings.
      */
-    List<String> getListString(String path);
+    @Nullable
+    List<String> getListString(@Nullable String path);
 
     /**
      * Used to get a list of integers.
-     * <ul>
-     *     <li>If the path does not exist it will return the alternative value.</li>
-     *     <li>If the value is not a integer list it will return the alternative value.</li>
-     * </ul>
+     * <li>If the value is a long list it will be converted into a integer list.</li>
+     * <li>If the value is a double list it will be converted into a integer list.</li>
+     * <li>If the value is a float list it will be converted into a integer list.</li>
+     * <li>If the path does not exist it will return the alternative value.</li>
+     * <li>If the value is not a integer list it will return the alternative value.</li>
      *
-     * @param path        The location of the integer list in this configuration section.
+     * @param path        The location of the integer list in this section.
      * @param alternative The alternative value.
      * @return The requested list of integers.
      */
-    List<Integer> getListInteger(String path, List<Integer> alternative);
+    List<Integer> getListInteger(@Nullable String path, @Nullable List<Integer> alternative);
 
     /**
      * Used to get a list of integers.
-     * <ul>
-     *     <li>If the path does not exist it will return null.</li>
-     *     <li>If the value is not a integer list it will return null.</li>
-     * </ul>
+     * <li>If the value is a long list it will be converted into a integer list.</li>
+     * <li>If the value is a double list it will be converted into a integer list.</li>
+     * <li>If the value is a float list it will be converted into a integer list.</li>
+     * <li>If the path does not exist it will return null.</li>
+     * <li>If the value is not a integer list it will return null.</li>
      *
      * @param path The location of the integer list in this configuration section.
      * @return The requested list of integers.
      */
-    List<Integer> getListInteger(String path);
+    @Nullable
+    List<Integer> getListInteger(@Nullable String path);
 
     /**
-     * Used to get the configuration section as a map.
+     * Used to get a list of longs.
+     * <li>If the value is a integer list it will be converted into a long list.</li>
+     * <li>If the value is a double list it will be converted into a long list.</li>
+     * <li>If the value is a float list it will be converted into a long list.</li>
+     * <li>If the path does not exist it will return the alternative value.</li>
+     * <li>If the value is not a integer list it will return the alternative value.</li>
      *
-     * @return A map representing the configuration section.
+     * @param path        The location of the long list in this section.
+     * @param alternative The alternative value.
+     * @return The requested list of longs.
      */
-    Map<String, Object> getMap();
+    List<Long> getListLong(@Nullable String path, @Nullable List<Integer> alternative);
+
+    /**
+     * Used to get a list of longs.
+     * <li>If the value is a integer list it will be converted into a long list.</li>
+     * <li>If the value is a double list it will be converted into a long list.</li>
+     * <li>If the value is a float list it will be converted into a long list.</li>
+     * <li>If the path does not exist it will return null.</li>
+     * <li>If the value is not a integer list it will return null.</li>
+     *
+     * @param path The location of the long list in this configuration section.
+     * @return The requested list of longs.
+     */
+    @Nullable
+    List<Long> getListLong(@Nullable String path);
+
+    /**
+     * Used to get a list of doubles.
+     * <li>If the value is a integer list it will be converted into a double list.</li>
+     * <li>If the value is a long list it will be converted into a double list.</li>
+     * <li>If the value is a float list it will be converted into a double list.</li>
+     * <li>If the path does not exist it will return the alternative value.</li>
+     * <li>If the value is not a integer list it will return the alternative value.</li>
+     *
+     * @param path        The location of the double list in this section.
+     * @param alternative The alternative value.
+     * @return The requested list of doubles.
+     */
+    List<Double> getListDouble(@Nullable String path, @Nullable List<Integer> alternative);
+
+    /**
+     * Used to get a list of doubles.
+     * <li>If the value is a integer list it will be converted into a double list.</li>
+     * <li>If the value is a long list it will be converted into a double list.</li>
+     * <li>If the value is a float list it will be converted into a double list.</li>
+     * <li>If the path does not exist it will return null.</li>
+     * <li>If the value is not a integer list it will return null.</li>
+     *
+     * @param path The location of the double list in this configuration section.
+     * @return The requested list of doubles.
+     */
+    @Nullable
+    List<Double> getListDouble(@Nullable String path);
+
+    /**
+     * Used to get a list of floats.
+     * <li>If the value is a integer list it will be converted into a float list.</li>
+     * <li>If the value is a long list it will be converted into a float list.</li>
+     * <li>If the value is a double list it will be converted into a float list.</li>
+     * <li>If the path does not exist it will return the alternative value.</li>
+     * <li>If the value is not a integer list it will return the alternative value.</li>
+     *
+     * @param path        The location of the float list in this section.
+     * @param alternative The alternative value.
+     * @return The requested list of floats.
+     */
+    List<Float> getListFloat(@Nullable String path, @Nullable List<Integer> alternative);
+
+    /**
+     * Used to get a list of floats.
+     * <li>If the value is a integer list it will be converted into a float list.</li>
+     * <li>If the value is a long list it will be converted into a float list.</li>
+     * <li>If the value is a double list it will be converted into a float list.</li>
+     * <li>If the path does not exist it will return null.</li>
+     * <li>If the value is not a integer list it will return null.</li>
+     *
+     * @param path The location of the float list in this configuration section.
+     * @return The requested list of floats.
+     */
+    @Nullable
+    List<Float> getListFloat(@Nullable String path);
 
     /**
      * Used to get the configuration section as a map.
-     * <ul>
-     *     <li>If the path does not exist it will return the alternative value.</li>
-     *     <li>If the value is not a map it will return the alternative value.</li>
-     * </ul>
+     * <li>If the path does not exist it will return the alternative value.</li>
+     * <li>If the value is not a map it will return the alternative value.</li>
      *
      * @param alternative The alternative value.
      * @return A map representing the configuration section.
      */
-    Map<String, Object> getMap(String path, Map<String, Object> alternative);
+    Map<String, Object> getMap(@Nullable String path, @Nullable Map<String, Object> alternative);
 
     /**
      * Used to get the configuration section as a map.
-     * <ul>
-     *     <li>If the path does not exist it will return null.</li>
-     *     <li>If the value is not a map it will return null.</li>
-     * </ul>
+     * <li>If the path does not exist it will return null.</li>
+     * <li>If the value is not a map it will return null.</li>
      *
      * @return A map representing the configuration section.
      */
-    Map<String, Object> getMap(String path);
+    Map<String, Object> getMap(@Nullable String path);
 
     /**
      * Used to check if a value is a map.
@@ -484,5 +600,5 @@ public interface ConfigurationSection {
      * @param path The instance of the path.
      * @return True if the value is a map.
      */
-    boolean isMap(String path);
+    boolean isMap(@Nullable String path);
 }

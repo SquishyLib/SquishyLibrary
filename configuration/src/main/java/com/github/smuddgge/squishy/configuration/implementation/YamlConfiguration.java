@@ -16,19 +16,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.github.smuddgge;
+package com.github.smuddgge.squishy.configuration.implementation;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
+import com.github.smuddgge.squishy.configuration.Configuration;
 
-public class Main {
-
-    public static void main(String[] args) {
-
-        int[] test = new int[]{1,2};
-        List<Integer> list = Arrays.stream(test).boxed().toList();
-        System.out.println(list);
-    }
+public class YamlConfiguration implements Configuration {
 }
