@@ -28,7 +28,7 @@ import java.nio.file.Files;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-public interface Configuration {
+public interface Configuration extends ConfigurationSection {
 
     /**
      * Used to get the absolute file path.
@@ -102,6 +102,8 @@ public interface Configuration {
     /**
      * Used to copy the configuration file into this class instance,
      * clearing and then adding the keys and values.
+     * <p>
+     * You can use the {@link CompletableFuture#get()} to wait for the result.
      *
      * @return True if successful.
      */
@@ -111,6 +113,8 @@ public interface Configuration {
     /**
      * Used to update the configuration file with this class
      * instance's values.
+     * <p>
+     * You can use the {@link CompletableFuture#get()} to wait for the result.
      *
      * @return True if successful.
      */
@@ -120,6 +124,8 @@ public interface Configuration {
     /**
      * Attempts to create the file.
      * It will use the default resource file if provided.
+     * <p>
+     * You can use the {@link CompletableFuture#get()} to wait for the result.
      *
      * @return True if a file was created.
      */

@@ -5,6 +5,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * A section of configuration.
@@ -23,16 +24,6 @@ public interface ConfigurationSection {
     ConfigurationSection getBaseSection();
 
     /**
-     * Used to get the location of this configuration section
-     * from the original configuration file or base section.
-     * <li>If this is the base section it will return a empty string.</li>
-     *
-     * @return The dot path.
-     */
-    @NotNull
-    String getPathFromBase();
-
-    /**
      * Used to get the location of a configuration section
      * at a higher level then this one from the original
      * configuration file or base section.
@@ -46,6 +37,16 @@ public interface ConfigurationSection {
     String getPathFromBase(@Nullable String path);
 
     /**
+     * Used to get the location of this configuration section
+     * from the original configuration file or base section.
+     * <li>If this is the base section it will return a empty string.</li>
+     *
+     * @return The dot path.
+     */
+    @NotNull
+    String getPathFromBase();
+
+    /**
      * Used to get the configuration section as a map.
      *
      * @return A map representing the configuration section.
@@ -54,27 +55,34 @@ public interface ConfigurationSection {
     Map<String, Object> getMap();
 
     /**
-     * Used to set a value in this section and apply it to the base section.
-     * <li>If the value is null, this section will be removed</li>
+     * Used to get the section that contains this section.
+     * <p>
+     * If this is the base section it will return empty.
      *
-     * @param value The value to set the configuration section to.
+     * @return The optional section below.
+     */
+    @NotNull
+    Optional<ConfigurationSection> getSectionBelow();
+
+    /**
+     * Used to remove all keys and values from this section.
+     *
      * @return This instance.
      */
     @NotNull
-    ConfigurationSection set(@Nullable Object value);
+    ConfigurationSection clear();
 
     /**
      * Used to set or create a value in the section
      * and save it in the base section.
-     * <li>If the value is null it will remove the key and value.</li>
-     * <li>If the path is null this section will be replaced with the value.</li>
+     * <li>If the value is null it will remove the key and value from the section.</li>
      *
      * @param path  The location to set the value.
      * @param value The value to be set in the config.
      * @return This instance.
      */
     @NotNull
-    ConfigurationSection set(@Nullable String path, @Nullable Object value);
+    ConfigurationSection set(@NotNull String path, @Nullable Object value);
 
     /**
      * Used to set or create a value in this section
@@ -87,7 +95,27 @@ public interface ConfigurationSection {
      * @return This instance.
      */
     @NotNull
-    ConfigurationSection setInSection(@Nullable String path, @Nullable Object value);
+    ConfigurationSection setInSection(@NotNull String path, @Nullable Object value);
+
+    /**
+     * Used to remove a key and value from the section.
+     *
+     * @param path the path to the key.
+     * @return This instance.
+     */
+    default @NotNull ConfigurationSection remove(@NotNull String path) {
+        return this.set(path, null);
+    }
+
+    /**
+     * Used to check if a value is supported.
+     * If a value is not supported, this library will still attempt to
+     * convert it into a map object using {@link com.google.gson.Gson}.
+     *
+     * @param value The value to check.
+     * @return If the value is supported.
+     */
+    boolean isValueSupported(@NotNull Object value);
 
     /**
      * Used to get any value from this section or
@@ -142,12 +170,13 @@ public interface ConfigurationSection {
     /**
      * Used to get a configuration section.
      * <li>If the path does not exist it will create a temporary empty section.</li>
+     * <li>If the path is null it will return this instance.</li>
      *
      * @param path The location of the section from this section.
      * @return An instance of the section.
      */
     @NotNull
-    ConfigurationSection getSection(String path);
+    ConfigurationSection getSection(@Nullable String path);
 
     /**
      * This will return the map keys.

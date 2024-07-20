@@ -18,14 +18,13 @@
 
 package com.github.smuddgge.squishy.configuration.implementation;
 
+import com.github.smuddgge.squishy.configuration.ConfigurationException;
 import com.github.smuddgge.squishy.configuration.ConfigurationSection;
+import com.google.gson.Gson;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * A configuration section that used a {@link Map} to
@@ -33,9 +32,15 @@ import java.util.Map;
  */
 public class MemoryConfigurationSection implements ConfigurationSection {
 
-    private final @NotNull Map<String, Object> data;
+    protected final @NotNull Map<String, Object> data;
     private final @NotNull ConfigurationSection baseSection;
-    private final @NotNull String pathFromBase;
+    private final @NotNull String pathFromBase; // Formatted with dots.
+
+    public MemoryConfigurationSection() {
+        this.data = new LinkedHashMap<>();
+        this.baseSection = this;
+        this.pathFromBase = "";
+    }
 
     public MemoryConfigurationSection(@NotNull Map<String, Object> data) {
         this.data = data;
@@ -55,11 +60,6 @@ public class MemoryConfigurationSection implements ConfigurationSection {
     }
 
     @Override
-    public @NotNull String getPathFromBase() {
-        return this.getPathFromBase(null);
-    }
-
-    @Override
     public @NotNull String getPathFromBase(@Nullable String path) {
         if (path == null) return this.pathFromBase;
         if (this.pathFromBase.isEmpty()) return path;
@@ -67,26 +67,88 @@ public class MemoryConfigurationSection implements ConfigurationSection {
     }
 
     @Override
-    public Map<String, Object> getMap(@Nullable String path) {
+    public @NotNull String getPathFromBase() {
+        return this.getPathFromBase(null);
+    }
+
+    @Override
+    public @NotNull Map<String, Object> getMap() {
         return this.data;
     }
 
     @Override
-    public @NotNull ConfigurationSection set(@Nullable Object value) {
-        return this.getBaseSection().setInSection(this.getPathFromBase(), value);
+    public @NotNull Optional<ConfigurationSection> getSectionBelow() {
+
+        // Is this the base section?
+        if (this.pathFromBase.isEmpty()) return Optional.empty();
+
+        // Is the base section below this section?
+        if (!this.pathFromBase.contains(".")) return Optional.of(this.baseSection);
+
+        // Create the path to the section below.
+        final String[] pathFromBaseKeys = this.pathFromBase.split("\\.");
+        final String sectionKey = pathFromBaseKeys[pathFromBaseKeys.length - 1];
+        final String path = this.pathFromBase.substring(0, this.pathFromBase.length() - sectionKey.length());
+
+        // Return the section below.
+        return Optional.of(this.baseSection.getSection(path));
     }
 
     @Override
-    public @NotNull ConfigurationSection set(@Nullable String path, @Nullable Object value) {
-        return this.getBaseSection().setInSection(this.getPathFromBase(path), value);
+    public @NotNull ConfigurationSection clear() {
+        return this.baseSection.setInSection(this.getPathFromBase(), null);
     }
 
     @Override
-    public @NotNull ConfigurationSection setInSection(@Nullable String path, @Nullable Object value) {
+    public @NotNull ConfigurationSection set(@NotNull String path, @Nullable Object value) {
+        return this.baseSection.setInSection(this.getPathFromBase(path), value);
+    }
+
+    @Override
+    public @NotNull ConfigurationSection setInSection(@NotNull String path, @Nullable Object value) {
+
+        // Convert immutable lists into List<> type.
         final Object convertedValue = this.convertLists(value);
 
-        // TODO
+        // Should the value be in a section above this one?
+        if (path.contains(".")) {
 
+            // Get the key to the section above.
+            final String key = path.split("\\.")[0];
+
+            // Get the remaining path to the value.
+            final String remainingPath = path.substring(key.length() + 1);
+
+            // Get the section above.
+            final ConfigurationSection sectionAbove = this.getSection(key);
+
+            // Populate the above sections with the keys and finally the value.
+            sectionAbove.setInSection(remainingPath, convertedValue);
+
+            // Update the section's data.
+            this.data.put(key, sectionAbove.getMap());
+            return this;
+        }
+
+        // Is the key being set to null?
+        if (convertedValue == null) {
+            this.data.remove(path);
+            return this;
+        }
+
+        // Is the value type supported?
+        if (this.isValueSupported(value)) {
+            this.data.put(path, convertedValue);
+            return this;
+        }
+
+        // Convert the value into a map.
+        final Gson gson = new Gson();
+        final String json = gson.toJson(convertedValue);
+        final Map<?, ?> map = gson.fromJson(json, Map.class);
+
+        // Put the map into the data map.
+        this.data.put(path, map);
         return this;
     }
 
@@ -128,6 +190,20 @@ public class MemoryConfigurationSection implements ConfigurationSection {
 
         return value;
     }
+
+    @Override
+    public boolean isValueSupported(@NotNull Object value) {
+        return value instanceof String
+                || value instanceof Integer
+                || value instanceof Long
+                || value instanceof Double
+                || value instanceof Float
+                || value instanceof Boolean
+                || value instanceof List
+                || value instanceof Map;
+    }
+
+    // TODO:
 
     @Override
     public Object get(@Nullable String path, @Nullable Object alternative) {
@@ -330,12 +406,12 @@ public class MemoryConfigurationSection implements ConfigurationSection {
     }
 
     @Override
-    public @NotNull Map<String, Object> getMap() {
+    public Map<String, Object> getMap(@Nullable String path, @Nullable Map<String, Object> alternative) {
         return Map.of();
     }
 
     @Override
-    public Map<String, Object> getMap(@Nullable String path, @Nullable Map<String, Object> alternative) {
+    public Map<String, Object> getMap(@Nullable String path) {
         return Map.of();
     }
 
