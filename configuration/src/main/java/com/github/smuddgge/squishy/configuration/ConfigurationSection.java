@@ -276,10 +276,11 @@ public interface ConfigurationSection {
 
     /**
      * Used to get an integer.
-     * <li>If the path does not exist it will return the alternative value.</li>
+     * <li>If the value is a string it will try to convert it to a integer.</li>
      * <li>If the value is a long it will convert the long into a integer.</li>
      * <li>If the value is a double it will convert the double into a integer.</li>
      * <li>If the value is a float it will convert the float into a integer.</li>
+     * <li>If the path does not exist it will return the alternative value.</li>
      * <li>If the value is not a integer and not listed above it will return the alternative value..</li>
      *
      * @param path        The location of the integer in the section.
@@ -291,10 +292,11 @@ public interface ConfigurationSection {
     /**
      * Used to get an integer.
      * Will attempt to convert doubles and longs to int.
-     * <li>If the path does not exist it will return the alternative value.</li>
+     * <li>If the value is a string it will try to convert it to a integer.</li>
      * <li>If the value is a long it will convert the long into a integer.</li>
      * <li>If the value is a double it will convert the double into a integer.</li>
      * <li>If the value is a float it will convert the float into a integer.</li>
+     * <li>If the path does not exist it will return the alternative value.</li>
      * <li>If the value is not a integer and not listed above it will return the alternative value..</li>
      *
      * @param path The location of the integer in the section.
@@ -392,7 +394,7 @@ public interface ConfigurationSection {
      * @param alternative The alternative value.
      * @return The requested float.
      */
-    float getFloat(@Nullable String path, double alternative);
+    float getFloat(@Nullable String path, float alternative);
 
     /**
      * Used to get a float.
@@ -536,7 +538,7 @@ public interface ConfigurationSection {
      * @param alternative The alternative value.
      * @return The requested list of longs.
      */
-    List<Long> getListLong(@Nullable String path, @Nullable List<Integer> alternative);
+    List<Long> getListLong(@Nullable String path, @Nullable List<Long> alternative);
 
     /**
      * Used to get a list of longs.
@@ -564,7 +566,7 @@ public interface ConfigurationSection {
      * @param alternative The alternative value.
      * @return The requested list of doubles.
      */
-    List<Double> getListDouble(@Nullable String path, @Nullable List<Integer> alternative);
+    List<Double> getListDouble(@Nullable String path, @Nullable List<Double> alternative);
 
     /**
      * Used to get a list of doubles.
@@ -592,7 +594,7 @@ public interface ConfigurationSection {
      * @param alternative The alternative value.
      * @return The requested list of floats.
      */
-    List<Float> getListFloat(@Nullable String path, @Nullable List<Integer> alternative);
+    List<Float> getListFloat(@Nullable String path, @Nullable List<Float> alternative);
 
     /**
      * Used to get a list of floats.
@@ -625,10 +627,10 @@ public interface ConfigurationSection {
      *
      * @return A map representing the configuration section.
      */
-    Map<String, Object> getMap(@Nullable String path);
+    @Nullable Map<String, Object> getMap(@Nullable String path);
 
     /**
-     * Used to check if a value is a map.
+     * Used to check if a value is a map of string to object.
      *
      * @param path The instance of the path.
      * @return True if the value is a map.

@@ -377,158 +377,245 @@ public class MemoryConfigurationSection implements ConfigurationSection {
         return this.get(path, false) instanceof String;
     }
 
+    private interface StringParser<T> {
+        @Nullable T parse(@NotNull String value);
+    }
+
+    private @Nullable <T> T parseValue(@NotNull Object value, @NotNull StringParser<T> parser) {
+        if (value instanceof Integer number) return parser.parse(Integer.toString(number));
+        if (value instanceof Long number) return parser.parse(Long.toString(number));
+        if (value instanceof Double number) return parser.parse(Double.toString(number));
+        if (value instanceof Float number) return parser.parse(Float.toString(number));
+        if (value instanceof String string) return parser.parse(string);
+        return null;
+    }
+
+    private @Nullable <T> T parse(@Nullable String path, @NotNull StringParser<T> parser) {
+
+        // Get the value from the path.
+        final Object value = this.get(path);
+
+        // Does the value exist?
+        if (value == null) return null;
+
+        // Parse the value into the object.
+        return this.parseValue(value, parser);
+    }
+
     @Override
     public int getInteger(@Nullable String path, int alternative) {
-        return 0;
+        final Integer number = this.parse(path, Integer::parseInt);
+        return number == null ? alternative : number;
     }
 
     @Override
     public int getInteger(@Nullable String path) {
-        return 0;
+        return this.getInteger(path, -1);
     }
 
     @Override
     public boolean isInteger(@Nullable String path) {
-        return false;
+        return this.get(path) instanceof Integer;
     }
 
     @Override
     public long getLong(@Nullable String path, long alternative) {
-        return 0;
+        final Long number = this.parse(path, Long::parseLong);
+        return number == null ? alternative : number;
     }
 
     @Override
     public long getLong(@Nullable String path) {
-        return 0;
+        return this.getLong(path, -1L);
     }
 
     @Override
     public boolean isLong(@Nullable String path) {
-        return false;
+        return this.get(path) instanceof Long;
     }
 
     @Override
     public double getDouble(@Nullable String path, double alternative) {
-        return 0;
+        final Double number = this.parse(path, Double::parseDouble);
+        return number == null ? alternative : number;
     }
 
     @Override
     public double getDouble(@Nullable String path) {
-        return 0;
+        return this.getDouble(path, -1D);
     }
 
     @Override
     public boolean isDouble(@Nullable String path) {
-        return false;
+        return this.get(path) instanceof Double;
     }
 
     @Override
-    public float getFloat(@Nullable String path, double alternative) {
-        return 0;
+    public float getFloat(@Nullable String path, float alternative) {
+        final Float number = this.parse(path, Float::parseFloat);
+        return number == null ? alternative : number;
     }
 
     @Override
     public float getFloat(@Nullable String path) {
-        return 0;
+        return this.getFloat(path, -1F);
     }
 
     @Override
     public boolean isFloat(@Nullable String path) {
-        return false;
+        return this.get(path) instanceof Float;
     }
 
     @Override
     public boolean getBoolean(@Nullable String path, boolean alternative) {
-        return false;
+
+        // Get the value from the path.
+        final Object value = this.get(path);
+
+        // Return the value if it is a boolean.
+        return value instanceof Boolean ? (Boolean) value : alternative;
     }
 
     @Override
     public boolean getBoolean(@Nullable String path) {
-        return false;
+        return this.getBoolean(path, false);
     }
 
     @Override
     public boolean isBoolean(@Nullable String path) {
-        return false;
+        return this.get(path) instanceof Boolean;
     }
 
     @Override
     public List<?> getList(@Nullable String path, @Nullable List<?> alternative) {
-        return List.of();
+
+        // Get the value from the path.
+        final Object object = this.get(path);
+
+        // Return the value if it is a list.
+        return object instanceof List<?> ? (List<?>) object : alternative;
     }
 
     @Override
     public @Nullable List<?> getList(@Nullable String path) {
-        return List.of();
+        return this.getList(path, null);
     }
 
     @Override
     public boolean isList(@Nullable String path) {
-        return false;
+        return this.get(path) instanceof List<?>;
+    }
+
+    private <T> List<T> getList(@Nullable String path, @Nullable List<T> alternative, @NotNull StringParser<T> parser) {
+
+        // Is the location not a list?
+        if (!this.isList(path)) return alternative;
+
+        // Create a new list.
+        final List<T> list = new ArrayList<>();
+
+        // Loop though items in the list.
+        for (final Object item : this.getList(path, new ArrayList<>())) {
+
+            final T parsed = this.parseValue(item, parser);
+
+            // Is the value not the correct type.
+            if (parsed == null) {
+                return alternative;
+            }
+
+            // Add the value.
+            list.add(parsed);
+        }
+
+        return list;
     }
 
     @Override
     public List<String> getListString(@Nullable String path, @Nullable List<String> alternative) {
-        return List.of();
+        return this.getList(path, alternative, (string) -> string);
     }
 
     @Override
     public @Nullable List<String> getListString(@Nullable String path) {
-        return List.of();
+        return this.getListString(path, null);
     }
 
     @Override
     public List<Integer> getListInteger(@Nullable String path, @Nullable List<Integer> alternative) {
-        return List.of();
+        return this.getList(path, alternative, Integer::parseInt);
     }
 
     @Override
     public @Nullable List<Integer> getListInteger(@Nullable String path) {
-        return List.of();
+        return this.getListInteger(path, null);
     }
 
     @Override
-    public List<Long> getListLong(@Nullable String path, @Nullable List<Integer> alternative) {
-        return List.of();
+    public List<Long> getListLong(@Nullable String path, @Nullable List<Long> alternative) {
+        return this.getList(path, alternative, Long::parseLong);
     }
 
     @Override
     public @Nullable List<Long> getListLong(@Nullable String path) {
-        return List.of();
+        return this.getListLong(path, null);
     }
 
     @Override
-    public List<Double> getListDouble(@Nullable String path, @Nullable List<Integer> alternative) {
-        return List.of();
+    public List<Double> getListDouble(@Nullable String path, @Nullable List<Double> alternative) {
+        return this.getList(path, alternative, Double::parseDouble);
     }
 
     @Override
     public @Nullable List<Double> getListDouble(@Nullable String path) {
-        return List.of();
+        return this.getListDouble(path, null);
     }
 
     @Override
-    public List<Float> getListFloat(@Nullable String path, @Nullable List<Integer> alternative) {
-        return List.of();
+    public List<Float> getListFloat(@Nullable String path, @Nullable List<Float> alternative) {
+        return this.getList(path, alternative, Float::parseFloat);
     }
 
     @Override
     public @Nullable List<Float> getListFloat(@Nullable String path) {
-        return List.of();
+        return this.getListFloat(path, null);
     }
 
     @Override
     public Map<String, Object> getMap(@Nullable String path, @Nullable Map<String, Object> alternative) {
-        return Map.of();
+
+        // Get the value from the path.
+        final Object object = this.get(path);
+
+        // Is the object not a map?
+        if (!(object instanceof Map<?, ?> map)) return alternative;
+
+        // Create the new map instance.
+        final Map<String, Object> result = new LinkedHashMap<>();
+
+        // Loop though entry's.
+        for (Map.Entry<?, ?> entry : map.entrySet()) {
+
+            // Is the key a string?
+            if (entry.getKey() instanceof String key) {
+                result.put(key, entry.getValue());
+                continue;
+            }
+
+            // Otherwise, it is not a string to object map.
+            return alternative;
+        }
+
+        return result;
     }
 
     @Override
-    public Map<String, Object> getMap(@Nullable String path) {
-        return Map.of();
+    public @Nullable Map<String, Object> getMap(@Nullable String path) {
+        return this.getMap(path, null);
     }
 
     @Override
     public boolean isMap(@Nullable String path) {
-        return false;
+        return this.getMap(path, null) != null;
     }
 }
