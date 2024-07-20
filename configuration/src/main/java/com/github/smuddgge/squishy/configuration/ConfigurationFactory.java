@@ -18,7 +18,59 @@
 
 package com.github.smuddgge.squishy.configuration;
 
+import com.github.smuddgge.squishy.configuration.implementation.TomlConfiguration;
+import com.github.smuddgge.squishy.configuration.implementation.YamlConfiguration;
+import org.jetbrains.annotations.NotNull;
+
+import java.io.File;
+import java.util.List;
+import java.util.Optional;
+
 public enum ConfigurationFactory {
-    YAML,
-    TOML;
+    YAML(List.of("yaml", "yml")) {
+        @Override
+        public @NotNull Configuration create(@NotNull File file) {
+            return new YamlConfiguration(file);
+        }
+
+        @Override
+        public @NotNull Configuration create(@NotNull File folder, @NotNull String pathFromFolder) {
+            return new YamlConfiguration(folder, pathFromFolder);
+        }
+    },
+    TOML(List.of("toml")) {
+        @Override
+        public @NotNull Configuration create(@NotNull File file) {
+            return new TomlConfiguration(file);
+        }
+
+        @Override
+        public @NotNull Configuration create(@NotNull File folder, @NotNull String pathFromFolder) {
+            return new TomlConfiguration(folder, pathFromFolder);
+        }
+    };
+
+    private final @NotNull List<String> extensions;
+
+    ConfigurationFactory(final @NotNull List<String> extensions) {
+        this.extensions = extensions;
+    }
+
+    public abstract @NotNull Configuration create(@NotNull File file);
+
+    public abstract @NotNull Configuration create(@NotNull File folder, @NotNull String pathFromFolder);
+
+    public static @NotNull Optional<Configuration> create(@NotNull String extension, @NotNull File file) {
+        for (ConfigurationFactory factory : ConfigurationFactory.values()) {
+            if (factory.extensions.contains(extension)) return Optional.of(factory.create(file));
+        }
+        return Optional.empty();
+    }
+
+    public static @NotNull Optional<Configuration> create(@NotNull String extension, @NotNull File folder, @NotNull String pathFromFolder) {
+        for (ConfigurationFactory factory : ConfigurationFactory.values()) {
+            if (factory.extensions.contains(extension)) return Optional.of(factory.create(folder, pathFromFolder));
+        }
+        return Optional.empty();
+    }
 }
