@@ -130,7 +130,7 @@ public class YamlConfiguration extends MemoryConfigurationSection implements Con
         final CompletableFuture<@NotNull Boolean> future = new CompletableFuture<>();
 
         future.completeAsync(() -> {
-            
+
             // Set up the yaml options.
             DumperOptions dumperOptions = new DumperOptions();
             dumperOptions.setPrettyFlow(true);

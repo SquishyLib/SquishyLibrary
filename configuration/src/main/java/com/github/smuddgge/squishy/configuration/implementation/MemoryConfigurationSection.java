@@ -110,7 +110,7 @@ public class MemoryConfigurationSection implements ConfigurationSection {
         // Convert immutable lists into List<> type.
         final Object convertedValue = this.convertLists(value);
 
-        // Should the value be in a section above this one?
+        // Is the value be in a section above this one?
         if (path.contains(".")) {
 
             // Get the key to the section above.
@@ -119,15 +119,25 @@ public class MemoryConfigurationSection implements ConfigurationSection {
             // Get the remaining path to the value.
             final String remainingPath = path.substring(key.length() + 1);
 
-            // Get the section above.
-            final ConfigurationSection sectionAbove = this.getSection(key);
+            try {
 
-            // Populate the above sections with the keys and finally the value.
-            sectionAbove.setInSection(remainingPath, convertedValue);
+                // Create the section above.
+                MemoryConfigurationSection sectionAbove = new MemoryConfigurationSection(
+                        this.getMap(key) == null ? new LinkedHashMap<>() : this.getMap(key),
+                        this.baseSection,
+                        this.getPathFromBase(key)
+                );
 
-            // Update the section's data.
-            this.data.put(key, sectionAbove.getMap());
-            return this;
+                // Populate the above sections with the keys and finally the value.
+                sectionAbove.setInSection(remainingPath, convertedValue);
+
+                // Update this section's data.
+                this.data.put(key, sectionAbove.getMap());
+                return this;
+
+            } catch (Exception exception) {
+                throw new ConfigurationException(this, "setInSection", "Unable to create section above and update data. remaining_path=" + remainingPath + ".");
+            }
         }
 
         // Is the key being set to null?
@@ -203,66 +213,168 @@ public class MemoryConfigurationSection implements ConfigurationSection {
                 || value instanceof Map;
     }
 
-    // TODO:
-
     @Override
     public Object get(@Nullable String path, @Nullable Object alternative) {
-        return null;
+        try {
+
+            // Do they want this sections map?
+            if (path == null) {
+                return this.data;
+            }
+
+            // Is the value be in a section above this one?
+            if (path.contains(".")) {
+
+                // Get the key to the section above.
+                final String key = path.split("\\.")[0];
+
+                // Get the remaining path to the value.
+                final String remainingPath = path.substring(key.length() + 1);
+
+                // Get the section above.
+                final ConfigurationSection sectionAbove = this.getSection(key);
+                return sectionAbove.get(remainingPath, alternative);
+            }
+
+            // Return the value in this sections map.
+            return this.data.getOrDefault(path, alternative);
+
+        } catch (Exception exception) {
+            throw new ConfigurationException(this, "get", "Unable to get value from " + this.getPathFromBase(path) + ". The alternative value was " + alternative + ".");
+        }
     }
 
     @Override
     public @Nullable Object get(@Nullable String path) {
-        return null;
+        return this.get(path, null);
     }
 
     @Override
     public <T> T getClass(@Nullable String path, @NotNull Class<T> clazz, @Nullable T alternative) {
-        return null;
+
+        // Set up the json converter.
+        final Gson gson = new Gson();
+
+        // Get the instance of the map from the path.
+        final Map<String, Object> map = this.getMap(path);
+
+        // Does the map exist?
+        if (map == null) return alternative;
+
+        try {
+
+            // Convert the map into the object.
+            final String json = gson.toJson(map);
+            final T type = gson.fromJson(json, clazz);
+
+            // Was the json empty?
+            if (type == null) return alternative;
+            return type;
+
+        } catch (Exception exception) {
+            throw new ConfigurationException(this, "getClass", "Unable to convert map " + map + " located " + this.getPathFromBase(path) + " into the class type " + clazz + ".");
+        }
     }
 
     @Override
     public <T> @Nullable T getClass(@Nullable String path, @NotNull Class<T> clazz) {
-        return null;
+        return this.getClass(path, clazz, null);
     }
 
     @Override
-    public @NotNull ConfigurationSection getSection(String path) {
-        return null;
+    public @NotNull ConfigurationSection getSection(@Nullable String path) {
+
+        // Do they want this section?
+        if (path == null) return this;
+
+        // Return the section that is higher.
+        return new MemoryConfigurationSection(
+                this.getMap(path, new LinkedHashMap<>()),
+                this.baseSection,
+                this.getPathFromBase(path)
+        );
     }
 
     @Override
     public @NotNull List<@NotNull String> getKeys() {
-        return List.of();
+        if (this.data.isEmpty()) return new ArrayList<>();
+        return new ArrayList<>(this.data.keySet().stream().toList());
     }
 
     @Override
     public @NotNull List<@NotNull String> getKeys(@Nullable String path) {
-        return List.of();
-    }
-
-    @Override
-    public String getString(@Nullable String path, @Nullable String alternative) {
-        return "";
-    }
-
-    @Override
-    public @Nullable String getString(@Nullable String path) {
-        return "";
-    }
-
-    @Override
-    public boolean isString(@Nullable String path) {
-        return false;
+        return this.getSection(path).getKeys();
     }
 
     @Override
     public String getAdaptedString(@Nullable String path, @NotNull String join, @Nullable String alternative) {
-        return "";
+
+        // Get the value from the section.
+        final Object value = this.get(path);
+
+        // Attempt to convert the object into a string.
+        final String converted = this.convertObject(value);
+
+        // Has the value now been converted?
+        if (converted != null) return converted;
+
+        // Check if the value is a list.
+        if (value instanceof List<?> list) {
+
+            // Set up a string builder.
+            StringBuilder builder = new StringBuilder();
+
+            // Add all elements with the
+            int index = 0;
+            for (final Object item : list) {
+
+                // Add the list item as a converted string.
+                builder.append(this.convertObject(item));
+
+                // Should there be a joiner here?
+                if (index + 1 != list.size()) builder.append(join);
+                index++;
+            }
+
+            return builder.toString();
+        }
+
+        return alternative;
+    }
+
+    private @Nullable String convertObject(@Nullable Object value) {
+
+        // Does the value not exist?
+        if (value == null) return null;
+
+        // Check if the value is a string or type of supported number.
+        if (value instanceof String string) return string;
+        if (value instanceof Integer integer) return String.valueOf(integer);
+        if (value instanceof Long number) return String.valueOf(number);
+        if (value instanceof Double number) return String.valueOf(number);
+        if (value instanceof Float number) return String.valueOf(number);
+
+        return null;
     }
 
     @Override
     public @Nullable String getAdaptedString(@Nullable String path, @NotNull String join) {
-        return "";
+        return this.getAdaptedString(path, join, null);
+    }
+
+    @Override
+    public String getString(@Nullable String path, @Nullable String alternative) {
+        return this.getAdaptedString(path, ",", alternative);
+    }
+
+    @Override
+    public @Nullable String getString(@Nullable String path) {
+        return this.getAdaptedString(path, ",", null);
+    }
+
+    @Override
+    public boolean isString(@Nullable String path) {
+        return this.get(path, false) instanceof String;
     }
 
     @Override

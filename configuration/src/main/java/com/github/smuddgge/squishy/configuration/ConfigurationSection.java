@@ -199,42 +199,6 @@ public interface ConfigurationSection {
     List<@NotNull String> getKeys(@Nullable String path);
 
     /**
-     * Used to get a string.
-     * <li>If the path does not exist it will return the alternative value.</li>
-     * <li>If the value is not a string it will return the alternative value.</li>
-     * <li>If the path is null it will return the alternative value.
-     * This is because this is a section and not a string.</li>
-     *
-     * @param path        The location of the string in the section.
-     * @param alternative The alternative value.
-     * @return The requested string.
-     */
-    String getString(@Nullable String path, @Nullable String alternative);
-
-    /**
-     * Used to get a string.
-     * <li>If the path does not exist it will return null.</li>
-     * <li>If the value is not a string it will return null.</li>
-     * <li>If the path is null it will return null.
-     * This is because this is a section and not a string.</li>
-     *
-     * @param path The location of the string in the section.
-     * @return The requested string.
-     */
-    @Nullable
-    String getString(@Nullable String path);
-
-    /**
-     * Used to check if a value is a string.
-     * <li>If the path is null it will return false.
-     * This is because this is a section not a string.</li>
-     *
-     * @param path The instance of the path.
-     * @return True if the value is a string.
-     */
-    boolean isString(@Nullable String path);
-
-    /**
      * Used to get the value as a string.
      * <li>If the path does not exist it will return the alternative.</li>
      * <li>If the path is null it will return the alternative.</li>
@@ -269,6 +233,46 @@ public interface ConfigurationSection {
      */
     @Nullable
     String getAdaptedString(@Nullable String path, @NotNull String join);
+
+    /**
+     * Used to get a string.
+     * <li>This method will also attempt to adapt non strings into strings using
+     * {@link ConfigurationSection#getAdaptedString(String, String, String)}</li>
+     * <li>If the path does not exist it will return the alternative value.</li>
+     * <li>If the value is not a string it will return the alternative value.</li>
+     * <li>If the path is null it will return the alternative value.
+     * This is because this is a section and not a string.</li>
+     *
+     * @param path        The location of the string in the section.
+     * @param alternative The alternative value.
+     * @return The requested string.
+     */
+    String getString(@Nullable String path, @Nullable String alternative);
+
+    /**
+     * Used to get a string.
+     * <li>This method will also attempt to adapt non strings into strings using
+     * {@link ConfigurationSection#getAdaptedString(String, String, String)}</li>
+     * <li>If the path does not exist it will return null.</li>
+     * <li>If the value is not a string it will return null.</li>
+     * <li>If the path is null it will return null.
+     * This is because this is a section and not a string.</li>
+     *
+     * @param path The location of the string in the section.
+     * @return The requested string.
+     */
+    @Nullable
+    String getString(@Nullable String path);
+
+    /**
+     * Used to check if a value is a string.
+     * <li>If the path is null it will return false.
+     * This is because this is a section not a string.</li>
+     *
+     * @param path The instance of the path.
+     * @return True if the value is a string.
+     */
+    boolean isString(@Nullable String path);
 
     /**
      * Used to get an integer.
