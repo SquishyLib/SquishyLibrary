@@ -21,19 +21,17 @@ package com.github.smuddgge.squishy.common.indicator;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Indicates if this class can be saved to a
+ * Indicates if this class can be removed from a
  * specific storage.
  *
- * @param <T> The instance that is being saved.
+ * @param <T> The class being removed.
  */
-public interface Savable<T> {
+public interface Removable<T> {
 
     /**
-     * Used to save this instance of the class
-     * to storage.
+     * Used to remove this class instance from storage.
      *
      * @return This instance.
      */
-    @NotNull
-    T save();
+    @NotNull T remove();
 }
