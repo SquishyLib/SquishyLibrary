@@ -57,3 +57,49 @@ directory.save(true);
 // Get the list of files being combined.
 List<Configuration> files = directory.getConfigurationFiles(true);
 ```
+
+# Single Type Configuration Directory
+```java
+// A type example.
+public class Egg implements ConfigurationConvertible<Egg> {
+
+    private final @NotNull String identifier;
+    private boolean hasCracked;
+
+    public Egg(@NotNull String identifier) {
+        this.identifier = identifier;
+    }
+
+    public void setHasCracked(boolean hasCracked) {
+        this.hasCracked = hasCracked;
+    }
+
+    @Override
+    public @NotNull ConfigurationSection convert() {
+        ConfigurationSection section = new MemoryConfigurationSection();
+        section.set("has_cracked", hasCracked);
+        return section;
+    }
+
+    @Override
+    public @NotNull Egg convert(@NotNull ConfigurationSection section) {
+        this.hasCracked = section.getBoolean("has_cracked");
+        return this;
+    }
+}
+```
+```java
+// Directory examples.
+SingleTypeConfigurationDirectory<Egg> directory = new SingleTypeConfigurationDirectory<>(new File("directory"), Egg::new, false);
+directory.load();
+
+Egg egg = directory.get("first_egg").orElse(null);
+
+List<Egg> eggs = directory.getAll();
+        
+directory.set("second_egg", new Egg("second_egg"));
+
+directory.remove("third_egg");
+
+boolean contains = directory.contains("fourth_egg");
+```
