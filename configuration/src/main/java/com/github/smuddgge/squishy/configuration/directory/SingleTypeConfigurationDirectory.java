@@ -115,12 +115,12 @@ public class SingleTypeConfigurationDirectory<T extends ConfigurationConvertible
      * @param type       The type to insert.
      * @return This instance.
      */
-    public @NotNull SingleTypeConfigurationDirectory<T> insert(@NotNull String identifier, @NotNull T type) {
+    public @NotNull SingleTypeConfigurationDirectory<T> set(@NotNull String identifier, @NotNull T type) {
 
         // Get the instance of the configuration to use.
         Configuration configuration = this.directory.getConfiguration(identifier, this.onlyThisDirectory).orElseGet(() -> {
             Configuration temp = new YamlConfiguration(this.directory.getDirectory(), "default.yml");
-            temp.load().waitForComplete();
+            temp.load();
             return temp;
         });
 

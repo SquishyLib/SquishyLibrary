@@ -120,7 +120,7 @@ public class ConfigurationDirectory extends MemoryConfigurationSection {
 
             // Load the configuration file.
             YamlConfiguration configuration = new YamlConfiguration(file);
-            configuration.load().waitForComplete();
+            configuration.load();
             return configuration;
         }
 
@@ -129,7 +129,7 @@ public class ConfigurationDirectory extends MemoryConfigurationSection {
                 this.getDirectory(),
                 ConfigurationDirectory.DATA_FILE_EXTENSION
         );
-        configuration.load().waitForComplete();
+        configuration.load();
         return configuration;
     }
 
@@ -226,7 +226,7 @@ public class ConfigurationDirectory extends MemoryConfigurationSection {
             final Configuration configuration = ConfigurationFactory.createConfiguration(file).orElseThrow(
                     () -> new ConfigurationException(this, "getConfigurationFiles", "File may not be supported. Unable to create configuration instance from file with path " + file.getAbsolutePath() + ".")
             );
-            configuration.load().waitForComplete();
+            configuration.load();
             configurationList.add(configuration);
         }
 
@@ -254,7 +254,7 @@ public class ConfigurationDirectory extends MemoryConfigurationSection {
 
                 // Attempt to create the configuration.
                 final Configuration configuration = ConfigurationFactory.createConfiguration(file).orElseThrow();
-                configuration.load().waitForComplete();
+                configuration.load();
 
                 if (configuration.getKeys().contains(key)) return Optional.of(configuration);
                 continue;
@@ -265,7 +265,7 @@ public class ConfigurationDirectory extends MemoryConfigurationSection {
 
             // Create the configuration.
             Configuration configuration = factory.create(file);
-            configuration.load().waitForComplete();
+            configuration.load();
 
             if (configuration.getKeys().contains(key)) return Optional.of(configuration);
         }
@@ -304,7 +304,7 @@ public class ConfigurationDirectory extends MemoryConfigurationSection {
         );
 
         // Load the configuration file.
-        configuration.load().waitForComplete();
+        configuration.load();
 
         // Append the configuration's section.
         this.appendSection(configuration);
@@ -426,13 +426,12 @@ public class ConfigurationDirectory extends MemoryConfigurationSection {
 
                 // Does the configuration not exist?
                 if (configuration == null) {
-                    Configuration temp = new YamlConfiguration(this.getDirectory(), "lost_keys.yml");
-                    temp.load().waitForComplete();
+                    Configuration temp = new YamlConfiguration(this.getDirectory(), "lost_keys.yml").load();
                     temp.set(key, this.get(key));
                     continue;
                 }
 
-                configuration.load().waitForComplete();
+                configuration.load();
                 configuration.set(key, this.get(key));
 
             } catch (Exception exception) {
@@ -454,7 +453,7 @@ public class ConfigurationDirectory extends MemoryConfigurationSection {
                 // Does the configuration not exist?
                 if (configuration == null) continue;
 
-                configuration.load().waitForComplete();
+                configuration.load();
                 configuration.remove(key);
 
             } catch (Exception exception) {

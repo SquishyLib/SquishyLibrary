@@ -70,7 +70,18 @@ public class YamlConfiguration extends MemoryConfigurationSection implements Con
     }
 
     @Override
-    public @NotNull CompletableFuture<@NotNull Boolean> load() {
+    public @NotNull Configuration load() {
+        this.loadAsync().waitForComplete();
+        return this;
+    }
+
+    @Override
+    public boolean loadWithResult() {
+        return this.loadAsync().waitForComplete();
+    }
+
+    @Override
+    public @NotNull CompletableFuture<@NotNull Boolean> loadAsync() {
 
         // Create the completable return value.
         final CompletableFuture<@NotNull Boolean> future = new CompletableFuture<>();
@@ -125,7 +136,18 @@ public class YamlConfiguration extends MemoryConfigurationSection implements Con
     }
 
     @Override
-    public @NotNull CompletableFuture<@NotNull Boolean> save() {
+    public @NotNull Configuration save() {
+        this.saveAsync().waitForComplete();
+        return this;
+    }
+
+    @Override
+    public boolean saveWithResult() {
+        return this.saveAsync().waitForComplete();
+    }
+
+    @Override
+    public @NotNull CompletableFuture<@NotNull Boolean> saveAsync() {
 
         final CompletableFuture<@NotNull Boolean> future = new CompletableFuture<>();
 

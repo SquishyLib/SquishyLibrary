@@ -102,13 +102,46 @@ public interface Configuration extends ConfigurationSection {
     /**
      * Used to copy the configuration file into this class instance,
      * clearing and then adding the keys and values.
+     *
+     * @return This instance.
+     */
+    @NotNull Configuration load();
+
+    /**
+     * Used to copy the configuration file into this class instance,
+     * clearing and then adding the keys and values.
+     *
+     * @return True if successful.
+     */
+    boolean loadWithResult();
+
+    /**
+     * Used to copy the configuration file into this class instance,
+     * clearing and then adding the keys and values.
      * <p>
      * You can use the {@link CompletableFuture#get()} to wait for the result.
      *
      * @return True if successful.
      */
     @NotNull
-    CompletableFuture<@NotNull Boolean> load();
+    CompletableFuture<@NotNull Boolean> loadAsync();
+
+    /**
+     * Used to update the configuration file with this class
+     * instance's values.
+     *
+     * @return This instance.
+     */
+    @NotNull
+    Configuration save();
+
+    /**
+     * Used to update the configuration file with this class
+     * instance's values.
+     *
+     * @return True if successful.
+     */
+    boolean saveWithResult();
 
     /**
      * Used to update the configuration file with this class
@@ -119,7 +152,7 @@ public interface Configuration extends ConfigurationSection {
      * @return True if successful.
      */
     @NotNull
-    CompletableFuture<@NotNull Boolean> save();
+    CompletableFuture<@NotNull Boolean> saveAsync();
 
     /**
      * Attempts to create the file.
