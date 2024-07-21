@@ -18,6 +18,7 @@
 
 package com.github.smuddgge.squishy.configuration;
 
+import com.github.smuddgge.squishy.common.CompletableFuture;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -26,7 +27,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 public interface Configuration extends ConfigurationSection {
 

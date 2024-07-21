@@ -56,21 +56,29 @@ public enum ConfigurationFactory {
         this.extensions = extensions;
     }
 
+    public @NotNull List<String> getExtensions() {
+        return this.extensions;
+    }
+
     public abstract @NotNull Configuration create(@NotNull File file);
 
     public abstract @NotNull Configuration create(@NotNull File folder, @NotNull String pathFromFolder);
 
-    public static @NotNull Optional<Configuration> create(@NotNull String extension, @NotNull File file) {
+    public static @NotNull Optional<Configuration> createConfiguration(@NotNull String extension, @NotNull File file) {
         for (ConfigurationFactory factory : ConfigurationFactory.values()) {
             if (factory.extensions.contains(extension)) return Optional.of(factory.create(file));
         }
         return Optional.empty();
     }
 
-    public static @NotNull Optional<Configuration> create(@NotNull String extension, @NotNull File folder, @NotNull String pathFromFolder) {
+    public static @NotNull Optional<Configuration> createConfiguration(@NotNull String extension, @NotNull File folder, @NotNull String pathFromFolder) {
         for (ConfigurationFactory factory : ConfigurationFactory.values()) {
             if (factory.extensions.contains(extension)) return Optional.of(factory.create(folder, pathFromFolder));
         }
         return Optional.empty();
+    }
+
+    public static @NotNull Optional<Configuration> createConfiguration(@NotNull File file) {
+        return ConfigurationFactory.createConfiguration(file.getName().split("\\.")[file.getName().split("\\.").length - 1], file);
     }
 }

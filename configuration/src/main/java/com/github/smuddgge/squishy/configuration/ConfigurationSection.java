@@ -18,6 +18,7 @@
 
 package com.github.smuddgge.squishy.configuration;
 
+import com.github.smuddgge.squishy.configuration.indicator.ConfigurationConvertible;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -172,9 +173,11 @@ public interface ConfigurationSection {
      */
     <T> T getClass(@Nullable String path, @NotNull Class<T> clazz, @Nullable T alternative);
 
+
     /**
      * Used to fill a class with the configuration values.
      * The section will be mapped on to the class.
+     * <li>Used {@link com.google.gson.Gson} to convert the map into the class.</li>
      * <li>If the path does not exist null will be returned.</li>
      *
      * @param <T>   The class type.
@@ -184,6 +187,31 @@ public interface ConfigurationSection {
      */
     @Nullable
     <T> T getClass(@Nullable String path, @NotNull Class<T> clazz);
+
+    /**
+     * Used to convert a class using the configuration section
+     * of a given path.
+     *
+     * @param path        The location of the class.
+     * @param convertable The empty class instance.
+     * @param alternative The alternative value to return if there
+     *                    are no values in the location.
+     * @param <T>         The type of class to convert.
+     * @return The converted class.
+     */
+    <T extends ConfigurationConvertible<T>> T getConvertable(@Nullable String path, @NotNull T convertable, @Nullable T alternative);
+
+    /**
+     * Used to convert a class using the configuration section
+     * of a given path.
+     *
+     * @param path        The location of the class.
+     * @param convertable The empty class instance.
+     * @param <T>         The type of class to convert.
+     * @return The converted class.
+     */
+    @Nullable
+    <T extends ConfigurationConvertible<T>> T getConvertable(@Nullable String path, @NotNull T convertable);
 
     /**
      * Used to get a configuration section.
@@ -645,7 +673,8 @@ public interface ConfigurationSection {
      *
      * @return A map representing the configuration section.
      */
-    @Nullable Map<String, Object> getMap(@Nullable String path);
+    @Nullable
+    Map<String, Object> getMap(@Nullable String path);
 
     /**
      * Used to check if a value is a map of string to object.

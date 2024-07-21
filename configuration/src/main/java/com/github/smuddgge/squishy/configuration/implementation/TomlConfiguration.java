@@ -18,24 +18,17 @@
 
 package com.github.smuddgge.squishy.configuration.implementation;
 
+import com.github.smuddgge.squishy.common.CompletableFuture;
 import com.github.smuddgge.squishy.configuration.Configuration;
 import com.github.smuddgge.squishy.configuration.ConfigurationException;
 import com.moandjiezana.toml.Toml;
 import com.moandjiezana.toml.TomlWriter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-
-import static org.yaml.snakeyaml.DumperOptions.FlowStyle.BLOCK;
 
 public class TomlConfiguration extends MemoryConfigurationSection implements Configuration {
 

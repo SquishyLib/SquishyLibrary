@@ -29,4 +29,13 @@ public class ConfigurationException extends RuntimeException {
                 "\nreason= " + reason
         );
     }
+
+    public ConfigurationException(@NotNull final Exception exception, @NotNull final Object clazzInstance, @NotNull final String method, @NotNull final String reason) {
+        super("-----------------------------------" +
+                        "\nclass= " + clazzInstance.getClass().getName() +
+                        "\nmethod= " + method +
+                        "\nreason= " + reason,
+                exception
+        );
+    }
 }

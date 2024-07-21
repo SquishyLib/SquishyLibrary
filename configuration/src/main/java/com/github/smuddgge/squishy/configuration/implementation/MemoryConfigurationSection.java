@@ -20,6 +20,7 @@ package com.github.smuddgge.squishy.configuration.implementation;
 
 import com.github.smuddgge.squishy.configuration.ConfigurationException;
 import com.github.smuddgge.squishy.configuration.ConfigurationSection;
+import com.github.smuddgge.squishy.configuration.indicator.ConfigurationConvertible;
 import com.google.gson.Gson;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -282,6 +283,24 @@ public class MemoryConfigurationSection implements ConfigurationSection {
     }
 
     @Override
+    public <T extends ConfigurationConvertible<T>> T getConvertable(@Nullable String path, @NotNull T convertable, @Nullable T alternative) {
+
+        // Get the section from the path.
+        final ConfigurationSection section = this.getSection(path);
+
+        // Is the section empty?
+        if (section.getKeys().isEmpty()) return alternative;
+
+        // Convert the class.
+        return convertable.convert(section);
+    }
+
+    @Override
+    public <T extends ConfigurationConvertible<T>> @Nullable T getConvertable(@Nullable String path, @NotNull T convertable) {
+        return this.getConvertable(path, convertable, null);
+    }
+
+    @Override
     public @NotNull ConfigurationSection getSection(@Nullable String path) {
 
         // Do they want this section?
@@ -378,7 +397,8 @@ public class MemoryConfigurationSection implements ConfigurationSection {
     }
 
     private interface StringParser<T> {
-        @Nullable T parse(@NotNull String value);
+        @Nullable
+        T parse(@NotNull String value);
     }
 
     private @Nullable <T> T parseValue(@NotNull Object value, @NotNull StringParser<T> parser) {
