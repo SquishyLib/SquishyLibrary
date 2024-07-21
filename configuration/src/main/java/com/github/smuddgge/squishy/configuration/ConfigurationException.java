@@ -18,24 +18,26 @@
 
 package com.github.smuddgge.squishy.configuration;
 
+import com.github.smuddgge.squishy.common.logger.ConsoleColor;
 import org.jetbrains.annotations.NotNull;
 
 public class ConfigurationException extends RuntimeException {
 
     public ConfigurationException(@NotNull final Object clazzInstance, @NotNull final String method, @NotNull final String reason) {
-        super("-----------------------------------" +
-                "\nclass= " + clazzInstance.getClass().getName() +
-                "\nmethod= " + method +
-                "\nreason= " + reason
-        );
+        super(ConsoleColor.parse("\n&7----------------------------------------------------------------------" +
+                "\n&7class= &c" + clazzInstance.getClass().getName() +
+                (clazzInstance instanceof Configuration configuration ? "\n&7path= &c " + configuration.getPath() : "") +
+                "\n&7method= &c" + method +
+                "\n&7reason= &c" + reason
+        ));
     }
 
     public ConfigurationException(@NotNull final Exception exception, @NotNull final Object clazzInstance, @NotNull final String method, @NotNull final String reason) {
-        super("-----------------------------------" +
-                        "\nclass= " + clazzInstance.getClass().getName() +
-                        "\nmethod= " + method +
-                        "\nreason= " + reason,
-                exception
-        );
+        super(ConsoleColor.parse("\n&7----------------------------------------------------------------------" +
+                "\n&7class= &c" + clazzInstance.getClass().getName() +
+                "\n&7method= &c" + method +
+                "\n&7reason= &c" + reason +
+                "\n&7exception= &c" + exception
+        ), exception);
     }
 }

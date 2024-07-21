@@ -31,6 +31,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.yaml.snakeyaml.DumperOptions.FlowStyle.BLOCK;
@@ -41,10 +43,12 @@ public class YamlConfiguration extends MemoryConfigurationSection implements Con
     private @Nullable String resourcePath;
 
     public YamlConfiguration(@NotNull final File file) {
+        super();
         this.file = file;
     }
 
     public YamlConfiguration(@NotNull final File folder, @NotNull final String pathFromFile) {
+        super();
         this.file = new File(folder.getAbsolutePath() + File.separator + pathFromFile);
     }
 
@@ -97,7 +101,7 @@ public class YamlConfiguration extends MemoryConfigurationSection implements Con
 
                 // Was it not able to create the parent directories?
                 if (!success) {
-                    throw new ConfigurationException(this, "load", "Could not create parent directory's.");
+                    throw new ConfigurationException(this, "loadAsync", "Could not create parent directory's.");
                 }
             }
 
@@ -111,10 +115,10 @@ public class YamlConfiguration extends MemoryConfigurationSection implements Con
 
                     // Was there a problem while creating the file?
                     if (!success.get()) {
-                        throw new ConfigurationException(this, "load", "Could not create the file.");
+                        throw new ConfigurationException(this, "loadAsync", "Could not create the file.");
                     }
                 } catch (Exception exception) {
-                    throw new ConfigurationException(this, "load", "Could not get the completable future result for creating the file.");
+                    throw new ConfigurationException(exception, this, "loadAsync", "Could not get the completable future result for creating the file.");
                 }
             }
 
@@ -122,13 +126,15 @@ public class YamlConfiguration extends MemoryConfigurationSection implements Con
             try (InputStream inputStream = Files.newInputStream(this.file.toPath())) {
 
                 // Replace the data map with the content.
-                Yaml yaml = new Yaml();
+                final Yaml yaml = new Yaml();
+                final Map<String, Object> map = yaml.load(inputStream);
+
                 this.data.clear();
-                this.data.putAll(yaml.load(inputStream));
+                this.data.putAll(map == null ? new LinkedHashMap<>() : map);
                 return true;
 
-            } catch (IOException exception) {
-                throw new ConfigurationException(this, "load", "Could not get the content and replace the data map.");
+            } catch (Exception exception) {
+                throw new ConfigurationException(exception, this, "loadAsync", "Could not get the content and replace the data map.");
             }
         });
 

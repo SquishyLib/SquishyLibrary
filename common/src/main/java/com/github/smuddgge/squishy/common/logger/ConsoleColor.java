@@ -79,6 +79,6 @@ public enum ConsoleColor {
             }
         }
 
-        return string;
+        return string + "\033[0m";
     }
 }
