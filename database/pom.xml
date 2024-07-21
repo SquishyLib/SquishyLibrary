@@ -23,7 +23,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.github.smuddgge.squishy</groupId>
+        <groupId>com.github.squishylib</groupId>
         <artifactId>SquishyLibrary</artifactId>
         <version>${revision}</version>
     </parent>
