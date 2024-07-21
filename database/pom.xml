@@ -36,4 +36,12 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
+    <dependencies>
+        <!-- Configuration + Common -->
+        <dependency>
+            <groupId>com.github.squishylib</groupId>
+            <artifactId>configuration</artifactId>
+            <version>0.0.0</version>
+        </dependency>
+    </dependencies>
 </project>

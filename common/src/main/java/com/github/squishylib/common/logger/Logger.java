@@ -141,6 +141,16 @@ public class Logger implements Replicable<Logger> {
         return this;
     }
 
+    /**
+     * Used to check if the logger is outputting
+     * debug messages.
+     *
+     * @return True if in debug mode.
+     */
+    public boolean isInDebugMode() {
+        return this.logger.isLoggable(Level.DEBUG);
+    }
+
     public @NotNull Logger error(@NotNull String message) {
         this.logger.log(Level.ERROR, ConsoleColor.parse(this.getPrefixFormatted() + message));
         return this;

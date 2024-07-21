@@ -39,9 +39,9 @@
     <dependencies>
         <!-- Common -->
         <dependency>
-            <groupId>com.github.smuddgge.squishy</groupId>
+            <groupId>com.github.squishylib</groupId>
             <artifactId>common</artifactId>
-            <version>${parent.version}</version>
+            <version>0.0.0</version>
         </dependency>
 
         <!-- Yaml Parser -->
