@@ -6,7 +6,7 @@ status: In Development
 ```
 
 # Configuration File
-
+An easy way of getting and setting values in a config file.
 ```java
 // An example of a configuration file.
 Configuration config = new YamlConfiguration(new File("file.yml"));
@@ -24,6 +24,7 @@ config.save();
 ```
 
 # Configuration Factory
+A way of creating a config instance.
 ```java
 Configuration config = ConfigurationFactory.createConfiguration(new File("config.yml")).orElse(null);
 config.load();
@@ -39,6 +40,7 @@ config.load();
 ```
 
 # Configuration Directory
+Combines multiple config files into one big one.
 ```java
 // An example of a configuration directory.
 ConfigurationDirectory directory = new ConfigurationDirectory(new File("directory"));
@@ -59,6 +61,8 @@ List<Configuration> files = directory.getConfigurationFiles(true);
 ```
 
 # Single Type Configuration Directory
+Combines multiple config files into one big one.\
+Each key represents a class.
 ```java
 // A type example.
 public class Egg implements ConfigurationConvertible<Egg> {
