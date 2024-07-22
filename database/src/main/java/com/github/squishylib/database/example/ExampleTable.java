@@ -16,27 +16,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.github.squishylib.common;
+package com.github.squishylib.database.example;
 
+import com.github.squishylib.database.Table;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.concurrent.CancellationException;
+public class ExampleTable extends Table<ExampleRecord> {
 
-/**
- * Adds option to wait for the future to complete without
- * needing to handel exceptions.
- *
- * @param <T> The type that will be completed in the future.
- */
-public class CompletableFuture<T> extends java.util.concurrent.CompletableFuture<T> {
+    @Override
+    public @NotNull String getName() {
+        return "example";
+    }
 
-    public T waitForComplete() {
-        try {
-            return this.get();
-        } catch (CancellationException exception) {
-            return null;
-        } catch (Exception exception) {
-            throw new RuntimeException(exception);
-        }
+    @Override
+    public @NotNull ExampleRecord createEmpty(@NotNull String identifier) {
+        return new ExampleRecord(identifier);
     }
 }

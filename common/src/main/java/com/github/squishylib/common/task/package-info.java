@@ -1,6 +1,8 @@
 /*
- * Java configuration and database library.
- * Copyright (C) 2024  Smuddgge
+ * Kerb
+ * Event and request distributor server software.
+ *
+ * Copyright (C) 2023  Smuddgge
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,18 +18,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.github.squishylib.database;
-
-public enum DatabaseStatus {
-    CONNECTED,
-    DISCONNECTED,
-    RECONNECTING;
-
-    public boolean isConnected() {
-        return this == CONNECTED;
-    }
-
-    public boolean isDisconnected() {
-        return this == DISCONNECTED || this == RECONNECTING;
-    }
-}
+/**
+ * Contains classes to help classes run
+ * threaded tasks in the class instance.
+ * <ul>
+ *     <li>
+ *         To use this functionality, you can inherit the
+ *         {@link com.github.kerbity.kerb.task.TaskContainer} in the class.
+ *     </li>
+ * </ul>
+ */
+package com.github.squishylib.common.task;

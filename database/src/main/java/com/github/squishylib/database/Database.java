@@ -23,12 +23,32 @@ import com.github.squishylib.common.logger.Logger;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.Duration;
+import java.util.List;
 
 /**
  * Represents methods every database should have to
  * interact with the stored data.
  */
 public interface Database {
+
+    /**
+     * Represents the connection status of a database.
+     * Weather or not it is connected, disconnected or reconnecting.
+     */
+    enum DatabaseStatus {
+        CONNECTED,
+        DISCONNECTED,
+        RECONNECTING;
+
+        public boolean isConnected() {
+            return this == CONNECTED;
+        }
+
+        public boolean isDisconnected() {
+            return this == DISCONNECTED || this == RECONNECTING;
+        }
+    }
+
 
     /**
      * The status of the database connection.
@@ -70,6 +90,75 @@ public interface Database {
      * @return True if the database will attempt to reconnect.
      */
     boolean willReconnect();
+
+    /**
+     * The time between requests that are getting sent
+     * to the database.
+     * <p>
+     * This should be a low value, primarily used to let the
+     * database catch up.
+     * <p>
+     * This client will still however wait for a request to be
+     * completed before sending a new one.
+     *
+     * @return The duration between requests.
+     */
+    @NotNull
+    Duration getTimeBetweenRequests();
+
+    /**
+     * The maximum amount of requests that are allowed to be
+     * waiting at one time.
+     *
+     * @return The maximum requests pending.
+     */
+    long getMaxRequestsPending();
+
+    /**
+     * Used to get the list of tables registered with
+     * this database instance.
+     *
+     * @return The list of tables.
+     */
+    @NotNull
+    List<Table<?>> getTableList();
+
+    /**
+     * Used to get the amount of tables registered with this database.
+     *
+     * @return The amount of tables.
+     */
+    int getAmountOfTables();
+
+    /**
+     * Used to create a table if it doesn't exist and register it
+     * with this database instance.
+     *
+     * @param table The instance of the table.
+     * @return This instance.
+     */
+    @NotNull
+    Database createTable(@NotNull Table<?> table);
+
+    /**
+     * Used to get a registered table.
+     *
+     * @param clazz The table class type.
+     * @param <T>   The table type.
+     * @return The registered table.
+     * @throws DatabaseException If the table was not registered.
+     */
+    <T extends Table<?>> @NotNull T getTable(@NotNull Class<T> clazz);
+
+    /**
+     * Used to create a table selection implementation
+     * for a table instance.
+     *
+     * @param table The instance of a table.
+     * @param <R> The type of record being using.
+     * @return The table selection implementation.
+     */
+    <R extends Record> @NotNull TableSelection<R, ?> createTableSelection(@NotNull Table<R> table);
 
     /**
      * Used to attempt to connect to the database.

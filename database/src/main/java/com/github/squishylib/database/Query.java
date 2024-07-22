@@ -16,27 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.github.squishylib.common;
+package com.github.squishylib.database;
 
-import org.jetbrains.annotations.NotNull;
-
-import java.util.concurrent.CancellationException;
-
-/**
- * Adds option to wait for the future to complete without
- * needing to handel exceptions.
- *
- * @param <T> The type that will be completed in the future.
- */
-public class CompletableFuture<T> extends java.util.concurrent.CompletableFuture<T> {
-
-    public T waitForComplete() {
-        try {
-            return this.get();
-        } catch (CancellationException exception) {
-            return null;
-        } catch (Exception exception) {
-            throw new RuntimeException(exception);
-        }
-    }
+public class Query {
 }
