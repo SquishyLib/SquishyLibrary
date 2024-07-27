@@ -151,6 +151,14 @@ public interface Database {
     <T extends Table<?>> @NotNull T getTable(@NotNull Class<T> clazz);
 
     /**
+     * Used to check the database if a table has been created.
+     *
+     * @param tableName The table name to check.
+     * @return True if the database contains the table.
+     */
+    boolean hasTable(@NotNull String tableName);
+
+    /**
      * Used to create a table selection implementation
      * for a table instance.
      *

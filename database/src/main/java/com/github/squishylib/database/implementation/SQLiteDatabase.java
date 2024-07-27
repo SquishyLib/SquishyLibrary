@@ -26,7 +26,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -117,8 +119,36 @@ public class SQLiteDatabase extends DatabaseRequestQueue implements Database {
 
     @Override
     public @NotNull Database createTable(@NotNull Table<?> table) {
+
+        // Add the table to the list.
         this.tableList.add(table);
+
+        // Does the table not exist?
+        if (!this.hasTable(table.getName())) {
+
+        }
         return this;
+    }
+
+    // TODO
+    private @NotNull String createTableStatement(@NotNull Table<?> table) {
+        StringBuilder builder = new StringBuilder(
+                "CREATE TABLE IF NOT EXISTS `" + table.getName() + "` ("
+        );
+
+        // Create a new record.
+        Record<?> record = table.createEmpty("temp");
+
+        // Add the identifier/primary key.
+        builder.append("`{key}` {type} PRIMARY KEY,"
+                .replace("{key}", table.getIdentifierName())
+                .replace("{type}", "VARCHAR(255)")
+        );
+
+        for (String key : record.getFieldNames()) {
+
+        }
+        return "";
     }
 
     @SuppressWarnings("unchecked")
@@ -131,6 +161,26 @@ public class SQLiteDatabase extends DatabaseRequestQueue implements Database {
         throw new DatabaseException(this, "getTable", "Table was not registered with the database: " + clazz.getName()
                 + ". Please use database.createTable(Table<?> table) before trying to get the table isntance."
         );
+    }
+
+    @Override
+    public boolean hasTable(@NotNull String tableName) {
+        try {
+
+            // Get the table.
+            DatabaseMetaData metaData = this.connection.getMetaData();
+            ResultSet resultSet = metaData.getTables(null, null, tableName, null);
+
+            // Check if the result is null.
+            if (resultSet == null) return false;
+            if (!resultSet.next()) return false;
+
+            // Check if there is a table.
+            return resultSet.getRow() > 0;
+
+        } catch (Exception exception) {
+            throw new DatabaseException(exception, this, "hasTable", "Unable to check if the table " + tableName + " exists.");
+        }
     }
 
     @Override
