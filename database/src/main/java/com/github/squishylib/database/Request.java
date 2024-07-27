@@ -20,6 +20,7 @@ package com.github.squishylib.database;
 
 import com.github.squishylib.common.CompletableFuture;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,8 +28,7 @@ import java.util.List;
 public class Request<R> {
 
     public interface AsyncRequest<R> {
-        @NotNull
-        CompletableFuture<R> execute();
+        @Nullable R execute();
     }
 
     public interface Listener<R> {
@@ -49,8 +49,7 @@ public class Request<R> {
     }
 
     public void executeSync() {
-        CompletableFuture<R> future = this.executable.execute();
-        R result = future.waitForComplete();
+        R result = this.executable.execute();
         this.listenerList.forEach(listener -> listener.onComplete(result));
     }
 }

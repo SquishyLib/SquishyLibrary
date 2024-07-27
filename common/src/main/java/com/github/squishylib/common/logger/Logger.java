@@ -81,7 +81,7 @@ public class Logger implements Replicable<Logger> {
      * @param name   The name of the logger to get or create.
      * @param prefix The logging prefix to use.
      */
-    public Logger(@NotNull String name, @NotNull String prefix) {
+    public Logger(@NotNull String name, @Nullable String prefix) {
         this(java.util.logging.Logger.getLogger(name), prefix);
     }
 
@@ -152,22 +152,22 @@ public class Logger implements Replicable<Logger> {
     }
 
     public @NotNull Logger error(@NotNull String message) {
-        this.logger.log(Level.ERROR, ConsoleColor.parse(this.getPrefixFormatted() + message));
+        this.logger.log(Level.ERROR, ConsoleColor.parse("&c" + this.getPrefixFormatted() + message));
         return this;
     }
 
     public @NotNull Logger warn(@NotNull String message) {
-        this.logger.log(Level.WARNING, ConsoleColor.parse(this.getPrefixFormatted() + message));
+        this.logger.log(Level.WARNING, ConsoleColor.parse("&e" + this.getPrefixFormatted() + message));
         return this;
     }
 
     public @NotNull Logger info(@NotNull String message) {
-        this.logger.log(Level.INFO, ConsoleColor.parse(this.getPrefixFormatted() + message));
+        this.logger.log(Level.INFO, ConsoleColor.parse("&7" + this.getPrefixFormatted() + message));
         return this;
     }
 
     public @NotNull Logger debug(@NotNull String message) {
-        this.logger.log(Level.DEBUG, ConsoleColor.parse(this.getPrefixFormatted() + message));
+        this.logger.log(Level.DEBUG, ConsoleColor.parse("&7" + this.getPrefixFormatted() + message));
         return this;
     }
 
@@ -179,7 +179,9 @@ public class Logger implements Replicable<Logger> {
      * @return A new logger with the extended prefix but linked log level.
      */
     public @NotNull Logger extend(@NotNull String prefixExtension) {
-        return this.duplicate().setPrefix(this.getPrefix() + prefixExtension);
+        if (this.getPrefix() == null) prefixExtension = prefixExtension.trim();
+        else prefixExtension = this.getPrefix() + prefixExtension;
+        return this.duplicate().setPrefix(prefixExtension);
     }
 
     /**
@@ -194,9 +196,12 @@ public class Logger implements Replicable<Logger> {
      * @return A new logger, unless the name already exists, with a new prefix.
      */
     public @NotNull Logger extendFully(@NotNull String prefixExtension, @NotNull String nameExtension) {
+        if (this.getPrefix() == null) prefixExtension = prefixExtension.trim();
+        else prefixExtension = this.getPrefix() + prefixExtension;
+
         return new Logger(
                 this.getLogger().getName() + nameExtension,
-                this.getPrefixFormatted() + prefixExtension
+                prefixExtension
         );
     }
 

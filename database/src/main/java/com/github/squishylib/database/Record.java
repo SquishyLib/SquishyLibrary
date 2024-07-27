@@ -18,7 +18,51 @@
 
 package com.github.squishylib.database;
 
+import com.github.squishylib.configuration.ConfigurationSection;
+import com.github.squishylib.configuration.implementation.MemoryConfigurationSection;
 import com.github.squishylib.configuration.indicator.ConfigurationConvertible;
+import org.jetbrains.annotations.NotNull;
 
-public abstract class Record<R extends Record<R>> implements ConfigurationConvertible<R> {
+import java.sql.ResultSet;
+import java.util.List;
+
+public interface Record<R extends Record<R>> extends ConfigurationConvertible<R> {
+
+    /**
+     * The records unique identifier.
+     * This will be used as the primary key.
+     *
+     * @return The unique identifier.
+     */
+    @NotNull
+    String getIdentifier();
+
+    /**
+     * Used to get the table columns / the name of the
+     * variables / the keys in the configuration map.
+     *
+     * @return The list of field names.
+     */
+    @NotNull
+    List<String> getFieldNames();
+
+    /**
+     * Used to convert a result set into this class instance.
+     *
+     * @param results The results to convert.
+     * @return This instance.
+     */
+    default @NotNull R convert(@NotNull ResultSet results) {
+        ConfigurationSection section = new MemoryConfigurationSection();
+
+        for (String fieldName : this.getFieldNames()) {
+            try {
+                section.set(fieldName, results.getObject(fieldName));
+            } catch (Exception exception) {
+                throw new DatabaseException(exception, this, "convert", "Unable to convert " + fieldName + " to an object.");
+            }
+        }
+
+        return (R) this;
+    }
 }

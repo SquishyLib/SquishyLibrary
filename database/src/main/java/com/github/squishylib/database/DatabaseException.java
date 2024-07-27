@@ -19,7 +19,6 @@
 package com.github.squishylib.database;
 
 import com.github.squishylib.common.logger.ConsoleColor;
-import com.github.squishylib.configuration.Configuration;
 import org.jetbrains.annotations.NotNull;
 
 public class DatabaseException extends RuntimeException {

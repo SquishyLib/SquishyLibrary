@@ -19,16 +19,16 @@
 package com.github.squishylib.database.implementation;
 
 import com.github.squishylib.common.CompletableFuture;
-import com.github.squishylib.database.Query;
+import com.github.squishylib.database.*;
 import com.github.squishylib.database.Record;
-import com.github.squishylib.database.Table;
-import com.github.squishylib.database.TableSelection;
 import org.jetbrains.annotations.NotNull;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.List;
 import java.util.Optional;
 
-public class SQLiteTableSelection<R extends Record> implements TableSelection<R, SQLiteDatabase> {
+public class SQLiteTableSelection<R extends Record<R>> implements TableSelection<R, SQLiteDatabase> {
 
     private final @NotNull SQLiteDatabase database;
     private final @NotNull Table<R> table;
@@ -41,6 +41,11 @@ public class SQLiteTableSelection<R extends Record> implements TableSelection<R,
     @Override
     public @NotNull String getName() {
         return this.table.getName();
+    }
+
+    @Override
+    public @NotNull String getIdentifierName() {
+        return this.table.getIdentifierName();
     }
 
     @Override
@@ -61,7 +66,29 @@ public class SQLiteTableSelection<R extends Record> implements TableSelection<R,
 
     @Override
     public @NotNull CompletableFuture<R> getFirstRecord() {
-        return null;
+        return this.database.addRequest(new Request<>(() -> {
+
+            // Create the sql statement.
+            final String statement = "SELECT * FROM " + this.table.getName() + " LIMIT 1";
+
+            try {
+
+                // Create the prepared statement.
+                PreparedStatement preparedStatement = this.database.getConnection().prepareStatement(statement);
+                ResultSet results = preparedStatement.executeQuery(statement);
+                preparedStatement.close();
+
+                // Are there no results?
+                if (results == null) return null;
+                if (!results.next())  return null;
+
+                return this.createEmpty(results.getString(this.getIdentifierName()))
+                        .convert(results);
+
+            } catch (Exception exception) {
+                throw new DatabaseException(exception, this, "getFirstRecord", "statement=&e" + statement + "&r");
+            }
+        }));
     }
 
     @Override

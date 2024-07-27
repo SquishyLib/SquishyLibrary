@@ -26,6 +26,11 @@ import java.time.Duration;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+/**
+ * This should be the base of every database type.
+ * <p>
+ * Uses a queue structure to manage requests.
+ */
 public class DatabaseRequestQueue extends TaskContainer {
 
     private final @NotNull Duration timeBetweenRequests;
@@ -43,7 +48,19 @@ public class DatabaseRequestQueue extends TaskContainer {
         this.sentMaximumRequestsMessage = false;
     }
 
-    public @NotNull <R> CompletableFuture<R> add(@NotNull Request<R> request) {
+    /**
+     * Used to add a request to the queue.
+     * <p>
+     * The request will then be executed when the database connection is ready.
+     * <p>
+     * The request may be cancelled due to a request queue limit.
+     * If so the future will be cancelled.
+     *
+     * @param request The request to add to the queue.
+     * @param <R>     The type of result.
+     * @return The future result when executed.
+     */
+    public @NotNull <R> CompletableFuture<R> addRequest(@NotNull Request<R> request) {
 
         // Check if the queue has reached max requests.
         if (this.queue.size() >= this.maxRequestsPending) {
@@ -51,7 +68,7 @@ public class DatabaseRequestQueue extends TaskContainer {
             // If we have already sent an error message, complete this request with a null value.
             if (this.sentMaximumRequestsMessage) {
                 CompletableFuture<R> future = new CompletableFuture<>();
-                future.complete(null);
+                future.cancel(true);
                 return future;
             }
 

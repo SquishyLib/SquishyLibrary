@@ -24,6 +24,11 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * This will be implemented by every table.
+ *
+ * @param <R> The type of record in the table.
+ */
 public abstract class Table<R extends Record> implements TableSelection<R, Database> {
 
     private Database database;

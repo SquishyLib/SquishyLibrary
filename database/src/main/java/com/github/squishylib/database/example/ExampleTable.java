@@ -29,6 +29,11 @@ public class ExampleTable extends Table<ExampleRecord> {
     }
 
     @Override
+    public @NotNull String getIdentifierName() {
+        return ExampleRecord.IDENTIFIER_KEY;
+    }
+
+    @Override
     public @NotNull ExampleRecord createEmpty(@NotNull String identifier) {
         return new ExampleRecord(identifier);
     }

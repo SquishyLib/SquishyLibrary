@@ -18,5 +18,54 @@
 
 package com.github.squishylib.database;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
+
 public class Query {
+
+    private final @NotNull Map<String, Object> patterns;
+    private int limit;
+    private String orderByKey;
+    private Comparator<?> orderByComparator;
+
+    public Query() {
+        this.patterns = new HashMap<>();
+        this.limit = -1;
+    }
+
+    public @NotNull Map<String, Object> getPatterns() {
+        return this.patterns;
+    }
+
+    public int getLimit() {
+        return this.limit;
+    }
+
+    public @Nullable String getOrderByKey() {
+        return this.orderByKey;
+    }
+
+    public @Nullable Comparator<?> getOrderByComparator() {
+        return this.orderByComparator;
+    }
+
+    public @NotNull Query match(@NotNull String key, @NotNull Object value) {
+        this.patterns.put(key, value);
+        return this;
+    }
+
+    public @NotNull Query limit(int limit) {
+        this.limit = limit;
+        return this;
+    }
+
+    public @NotNull Query orderBy(@NotNull String key, @NotNull Comparator<?> comparator) {
+        this.orderByKey = key;
+        this.orderByComparator = comparator;
+        return this;
+    }
 }

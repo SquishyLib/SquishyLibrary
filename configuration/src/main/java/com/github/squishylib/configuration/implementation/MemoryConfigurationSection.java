@@ -122,9 +122,11 @@ public class MemoryConfigurationSection implements ConfigurationSection {
 
             try {
 
+                final Map<String, Object> map = this.getMap(key);
+
                 // Create the section above.
                 MemoryConfigurationSection sectionAbove = new MemoryConfigurationSection(
-                        this.getMap(key) == null ? new LinkedHashMap<>() : this.getMap(key),
+                        map == null ? new LinkedHashMap<>() : map,
                         this.baseSection,
                         this.getPathFromBase(key)
                 );

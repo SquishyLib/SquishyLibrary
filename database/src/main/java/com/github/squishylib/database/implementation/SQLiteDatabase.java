@@ -20,15 +20,20 @@ package com.github.squishylib.database.implementation;
 
 import com.github.squishylib.common.CompletableFuture;
 import com.github.squishylib.common.logger.Logger;
-import com.github.squishylib.database.*;
 import com.github.squishylib.database.Record;
+import com.github.squishylib.database.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A database that is represented by a local file.
+ */
 public class SQLiteDatabase extends DatabaseRequestQueue implements Database {
 
     private @NotNull DatabaseStatus status;
@@ -40,6 +45,7 @@ public class SQLiteDatabase extends DatabaseRequestQueue implements Database {
     private final @NotNull File file;
 
     private final @NotNull List<Table<?>> tableList;
+    private Connection connection;
 
     public SQLiteDatabase(@NotNull Logger logger,
                           @NotNull Duration reconnectCooldown,
@@ -101,6 +107,14 @@ public class SQLiteDatabase extends DatabaseRequestQueue implements Database {
         return this.tableList.size();
     }
 
+    public @NotNull String getUrl() {
+        return "jdbc:sqlite:" + this.file.getAbsolutePath();
+    }
+
+    public @NotNull Connection getConnection() {
+        return this.connection;
+    }
+
     @Override
     public @NotNull Database createTable(@NotNull Table<?> table) {
         this.tableList.add(table);
@@ -126,11 +140,120 @@ public class SQLiteDatabase extends DatabaseRequestQueue implements Database {
 
     @Override
     public @NotNull CompletableFuture<DatabaseStatus> connectAsync() {
-        return null;
+
+        // Create the future result.
+        final CompletableFuture<DatabaseStatus> future = new CompletableFuture<>();
+
+        new Thread(() -> {
+            try {
+
+                this.logger.info("Attempting to connect to the SQLite database.");
+
+                // Initiate drivers.
+                Class.forName("org.sqlite.JDBC");
+
+                // Create directory.
+                new File(this.file.getParent()).mkdirs();
+
+                // Create database connection url.
+                String url = this.getUrl();
+
+                // Create a connection to the database.
+                this.connection = DriverManager.getConnection(url);
+
+                this.logger.info("Connected successfully to SQLite database.");
+
+                // Set status and future.
+                this.status = DatabaseStatus.CONNECTED;
+                future.complete(this.status);
+
+
+            } catch (Exception exception) {
+
+                // Check if the database should attempt to reconnect later.
+                if (this.willReconnect) {
+
+                    // Attempt to reconnect to the database.
+                    this.attemptReconnect();
+
+                    // Set and return status.
+                    this.status = DatabaseStatus.RECONNECTING;
+                    future.complete(this.status);
+                    throw new DatabaseException(exception, this, "connectAsync",
+                            "Could not connect to SQLite database. Attempting to reconnect in "
+                                    + this.reconnectCooldown.toSeconds() + "s."
+                    );
+                }
+
+                // Otherwise, disconnect.
+                this.status = DatabaseStatus.DISCONNECTED;
+                future.complete(this.status);
+                throw new DatabaseException(exception, this, "connectAsync",
+                        "Could not connect to SQLite database. Reconnecting is set to false."
+                );
+            }
+        }).start();
+
+        return future;
+    }
+
+    private void attemptReconnect() {
+        new Thread(() -> {
+            try {
+
+                // Wait cooldown.
+                Thread.sleep(this.reconnectCooldown.toMillis());
+
+                // Attempt to reconnect.
+                this.connectAsync();
+
+            } catch (Exception exception) {
+                throw new DatabaseException(exception, this, "attemptReconnect",
+                        "Error occurred while waiting to reconnect to the database."
+                );
+            }
+        }).start();
     }
 
     @Override
     public @NotNull CompletableFuture<DatabaseStatus> disconnectAsync(boolean reconnect) {
-        return null;
+
+        // Create the future result.
+        final CompletableFuture<DatabaseStatus> future = new CompletableFuture<>();
+
+        new Thread(() -> {
+            try {
+
+                // Close connection.
+                this.connection.close();
+                this.status = DatabaseStatus.DISCONNECTED;
+
+                // Should we reconnect?
+                if (reconnect) {
+                    this.status = DatabaseStatus.RECONNECTING;
+                    this.connectAsync();
+                }
+
+                // Complete future status.
+                future.complete(this.status);
+
+            } catch (Exception exception) {
+
+                // Should we reconnect?
+                if (reconnect) {
+                    this.status = DatabaseStatus.RECONNECTING;
+                    this.connectAsync();
+                }
+
+                // Complete future status.
+                future.complete(this.status);
+
+                throw new DatabaseException(exception, this, "disconnectAsync",
+                        "Error while disconnecting. reconnect=" + reconnect
+                );
+            }
+        }).start();
+
+        return future;
     }
 }

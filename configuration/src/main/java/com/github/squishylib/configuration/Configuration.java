@@ -105,7 +105,8 @@ public interface Configuration extends ConfigurationSection {
      *
      * @return This instance.
      */
-    @NotNull Configuration load();
+    @NotNull
+    Configuration load();
 
     /**
      * Used to copy the configuration file into this class instance,

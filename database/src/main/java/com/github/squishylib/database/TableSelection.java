@@ -20,18 +20,45 @@ package com.github.squishylib.database;
 
 import com.github.squishylib.common.CompletableFuture;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Represents a table interface.
+ * Contains methods used to interact with a table.
+ *
+ * @param <R> The record type the table contains.
+ * @param <D> The database connection that is being used.
+ */
 public interface TableSelection<R extends Record, D extends Database> {
 
     /**
      * Used to get the name of the table.
+     * <p>
+     * This should never be a consumer inputted value.
+     * It should be a final string set by the administrator.
+     * <p>
+     * Otherwise, you may be vulnerable to sql injections.
+     * <p>
+     * All other values, for example, query's for records
+     * should be secure enough to use consumer inputted values.
+     * This is because in sql databases the prepared statement
+     * will be used.
      *
      * @return The name of the table.
      */
-    @NotNull String getName();
+    @NotNull
+    String getName();
+
+    /**
+     * The name of the identifier filed used in records.
+     * This will become the primary key.
+     *
+     * @return The identifier's name.
+     */
+    @NotNull String getIdentifierName();
 
     /**
      * Used to get the database this table selection
@@ -74,24 +101,27 @@ public interface TableSelection<R extends Record, D extends Database> {
      * @return The first record in this table.
      */
     @NotNull
-    CompletableFuture<@NotNull R> getFirstRecord();
+    CompletableFuture<@Nullable R> getFirstRecord();
 
     /**
      * Requests the first record from this
      * table within the database given a query.
      * <p>
-     * This will return null if the request was canceled
-     * or if the record doesn't exist.
+     * This will return null if the record doesn't exist.
+     * <p>
+     * It's advised to check if the future was also canceled.
      *
      * @return The first record in this table.
      */
     @NotNull
-    CompletableFuture<@NotNull R> getFirstRecord(@NotNull Query query);
+    CompletableFuture<@Nullable R> getFirstRecord(@NotNull Query query);
 
     /**
      * Requests the list of records within this table.
      * <p>
-     * This will return null if the request was canceled.
+     * This will return empty if there are no records.
+     * <p>
+     * It's advised to check if the future was also canceled.
      *
      * @return The optional list.
      */
@@ -102,7 +132,9 @@ public interface TableSelection<R extends Record, D extends Database> {
      * Requests the list of records within this table
      * given a query.
      * <p>
-     * This will return null if the request was canceled.
+     * This will return empty if there are no records.
+     * <p>
+     * It's advised to check if the future was also canceled.
      *
      * @return The optional list.
      */
@@ -112,7 +144,7 @@ public interface TableSelection<R extends Record, D extends Database> {
     /**
      * Requests the amount of records in this table.
      * <p>
-     * This will return null if the request was canceled.
+     * It's advised to check if the future was also canceled.
      *
      * @return The optional list.
      */
@@ -123,7 +155,7 @@ public interface TableSelection<R extends Record, D extends Database> {
      * Requests the amount of records in this table
      * given a query.
      * <p>
-     * This will return null if the request was canceled.
+     * It's advised to check if the future was also canceled.
      *
      * @return The optional list.
      */
@@ -134,6 +166,8 @@ public interface TableSelection<R extends Record, D extends Database> {
      * Used to insert a record into the database.
      * <p>
      * This will return false if the request was canceled.
+     * <p>
+     * It's advised to check if the future was also canceled.
      *
      * @return The optional list.
      */
@@ -144,6 +178,8 @@ public interface TableSelection<R extends Record, D extends Database> {
      * Used to remove a record from this table.
      * <p>
      * This will return false if the request was canceled.
+     * <p>
+     * It's advised to check if the future was also canceled.
      *
      * @return The optional list.
      */
@@ -154,6 +190,8 @@ public interface TableSelection<R extends Record, D extends Database> {
      * Used to remove a record from this table.
      * <p>
      * This will return false if the request was canceled.
+     * <p>
+     * It's advised to check if the future was also canceled.
      *
      * @return The optional list.
      */
