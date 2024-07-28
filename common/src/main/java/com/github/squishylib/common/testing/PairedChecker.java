@@ -16,24 +16,5 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.github.squishylib.database.example;
-
-import com.github.squishylib.database.Table;
-import com.github.squishylib.database.field.PrimaryFieldMap;
-import org.jetbrains.annotations.NotNull;
-
-public class ExampleTable extends Table<ExampleRecord> {
-
-    public static final @NotNull String TABLE_NAME = "example";
-
-    @Override
-    public @NotNull String getName() {
-        return ExampleTable.TABLE_NAME;
-    }
-
-    @SuppressWarnings("all")
-    @Override
-    public @NotNull ExampleRecord createEmpty(@NotNull PrimaryFieldMap primaryFieldMap) {
-        return new ExampleRecord((String) primaryFieldMap.get(ExampleRecord.IDENTIFIER_KEY));
-    }
+package com.github.squishylib.common.testing;public class PairedChecker {
 }

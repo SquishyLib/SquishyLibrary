@@ -16,24 +16,24 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.github.squishylib.database.example;
+package com.github.squishylib.database.annotation;
 
-import com.github.squishylib.database.Table;
-import com.github.squishylib.database.field.PrimaryFieldMap;
-import org.jetbrains.annotations.NotNull;
+import com.github.squishylib.common.annotation.Paired;
 
-public class ExampleTable extends Table<ExampleRecord> {
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-    public static final @NotNull String TABLE_NAME = "example";
-
-    @Override
-    public @NotNull String getName() {
-        return ExampleTable.TABLE_NAME;
-    }
-
-    @SuppressWarnings("all")
-    @Override
-    public @NotNull ExampleRecord createEmpty(@NotNull PrimaryFieldMap primaryFieldMap) {
-        return new ExampleRecord((String) primaryFieldMap.get(ExampleRecord.IDENTIFIER_KEY));
-    }
+/**
+ * Used to indicate which fields are
+ * primary keys.
+ * <p>
+ * You can have multiple primary keys that
+ * are final fields.
+ */
+@Target(ElementType.FIELD)
+@Retention(RetentionPolicy.RUNTIME)
+@Paired(Field.class)
+public @interface Primary {
 }

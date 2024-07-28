@@ -16,24 +16,33 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.github.squishylib.database.example;
+package com.github.squishylib.database.datatype;
 
-import com.github.squishylib.database.Table;
-import com.github.squishylib.database.field.PrimaryFieldMap;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-public class ExampleTable extends Table<ExampleRecord> {
+import java.sql.ResultSet;
 
-    public static final @NotNull String TABLE_NAME = "example";
+/**
+ * Represents a data type that can be converted to and from
+ * different database types.
+ *
+ * @param <T> The type of object in java.
+ */
+public interface DataType<T> {
 
-    @Override
-    public @NotNull String getName() {
-        return ExampleTable.TABLE_NAME;
-    }
+    boolean isType(@NotNull Object value);
 
-    @SuppressWarnings("all")
-    @Override
-    public @NotNull ExampleRecord createEmpty(@NotNull PrimaryFieldMap primaryFieldMap) {
-        return new ExampleRecord((String) primaryFieldMap.get(ExampleRecord.IDENTIFIER_KEY));
+    @NotNull String getSqliteName();
+
+    @NotNull String toSqlite(@Nullable T object);
+
+    @Nullable T fromSqlite(@Nullable ResultSet results, @NotNull String fieldName);
+
+    static @NotNull DataType<?> of(@NotNull Class<?> type) {
+        return switch (type.getName()) {
+            case "boolean", "java.land.Boolean" -> new BooleanType();
+            default -> new DefaultType();
+        };
     }
 }

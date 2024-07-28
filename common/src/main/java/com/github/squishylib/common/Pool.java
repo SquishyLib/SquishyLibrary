@@ -16,24 +16,21 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.github.squishylib.database.example;
+package com.github.squishylib.common;
 
-import com.github.squishylib.database.Table;
-import com.github.squishylib.database.field.PrimaryFieldMap;
-import org.jetbrains.annotations.NotNull;
+import java.util.ArrayList;
+import java.util.Arrays;
 
-public class ExampleTable extends Table<ExampleRecord> {
+/**
+ * An array list but with some usefully methods.
+ *
+ * @param <T> The class inheriting this class.
+ * @param <E> The type of elements in this list.
+ */
+public class Pool<T extends Pool<T, E>, E> extends ArrayList<E> {
 
-    public static final @NotNull String TABLE_NAME = "example";
-
-    @Override
-    public @NotNull String getName() {
-        return ExampleTable.TABLE_NAME;
-    }
-
-    @SuppressWarnings("all")
-    @Override
-    public @NotNull ExampleRecord createEmpty(@NotNull PrimaryFieldMap primaryFieldMap) {
-        return new ExampleRecord((String) primaryFieldMap.get(ExampleRecord.IDENTIFIER_KEY));
+    public T addAll(E[] list) {
+        this.addAll(new ArrayList<>(Arrays.stream(list).toList()));
+        return (T) this;
     }
 }

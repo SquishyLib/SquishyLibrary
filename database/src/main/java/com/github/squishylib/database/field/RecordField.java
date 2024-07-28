@@ -16,24 +16,28 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.github.squishylib.database.example;
+package com.github.squishylib.database.field;
 
-import com.github.squishylib.database.Table;
-import com.github.squishylib.database.field.PrimaryFieldMap;
+import com.github.squishylib.database.datatype.DataType;
 import org.jetbrains.annotations.NotNull;
 
-public class ExampleTable extends Table<ExampleRecord> {
+public class RecordField {
 
-    public static final @NotNull String TABLE_NAME = "example";
+    private final @NotNull String name;
+    private final @NotNull DataType<?> type;
 
-    @Override
-    public @NotNull String getName() {
-        return ExampleTable.TABLE_NAME;
+    public RecordField(final @NotNull String name,
+                       final @NotNull DataType<?> type) {
+
+        this.name = name;
+        this.type = type;
     }
 
-    @SuppressWarnings("all")
-    @Override
-    public @NotNull ExampleRecord createEmpty(@NotNull PrimaryFieldMap primaryFieldMap) {
-        return new ExampleRecord((String) primaryFieldMap.get(ExampleRecord.IDENTIFIER_KEY));
+    public @NotNull String getName() {
+        return this.name;
+    }
+
+    public @NotNull DataType<?> getType() {
+        return this.type;
     }
 }

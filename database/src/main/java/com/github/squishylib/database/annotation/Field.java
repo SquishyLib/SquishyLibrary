@@ -16,24 +16,25 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.github.squishylib.database.example;
+package com.github.squishylib.database.annotation;
 
-import com.github.squishylib.database.Table;
-import com.github.squishylib.database.field.PrimaryFieldMap;
-import org.jetbrains.annotations.NotNull;
+import java.lang.annotation.*;
 
-public class ExampleTable extends Table<ExampleRecord> {
+/**
+ * Indicates if a field should be in the
+ * database table.
+ */
+@Target(ElementType.FIELD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Field {
 
-    public static final @NotNull String TABLE_NAME = "example";
-
-    @Override
-    public @NotNull String getName() {
-        return ExampleTable.TABLE_NAME;
-    }
-
-    @SuppressWarnings("all")
-    @Override
-    public @NotNull ExampleRecord createEmpty(@NotNull PrimaryFieldMap primaryFieldMap) {
-        return new ExampleRecord((String) primaryFieldMap.get(ExampleRecord.IDENTIFIER_KEY));
-    }
+    /**
+     * This field's name / column name that should
+     * be used in the database table.
+     * <p>
+     * This will be used at runtime to get the field names.
+     *
+     * @return The field's name.
+     */
+    String value();
 }

@@ -20,7 +20,7 @@ package com.github.squishylib.database;
 
 import com.github.squishylib.common.logger.Logger;
 import com.github.squishylib.database.example.ExampleTable;
-import com.github.squishylib.database.implementation.SQLiteDatabase;
+import com.github.squishylib.database.implementation.SqliteDatabase;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -30,7 +30,7 @@ public class Tests {
 
     @Test
     public void test() {
-        Database database = new SQLiteDatabase(
+        Database database = new SqliteDatabase(
                 new Logger("com.github.squishylib.database", null),
                 Duration.ofSeconds(3),
                 true,

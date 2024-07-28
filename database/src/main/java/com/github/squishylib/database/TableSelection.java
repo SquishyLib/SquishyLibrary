@@ -19,10 +19,15 @@
 package com.github.squishylib.database;
 
 import com.github.squishylib.common.CompletableFuture;
+import com.github.squishylib.database.annotation.Field;
+import com.github.squishylib.database.field.PrimaryField;
+import com.github.squishylib.database.field.PrimaryFieldMap;
+import com.github.squishylib.database.field.RecordField;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -53,14 +58,6 @@ public interface TableSelection<R extends Record, D extends Database> {
     String getName();
 
     /**
-     * The name of the identifier filed used in records.
-     * This will become the primary key.
-     *
-     * @return The identifier's name.
-     */
-    @NotNull String getIdentifierName();
-
-    /**
      * Used to get the database this table selection
      * instance is linked to.
      *
@@ -85,10 +82,27 @@ public interface TableSelection<R extends Record, D extends Database> {
      * Used to create an empty record.
      * This will be used when getting a record from the database.
      *
+     * @param primaryFieldMap The list of primary keys.
      * @return The empty record.
      */
     @NotNull
-    R createEmpty(@NotNull String identifier);
+    R createEmpty(@NotNull PrimaryFieldMap primaryFieldMap);
+
+    /**
+     * Used to get the field names currently in
+     * the table.
+     *
+     * @return The column names.
+     */
+    @NotNull CompletableFuture<@NotNull List<String>> getColumnNames();
+
+    /**
+     * Used to add a new column to the table.
+     *
+     * @param field The column info.
+     * @return True if the column has been added successfully.
+     */
+    @NotNull CompletableFuture<@NotNull Boolean> addColumn(@NotNull RecordField field);
 
     /**
      * Requests the first record from this

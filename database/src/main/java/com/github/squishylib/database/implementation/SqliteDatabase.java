@@ -22,6 +22,8 @@ import com.github.squishylib.common.CompletableFuture;
 import com.github.squishylib.common.logger.Logger;
 import com.github.squishylib.database.Record;
 import com.github.squishylib.database.*;
+import com.github.squishylib.database.field.PrimaryFieldMap;
+import com.github.squishylib.database.field.RecordField;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -36,7 +38,7 @@ import java.util.List;
 /**
  * A database that is represented by a local file.
  */
-public class SQLiteDatabase extends DatabaseRequestQueue implements Database {
+public class SqliteDatabase extends DatabaseRequestQueue implements Database {
 
     private @NotNull DatabaseStatus status;
     private final @NotNull Logger logger;
@@ -49,7 +51,7 @@ public class SQLiteDatabase extends DatabaseRequestQueue implements Database {
     private final @NotNull List<Table<?>> tableList;
     private Connection connection;
 
-    public SQLiteDatabase(@NotNull Logger logger,
+    public SqliteDatabase(@NotNull Logger logger,
                           @NotNull Duration reconnectCooldown,
                           boolean willReconnect,
                           @NotNull Duration timeBetweenRequests,
@@ -123,32 +125,67 @@ public class SQLiteDatabase extends DatabaseRequestQueue implements Database {
         // Add the table to the list.
         this.tableList.add(table);
 
-        // Does the table not exist?
-        if (!this.hasTable(table.getName())) {
+        // Does the table exist?
+        if (this.hasTable(table.getName())) {
 
+            // Create a new record.
+            Record<?> record = table.createEmpty(new PrimaryFieldMap("temp"));
+
+            // Get the fields and the current loaded fields.
+            final List<RecordField> fields = record.getFieldList();
+            final List<String> currentFields = table.getColumnNames().waitForComplete();
+
+            // Get the list of missing fields.
+            final List<RecordField> missingFields = fields.stream()
+                    .filter(field -> !currentFields.contains(field.getName()))
+                    .toList();
+
+            // Are there no missing fields?
+            if (!missingFields.isEmpty()) return this;
+
+            // Otherwise, add the missing columns.
+            missingFields.forEach(table::addColumn);
         }
         return this;
     }
 
-    // TODO
     private @NotNull String createTableStatement(@NotNull Table<?> table) {
         StringBuilder builder = new StringBuilder(
                 "CREATE TABLE IF NOT EXISTS `" + table.getName() + "` ("
         );
 
         // Create a new record.
-        Record<?> record = table.createEmpty("temp");
+        Record<?> record = table.createEmpty(new PrimaryFieldMap("temp"));
 
-        // Add the identifier/primary key.
-        builder.append("`{key}` {type} PRIMARY KEY,"
-                .replace("{key}", table.getIdentifierName())
-                .replace("{type}", "VARCHAR(255)")
-        );
+        // Loop though primary keys.
+        record.getPrimaryFieldList().forEach(primaryField -> builder.append(
+                "`{key}` {type} PRIMARY KEY,"
+                        .replace("{key}", primaryField.getName())
+                        .replace("{type}", primaryField.getType().getSqliteName())
+        ));
 
-        for (String key : record.getFieldNames()) {
+        // Loop though fields.
+        record.getFieldList().stream()
+                .filter(field -> !builder.toString().contains(field.getName()))
+                .forEach(field -> builder.append(
+                        "`{key}` {type},"
+                                .replace("{key}", field.getName())
+                                .replace("{type}", field.getType().getSqliteName())
+                ));
 
-        }
-        return "";
+        // Loop though foreign keys.
+        record.getForeignFieldList().forEach(foreignField -> builder.append(
+                "`{key}` {type} REFERENCES {reference}({reference_field}),"
+                        .replace("{key}", foreignField.getName())
+                        .replace("{type}", foreignField.getType().getSqliteName())
+                        .replace("{reference}", foreignField.getForeignTableName())
+                        .replace("{reference_field}", foreignField.getForeignName())
+        ));
+
+        builder.deleteCharAt(builder.length() - 1);
+        builder.append(");");
+
+        return builder.toString();
     }
 
     @SuppressWarnings("unchecked")
@@ -185,7 +222,7 @@ public class SQLiteDatabase extends DatabaseRequestQueue implements Database {
 
     @Override
     public @NotNull <R extends Record> TableSelection<R, ?> createTableSelection(@NotNull Table<R> table) {
-        return new SQLiteTableSelection<>(this, table);
+        return new SqliteTableSelection<>(this, table);
     }
 
     @Override

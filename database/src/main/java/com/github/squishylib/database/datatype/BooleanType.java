@@ -16,24 +16,32 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.github.squishylib.database.example;
+package com.github.squishylib.database.datatype;
 
-import com.github.squishylib.database.Table;
-import com.github.squishylib.database.field.PrimaryFieldMap;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-public class ExampleTable extends Table<ExampleRecord> {
+import java.sql.ResultSet;
 
-    public static final @NotNull String TABLE_NAME = "example";
+public class BooleanType implements DataType<Boolean> {
 
     @Override
-    public @NotNull String getName() {
-        return ExampleTable.TABLE_NAME;
+    public boolean isType(@NotNull Object value) {
+        return false;
     }
 
-    @SuppressWarnings("all")
     @Override
-    public @NotNull ExampleRecord createEmpty(@NotNull PrimaryFieldMap primaryFieldMap) {
-        return new ExampleRecord((String) primaryFieldMap.get(ExampleRecord.IDENTIFIER_KEY));
+    public @NotNull String getSqliteName() {
+        return "";
+    }
+
+    @Override
+    public @NotNull String toSqlite(@Nullable Boolean object) {
+        return "";
+    }
+
+    @Override
+    public @Nullable Boolean fromSqlite(@Nullable ResultSet results, @NotNull String fieldName) {
+        return null;
     }
 }

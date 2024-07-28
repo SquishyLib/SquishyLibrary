@@ -16,24 +16,32 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.github.squishylib.database.example;
+package com.github.squishylib.database.field;
 
-import com.github.squishylib.database.Table;
-import com.github.squishylib.database.field.PrimaryFieldMap;
+import com.github.squishylib.database.datatype.DataType;
 import org.jetbrains.annotations.NotNull;
 
-public class ExampleTable extends Table<ExampleRecord> {
+public class ForeignField extends RecordField {
 
-    public static final @NotNull String TABLE_NAME = "example";
+    private final @NotNull String foreignName;
+    private final @NotNull String foreignTableName;
 
-    @Override
-    public @NotNull String getName() {
-        return ExampleTable.TABLE_NAME;
+    public ForeignField(final @NotNull String name,
+                        final @NotNull DataType<?> type,
+                        final @NotNull String foreignName,
+                        final @NotNull String foreignTableName) {
+
+        super(name, type);
+
+        this.foreignName = foreignName;
+        this.foreignTableName = foreignTableName;
     }
 
-    @SuppressWarnings("all")
-    @Override
-    public @NotNull ExampleRecord createEmpty(@NotNull PrimaryFieldMap primaryFieldMap) {
-        return new ExampleRecord((String) primaryFieldMap.get(ExampleRecord.IDENTIFIER_KEY));
+    public @NotNull String getForeignName() {
+        return this.foreignName;
+    }
+
+    public @NotNull String getForeignTableName() {
+        return this.foreignTableName;
     }
 }

@@ -21,47 +21,46 @@ package com.github.squishylib.database.example;
 import com.github.squishylib.configuration.ConfigurationSection;
 import com.github.squishylib.configuration.implementation.MemoryConfigurationSection;
 import com.github.squishylib.database.Record;
+import com.github.squishylib.database.annotation.Field;
+import com.github.squishylib.database.annotation.Primary;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
 
 public class ExampleRecord implements Record<ExampleRecord> {
 
     public static final @NotNull String IDENTIFIER_KEY = "identifier";
     public static final @NotNull String VALUE_KEY = "value";
 
-    private final @NotNull String identifier;
-    private String value;
+    private final @Field(IDENTIFIER_KEY) @Primary @NotNull String identifier;
+    private @Field(VALUE_KEY) String value;
 
     public ExampleRecord(@NotNull String identifier) {
         this.identifier = identifier;
         this.value = "The default value.";
     }
 
-    @Override
     public @NotNull String getIdentifier() {
         return this.identifier;
     }
 
-    @Override
-    public @NotNull List<String> getFieldNames() {
-        return List.of(ExampleRecord.VALUE_KEY);
+    public @NotNull String getValue() {
+        return this.value;
+    }
+
+    public @NotNull ExampleRecord setValue(@NotNull String value) {
+        this.value = value;
+        return this;
     }
 
     @Override
     public @NotNull ConfigurationSection convert() {
         ConfigurationSection section = new MemoryConfigurationSection();
-
         section.set(ExampleRecord.VALUE_KEY, this.value);
-
         return new MemoryConfigurationSection();
     }
 
     @Override
     public @NotNull ExampleRecord convert(@NotNull ConfigurationSection section) {
-
         this.value = section.getString(ExampleRecord.VALUE_KEY);
-
         return this;
     }
 }

@@ -19,6 +19,7 @@
 package com.github.squishylib.database;
 
 import com.github.squishylib.common.CompletableFuture;
+import com.github.squishylib.database.field.RecordField;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -42,6 +43,16 @@ public abstract class Table<R extends Record> implements TableSelection<R, Datab
     public @NotNull TableSelection<R, Database> setDatabase(@NotNull Database database) {
         this.database = database;
         return this;
+    }
+
+    @Override
+    public @NotNull CompletableFuture<@NotNull List<String>> getColumnNames() {
+        return this.database.createTableSelection(this).getColumnNames();
+    }
+
+    @Override
+    public @NotNull CompletableFuture<@NotNull Boolean> addColumn(@NotNull RecordField field) {
+        return this.database.createTableSelection(this).addColumn(field);
     }
 
     @Override

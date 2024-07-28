@@ -28,12 +28,12 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Optional;
 
-public class SQLiteTableSelection<R extends Record<R>> implements TableSelection<R, SQLiteDatabase> {
+public class SqliteTableSelection<R extends Record<R>> implements TableSelection<R, SqliteDatabase> {
 
-    private final @NotNull SQLiteDatabase database;
+    private final @NotNull SqliteDatabase database;
     private final @NotNull Table<R> table;
 
-    public SQLiteTableSelection(final @NotNull SQLiteDatabase database, @NotNull Table<R> table) {
+    public SqliteTableSelection(final @NotNull SqliteDatabase database, @NotNull Table<R> table) {
         this.database = database;
         this.table = table;
     }
@@ -49,12 +49,12 @@ public class SQLiteTableSelection<R extends Record<R>> implements TableSelection
     }
 
     @Override
-    public @NotNull Optional<SQLiteDatabase> getDatabase() {
+    public @NotNull Optional<SqliteDatabase> getDatabase() {
         return Optional.of(this.database);
     }
 
     @Override
-    public @NotNull TableSelection<R, SQLiteDatabase> setDatabase(@NotNull SQLiteDatabase database) {
+    public @NotNull TableSelection<R, SqliteDatabase> setDatabase(@NotNull SqliteDatabase database) {
         return this;
     }
 
