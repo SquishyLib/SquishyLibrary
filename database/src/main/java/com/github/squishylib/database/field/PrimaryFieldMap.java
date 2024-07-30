@@ -18,6 +18,7 @@
 
 package com.github.squishylib.database.field;
 
+import com.github.squishylib.database.DatabaseException;
 import com.github.squishylib.database.datatype.DefaultType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -45,6 +46,14 @@ public class PrimaryFieldMap {
             if (entry.getKey().getName().equals(fieldName)) return entry.getValue();
         }
         return this.defaultValue;
+    }
+
+    public @NotNull String getString(@NotNull final String fieldName) {
+        final Object value = get(fieldName);
+        if (!(value instanceof String)) {
+            throw new DatabaseException(this, "getString", "The primary key is ether null or not a string. fieldName=" + fieldName);
+        }
+        return (String) value;
     }
 
     public @Nullable PrimaryFieldMap set(@NotNull final String fieldName, @NotNull final Object value) {

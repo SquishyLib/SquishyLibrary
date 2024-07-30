@@ -19,13 +19,17 @@
 package com.github.squishylib.database.implementation;
 
 import com.github.squishylib.common.CompletableFuture;
-import com.github.squishylib.database.*;
 import com.github.squishylib.database.Record;
+import com.github.squishylib.database.*;
+import com.github.squishylib.database.field.PrimaryFieldMap;
+import com.github.squishylib.database.field.RecordField;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public class SqliteTableSelection<R extends Record<R>> implements TableSelection<R, SqliteDatabase> {
@@ -44,11 +48,6 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
     }
 
     @Override
-    public @NotNull String getIdentifierName() {
-        return this.table.getIdentifierName();
-    }
-
-    @Override
     public @NotNull Optional<SqliteDatabase> getDatabase() {
         return Optional.of(this.database);
     }
@@ -58,18 +57,18 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
         return this;
     }
 
-    @NotNull
     @Override
-    public R createEmpty(@NotNull String identifier) {
-        return this.table.createEmpty(identifier);
+    public @NotNull R createEmpty(@NotNull PrimaryFieldMap identifiers) {
+        return this.table.createEmpty(identifiers);
     }
 
     @Override
-    public @NotNull CompletableFuture<R> getFirstRecord() {
+    public @NotNull CompletableFuture<@NotNull List<String>> getColumnNames() {
         return this.database.addRequest(new Request<>(() -> {
 
             // Create the sql statement.
-            final String statement = "SELECT * FROM " + this.table.getName() + " LIMIT 1";
+            final String statement = "PRAGMA table_indo({table});"
+                    .replace("{table}", this.table.getName());
 
             try {
 
@@ -80,9 +79,67 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
 
                 // Are there no results?
                 if (results == null) return null;
-                if (!results.next())  return null;
 
-                return this.createEmpty(results.getString(this.getIdentifierName()))
+                // Create name list.
+                List<String> columnNames = new ArrayList<>();
+
+                // Loop though results.
+                while (results.next()) {
+                    columnNames.add(results.getString("name"));
+                }
+
+                return columnNames;
+
+            } catch (Exception exception) {
+                throw new DatabaseException(exception, this, "getFirstRecord", "statement=&e" + statement + "&r");
+            }
+        }));
+    }
+
+    @Override
+    public @NotNull CompletableFuture<@NotNull Boolean> addColumn(@NotNull RecordField field) {
+        return this.database.addRequest(new Request<>(() -> {
+
+            // Create statement.
+            final String statement = "ALTER TABLE {table} ADD COLUMN {key} {type};"
+                    .replace("{table}", this.getName())
+                    .replace("{key}", field.getName())
+                    .replace("{type}", field.getType().getSqliteName());
+
+            try {
+
+                // Execute statement.
+                PreparedStatement preparedStatement = this.database.getConnection().prepareStatement(statement);
+                boolean success = preparedStatement.execute();
+                preparedStatement.close();
+                return success;
+
+            } catch (Exception exception) {
+                throw new DatabaseException(exception, this, "getFirstRecord", "statement=&e" + statement + "&r");
+            }
+        }));
+    }
+
+    @Override
+    public @NotNull CompletableFuture<R> getFirstRecord() {
+        return this.database.addRequest(new Request<>(() -> {
+
+            // Create the sql statement.
+            final String statement = "SELECT * FROM {table} LIMIT 1"
+                    .replace("{table}", this.table.getName());
+
+            try {
+
+                // Create the prepared statement.
+                PreparedStatement preparedStatement = this.database.getConnection().prepareStatement(statement);
+                ResultSet results = preparedStatement.executeQuery(statement);
+                preparedStatement.close();
+
+                // Are there no results?
+                if (results == null) return null;
+                if (!results.next()) return null;
+
+                return this.createEmpty(this.getPrimaryFieldMap(results))
                         .convert(results);
 
             } catch (Exception exception) {

@@ -18,6 +18,7 @@
 
 package com.github.squishylib.database.datatype;
 
+import com.github.squishylib.database.DatabaseException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,21 +28,27 @@ public class BooleanType implements DataType<Boolean> {
 
     @Override
     public boolean isType(@NotNull Object value) {
-        return false;
+        return value instanceof Boolean;
     }
 
     @Override
     public @NotNull String getSqliteName() {
-        return "";
+        return "INTEGER";
     }
 
     @Override
     public @NotNull String toSqlite(@Nullable Boolean object) {
-        return "";
+        return Boolean.TRUE.equals(object) ? "1" : "0";
     }
 
     @Override
     public @Nullable Boolean fromSqlite(@Nullable ResultSet results, @NotNull String fieldName) {
-        return null;
+        try {
+            if (results == null) return null;
+            final int value = results.getInt(fieldName);
+            return value == 1 ? Boolean.TRUE : Boolean.FALSE;
+        } catch (Exception exception) {
+            throw new DatabaseException(this, "fromSqlite", "Unable to get integer from result set. fieldName=" + fieldName);
+        }
     }
 }

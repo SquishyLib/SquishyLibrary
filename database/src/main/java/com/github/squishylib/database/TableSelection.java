@@ -19,15 +19,15 @@
 package com.github.squishylib.database;
 
 import com.github.squishylib.common.CompletableFuture;
-import com.github.squishylib.database.annotation.Field;
+import com.github.squishylib.database.field.ForeignField;
 import com.github.squishylib.database.field.PrimaryField;
 import com.github.squishylib.database.field.PrimaryFieldMap;
 import com.github.squishylib.database.field.RecordField;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.sql.ResultSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -82,11 +82,11 @@ public interface TableSelection<R extends Record, D extends Database> {
      * Used to create an empty record.
      * This will be used when getting a record from the database.
      *
-     * @param primaryFieldMap The list of primary keys.
+     * @param identifiers The list of primary keys.
      * @return The empty record.
      */
     @NotNull
-    R createEmpty(@NotNull PrimaryFieldMap primaryFieldMap);
+    R createEmpty(@NotNull PrimaryFieldMap identifiers);
 
     /**
      * Used to get the field names currently in
@@ -94,7 +94,8 @@ public interface TableSelection<R extends Record, D extends Database> {
      *
      * @return The column names.
      */
-    @NotNull CompletableFuture<@NotNull List<String>> getColumnNames();
+    @NotNull
+    CompletableFuture<@NotNull List<String>> getColumnNames();
 
     /**
      * Used to add a new column to the table.
@@ -102,7 +103,8 @@ public interface TableSelection<R extends Record, D extends Database> {
      * @param field The column info.
      * @return True if the column has been added successfully.
      */
-    @NotNull CompletableFuture<@NotNull Boolean> addColumn(@NotNull RecordField field);
+    @NotNull
+    CompletableFuture<@NotNull Boolean> addColumn(@NotNull RecordField field);
 
     /**
      * Requests the first record from this
@@ -211,4 +213,38 @@ public interface TableSelection<R extends Record, D extends Database> {
      */
     @NotNull
     CompletableFuture<@NotNull Boolean> removeAllRecords(@NotNull Query query);
+
+    @SuppressWarnings("unchecked")
+    default @NotNull List<RecordField> getFieldList() {
+        return this.createEmpty(new PrimaryFieldMap(null)).getFieldList();
+    }
+
+    @SuppressWarnings("unchecked")
+    default @NotNull List<String> getFieldNameList() {
+        return this.createEmpty(new PrimaryFieldMap(null)).getFieldNameList();
+    }
+
+    @SuppressWarnings("unchecked")
+    default @NotNull List<PrimaryField> getPrimaryFieldList() {
+        return this.createEmpty(new PrimaryFieldMap(null)).getPrimaryFieldList();
+    }
+
+    @SuppressWarnings("unchecked")
+    default @NotNull List<ForeignField> getForeignFieldList() {
+        return this.createEmpty(new PrimaryFieldMap(null)).getForeignFieldList();
+    }
+
+    default @NotNull PrimaryFieldMap getPrimaryFieldMap(@NotNull ResultSet results) {
+        PrimaryFieldMap map = new PrimaryFieldMap(null);
+
+        for (RecordField field : this.getPrimaryFieldList()) {
+            try {
+                map.set(field.getName(), results.getObject(field.getName()));
+            } catch (Exception exception) {
+                throw new DatabaseException(exception, this, "getPrimaryFieldMap", "Unable tp get field from result set. field=" + field);
+            }
+        }
+
+        return map;
+    }
 }

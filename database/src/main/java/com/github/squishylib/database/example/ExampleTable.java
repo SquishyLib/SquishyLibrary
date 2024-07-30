@@ -31,9 +31,8 @@ public class ExampleTable extends Table<ExampleRecord> {
         return ExampleTable.TABLE_NAME;
     }
 
-    @SuppressWarnings("all")
     @Override
-    public @NotNull ExampleRecord createEmpty(@NotNull PrimaryFieldMap primaryFieldMap) {
-        return new ExampleRecord((String) primaryFieldMap.get(ExampleRecord.IDENTIFIER_KEY));
+    public @NotNull ExampleRecord createEmpty(@NotNull PrimaryFieldMap identifiers) {
+        return new ExampleRecord(identifiers.getString(ExampleRecord.IDENTIFIER_KEY));
     }
 }

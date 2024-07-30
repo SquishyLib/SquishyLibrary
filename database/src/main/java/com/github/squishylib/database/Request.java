@@ -18,7 +18,6 @@
 
 package com.github.squishylib.database;
 
-import com.github.squishylib.common.CompletableFuture;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -28,7 +27,8 @@ import java.util.List;
 public class Request<R> {
 
     public interface AsyncRequest<R> {
-        @Nullable R execute();
+        @Nullable
+        R execute();
     }
 
     public interface Listener<R> {

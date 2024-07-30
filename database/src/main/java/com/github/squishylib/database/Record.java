@@ -24,6 +24,7 @@ import com.github.squishylib.configuration.indicator.ConfigurationConvertible;
 import com.github.squishylib.database.annotation.Field;
 import com.github.squishylib.database.annotation.Foreign;
 import com.github.squishylib.database.annotation.Primary;
+import com.github.squishylib.database.datatype.DataType;
 import com.github.squishylib.database.field.ForeignField;
 import com.github.squishylib.database.field.PrimaryField;
 import com.github.squishylib.database.field.RecordField;
@@ -35,42 +36,74 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * A database record.
+ *
+ * @param <R> The record that inherits this class.
+ */
 public interface Record<R extends Record<R>> extends ConfigurationConvertible<R> {
 
+    /**
+     * The list of fields within the inherited class.
+     *
+     * @return The list of records.
+     */
     default @NotNull List<RecordField> getFieldList() {
         final List<RecordField> fields = new ArrayList<>();
 
+        // Loop though java fields.
         for (java.lang.reflect.Field field : getClass().getDeclaredFields()) {
 
             // Does the field have the field annotation?
             Field annotation = field.getAnnotation(Field.class);
             if (annotation == null) continue;
 
-            fields.add(new RecordField(annotation.value(), FieldType.of(field)));
+            // Add the field to the list.
+            fields.add(new RecordField(
+                    annotation.value(),
+                    DataType.of(field.getType()))
+            );
         }
 
         return fields;
     }
 
+    /**
+     * The list of field names that should be used in
+     * the database table.
+     *
+     * @return The list of field names.
+     */
     default @NotNull List<String> getFieldNameList() {
         final List<String> fieldNames = new ArrayList<>();
 
+        // Loop though java fields.
         for (java.lang.reflect.Field field : getClass().getDeclaredFields()) {
 
+            // Does the field have the field annotation?
             Field annotation = field.getAnnotation(Field.class);
             if (annotation == null) continue;
 
+            // Add the field name.
             fieldNames.add(annotation.value());
         }
 
         return fieldNames;
     }
 
-    default @NotNull Map<RecordField, Object> getFieldMap() {
+    /**
+     * The map of field to value within the inherited class.
+     *
+     * @return The field values.
+     */
+    default @NotNull Map<RecordField, Object> getFieldValues() {
         final ConfigurationSection section = this.convert();
         final Map<RecordField, Object> fieldMap = new HashMap<>();
 
+        // Loop though the field list.
         for (RecordField field : this.getFieldList()) {
+
+            // Get the value from this class.
             final Object value = section.get(field.getName(), null);
             fieldMap.put(field, value);
         }
@@ -78,9 +111,15 @@ public interface Record<R extends Record<R>> extends ConfigurationConvertible<R>
         return fieldMap;
     }
 
+    /**
+     * The list of primary fields within the inherited class.
+     *
+     * @return The primary field list.
+     */
     default @NotNull List<PrimaryField> getPrimaryFieldList() {
         final List<PrimaryField> primaryFields = new ArrayList<>();
 
+        // Loop though java fields.
         for (java.lang.reflect.Field field : getClass().getDeclaredFields()) {
 
             // Does the field have the field annotation?
@@ -91,27 +130,20 @@ public interface Record<R extends Record<R>> extends ConfigurationConvertible<R>
             Primary primaryAnnotation = field.getAnnotation(Primary.class);
             if (primaryAnnotation == null) continue;
 
-            primaryFields.add(new PrimaryField(annotation.value(), FieldType.of(field)));
+            // Add the primary field.
+            primaryFields.add(new PrimaryField(
+                    annotation.value(),
+                    DataType.of(field.getType())
+            ));
         }
 
         return primaryFields;
     }
 
-    default @NotNull Map<PrimaryField, Object> getPrimaryFieldMap() {
-        final ConfigurationSection section = this.convert();
-        final Map<PrimaryField, Object> primaryFieldMap = new HashMap<>();
-
-        for (PrimaryField primaryField : this.getPrimaryFieldList()) {
-            final Object value = section.get(primaryField.getName(), null);
-            primaryFieldMap.put(primaryField, value);
-        }
-
-        return primaryFieldMap;
-    }
-
     default @NotNull List<ForeignField> getForeignFieldList() {
         final List<ForeignField> foreignFields = new ArrayList<>();
 
+        // Loop though java fields.
         for (java.lang.reflect.Field field : getClass().getDeclaredFields()) {
 
             // Does the field have the field annotation?
@@ -122,27 +154,16 @@ public interface Record<R extends Record<R>> extends ConfigurationConvertible<R>
             Foreign foreignAnnotation = field.getAnnotation(Foreign.class);
             if (foreignAnnotation == null) continue;
 
+            // Add the foreign field.
             foreignFields.add(new ForeignField(
                     annotation.value(),
-                    FieldType.of(field),
+                    DataType.of(field.getType()),
                     foreignAnnotation.tableField(),
                     foreignAnnotation.table()
             ));
         }
 
         return foreignFields;
-    }
-
-    default @NotNull Map<ForeignField, Object> getForeignFieldMap() {
-        final ConfigurationSection section = this.convert();
-        final Map<ForeignField, Object> foreignFieldMap = new HashMap<>();
-
-        for (ForeignField foreignField : this.getForeignFieldList()) {
-            final Object value = section.get(foreignField.getName(), null);
-            foreignFieldMap.put(foreignField, value);
-        }
-
-        return foreignFieldMap;
     }
 
     /**

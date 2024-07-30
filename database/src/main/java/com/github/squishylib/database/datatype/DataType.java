@@ -33,11 +33,14 @@ public interface DataType<T> {
 
     boolean isType(@NotNull Object value);
 
-    @NotNull String getSqliteName();
+    @NotNull
+    String getSqliteName();
 
-    @NotNull String toSqlite(@Nullable T object);
+    @NotNull
+    String toSqlite(@Nullable T object);
 
-    @Nullable T fromSqlite(@Nullable ResultSet results, @NotNull String fieldName);
+    @Nullable
+    T fromSqlite(@Nullable ResultSet results, @NotNull String fieldName);
 
     static @NotNull DataType<?> of(@NotNull Class<?> type) {
         return switch (type.getName()) {
