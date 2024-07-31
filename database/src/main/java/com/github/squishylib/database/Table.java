@@ -91,7 +91,7 @@ public abstract class Table<R extends Record> implements TableSelection<R, Datab
     }
 
     @Override
-    public @NotNull CompletableFuture<@NotNull Boolean> removeRecord(@NotNull Record record) {
+    public @NotNull CompletableFuture<@NotNull Boolean> removeRecord(@NotNull R record) {
         return this.database.createTableSelection(this).removeRecord(record);
     }
 

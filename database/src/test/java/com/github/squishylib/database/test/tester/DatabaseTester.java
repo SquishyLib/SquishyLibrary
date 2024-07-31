@@ -69,4 +69,8 @@ public class DatabaseTester {
                 .expect(database.getAmountOfTables() == 1, "database.getTable(ExampleTable.class) != null")
                 .expect(database.getTable(ExampleTable.class).getColumnNames().waitForComplete().size() == 2, "Are there the correct number of columns?");
     }
+
+    public void testGetFirstRecord() {
+
+    }
 }

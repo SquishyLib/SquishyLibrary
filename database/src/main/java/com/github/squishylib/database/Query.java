@@ -18,9 +18,15 @@
 
 package com.github.squishylib.database;
 
+import com.github.squishylib.database.field.PrimaryField;
+import com.github.squishylib.database.field.RecordField;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.sqlite.SQLiteErrorCode;
+import org.sqlite.SQLiteException;
 
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
@@ -58,6 +64,13 @@ public class Query {
         return this;
     }
 
+    public @NotNull Query match(@NotNull Record<?> record) {
+        for (final Map.Entry<PrimaryField, Object> entry : record.getPrimaryFieldMap().get().entrySet()) {
+            this.match(entry.getKey().getName(), entry.getValue());
+        }
+        return this;
+    }
+
     public @NotNull Query limit(int limit) {
         this.limit = limit;
         return this;
@@ -67,5 +80,32 @@ public class Query {
         this.orderByKey = key;
         this.orderByComparator = comparator;
         return this;
+    }
+
+    public @NotNull String buildSqliteWhere() {
+        StringBuilder builder = new StringBuilder();
+
+        for (Map.Entry<String, Object> map : this.patterns.entrySet()) {
+            builder.append(map.getKey()).append(" = ? AND ");
+        }
+
+        // Delete the last " AND".
+        builder.replace(builder.length() - 5, builder.length(), "");
+
+        return builder.toString();
+    }
+
+    public void appendSqlite(@NotNull PreparedStatement statement) {
+        try {
+
+            int index = 1;
+            for (Map.Entry<String, Object> map : this.patterns.entrySet()) {
+                statement.setObject(index, map.getValue());
+                index++;
+            }
+
+        } catch (Exception exception) {
+            throw new DatabaseException(exception, this, "appendSqlite", "Unable to append a query to a statement.");
+        }
     }
 }

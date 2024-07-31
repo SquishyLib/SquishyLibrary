@@ -41,6 +41,10 @@ public class PrimaryFieldMap {
         this.defaultValue = defaultValue;
     }
 
+    public @NotNull Map<PrimaryField, Object> get() {
+        return this.map;
+    }
+
     public @Nullable Object get(@NotNull final String fieldName) {
         for (final Map.Entry<PrimaryField, Object> entry : map.entrySet()) {
             if (entry.getKey().getName().equals(fieldName)) return entry.getValue();

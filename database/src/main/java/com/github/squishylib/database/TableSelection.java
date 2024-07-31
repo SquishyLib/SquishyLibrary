@@ -37,7 +37,7 @@ import java.util.Optional;
  * @param <R> The record type the table contains.
  * @param <D> The database connection that is being used.
  */
-public interface TableSelection<R extends Record, D extends Database> {
+public interface TableSelection<R extends Record<?>, D extends Database> {
 
     /**
      * Used to get the name of the table.
@@ -200,7 +200,7 @@ public interface TableSelection<R extends Record, D extends Database> {
      * @return The optional list.
      */
     @NotNull
-    CompletableFuture<@NotNull Boolean> removeRecord(@NotNull Record record);
+    CompletableFuture<@NotNull Boolean> removeRecord(@NotNull R record);
 
     /**
      * Used to remove a record from this table.

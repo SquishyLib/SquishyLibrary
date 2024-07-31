@@ -24,6 +24,7 @@ import com.github.squishylib.database.*;
 import com.github.squishylib.database.field.PrimaryFieldMap;
 import com.github.squishylib.database.field.RecordField;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -157,7 +158,38 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
 
     @Override
     public @NotNull CompletableFuture<R> getFirstRecord(@NotNull Query query) {
-        return null;
+        return this.database.addRequest(new Request<>(() -> this.getFirstRecordSync(query)));
+    }
+
+    private @Nullable R getFirstRecordSync(@NotNull Query query) {
+
+        // Create the sql statement.
+        final String statement = "SELECT * FROM {table} LIMIT 1 WHERE {where};"
+                .replace("{table}", this.table.getName())
+                .replace("{where}", query.buildSqliteWhere());
+
+        try {
+
+            // Create the prepared statement.
+            PreparedStatement preparedStatement = this.database.getConnection().prepareStatement(statement);
+            query.appendSqlite(preparedStatement);
+            ResultSet results = preparedStatement.executeQuery();
+
+            // Are there no results?
+            if (results == null || !results.next()) {
+                preparedStatement.close();
+                return null;
+            }
+
+            R record = this.createEmpty(this.getPrimaryFieldMap(results))
+                    .convert(results);
+
+            preparedStatement.close();
+            return record;
+
+        } catch (Exception exception) {
+            throw new DatabaseException(exception, this, "getFirstRecord", "statement=&e" + statement + "&r");
+        }
     }
 
     @Override
@@ -181,17 +213,35 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
     }
 
     @Override
-    public @NotNull CompletableFuture<@NotNull Boolean> removeRecord(@NotNull Record record) {
+    public @NotNull CompletableFuture<@NotNull Boolean> insertRecord(@NotNull R record) {
+        return this.database.addRequest(new Request<>(() -> {
+
+            // Check if the record already exists.
+            final R temp = this.getFirstRecordSync(new Query().match(record));
+
+            // If empty add record.
+            if (temp == null) return this.addRecord(record);
+
+            // Otherwise, update record.
+            return this.updateRecord(record);
+        }));
+    }
+
+    private boolean addRecord(@NotNull R record) {
+
+    }
+
+    private boolean updateRecord(@NotNull R record) {
+
+    }
+
+    @Override
+    public @NotNull CompletableFuture<@NotNull Boolean> removeRecord(@NotNull R record) {
         return null;
     }
 
     @Override
     public @NotNull CompletableFuture<@NotNull Boolean> removeAllRecords(@NotNull Query query) {
-        return null;
-    }
-
-    @Override
-    public @NotNull CompletableFuture<@NotNull Boolean> insertRecord(@NotNull Record record) {
         return null;
     }
 }

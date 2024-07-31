@@ -27,6 +27,7 @@ import com.github.squishylib.database.annotation.Primary;
 import com.github.squishylib.database.datatype.DataType;
 import com.github.squishylib.database.field.ForeignField;
 import com.github.squishylib.database.field.PrimaryField;
+import com.github.squishylib.database.field.PrimaryFieldMap;
 import com.github.squishylib.database.field.RecordField;
 import org.jetbrains.annotations.NotNull;
 
@@ -138,6 +139,17 @@ public interface Record<R extends Record<R>> extends ConfigurationConvertible<R>
         }
 
         return primaryFields;
+    }
+
+    default @NotNull PrimaryFieldMap getPrimaryFieldMap() {
+        final ConfigurationSection section = this.convert();
+        final PrimaryFieldMap map = new PrimaryFieldMap(null);
+
+        for (final PrimaryField field : this.getPrimaryFieldList()) {
+            map.set(field.getName(), section.get(field.getName(), null));
+        }
+
+        return map;
     }
 
     default @NotNull List<ForeignField> getForeignFieldList() {
