@@ -20,6 +20,7 @@ package com.github.squishylib.common.testing;
 
 import com.github.squishylib.common.logger.Logger;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Assertions;
 
 
@@ -33,8 +34,24 @@ import java.util.List;
  */
 public class ResultChecker {
 
-    private final Logger logger = new Logger("com.github.cozygames.testing", "[Testing]");
+    private final @Nullable String name;
+    private final @NotNull Logger logger;
     private final List<Runnable> fallBackRunnableList = new ArrayList<>();
+
+    public ResultChecker() {
+        this.name = null;
+        this.logger = new Logger("com.github.squishylib.common.testing");
+    }
+
+    public ResultChecker(@NotNull String name) {
+        this.name = name;
+        this.logger = new Logger("com.github.squishylib.common.testing");
+    }
+
+    public ResultChecker(@NotNull String name, @NotNull Logger logger) {
+        this.name = name;
+        this.logger = logger;
+    }
 
     /**
      * Used to check if a boolean value is true.
@@ -43,13 +60,18 @@ public class ResultChecker {
      * @param condition The boolean value.
      * @return This instance.
      */
-    public @NotNull ResultChecker expect(boolean condition) {
+    public @NotNull ResultChecker expect(boolean condition, @NotNull String subName) {
         if (condition) {
-            this.logger.info("&aPassed");
+            if (this.name == null) {
+                this.logger.info("&aTest passed.");
+                return this;
+            }
+            this.logger.info("&aTest passed: &f" + this.name + " &a" + subName);
             return this;
         }
 
         this.runFallBack();
+        this.logger.info("&eTest failed: &f" + this.name + " &e" + subName);
         Assertions.assertTrue(condition);
         return this;
     }
@@ -62,15 +84,18 @@ public class ResultChecker {
      * @param value2 The second value.
      * @return This instance.
      */
-    public @NotNull ResultChecker expect(Object value1, Object value2) {
+    public @NotNull ResultChecker expect(Object value1, Object value2, @NotNull String subName) {
         if (value1.equals(value2)) {
-            this.logger.info("&aPassed");
-            this.logger.info("&7Value 1 &r: &e" + value1);
-            this.logger.info("&7Value 2 &r: &e" + value2);
+            if (this.name == null) {
+                this.logger.info("&aTest passed. &7{value1=" + value1 + ", &7value2=" + value2 + "}");
+                return this;
+            }
+            this.logger.info("&aTest passed: &f" + this.name + " &a" + subName + ". &7{value1=" + value1 + ", &7value2=" + value2 + "}");
             return this;
         }
 
         this.runFallBack();
+        this.logger.info("&eTest failed: &f" + this.name + " &e" + subName + ". &7{value1=" + value1 + ", &7value2=" + value2 + "}");
         Assertions.assertEquals(value1, value2);
         return this;
     }

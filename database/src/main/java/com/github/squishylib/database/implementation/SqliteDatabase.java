@@ -27,10 +27,7 @@ import com.github.squishylib.database.field.RecordField;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
+import java.sql.*;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -72,7 +69,58 @@ public class SqliteDatabase extends DatabaseRequestQueue implements Database {
     }
 
     @Override
+    protected @NotNull Database getDatabase() {
+        return this;
+    }
+
+    @Override
+    protected boolean reconnectIfDisconnected() {
+
+        try {
+            // Is the database connected?
+            if (this.isConnected()) return true;
+
+            // Should the database reconnect?
+            if (this.willReconnect) {
+                this.connect();
+
+                // Is the database now connected?
+                if (this.isConnected()) return true;
+
+                // Otherwise, it will try to reconnect,
+                // so here we wait till connected.
+
+                while (true) {
+                    Thread.sleep(this.getReconnectCooldown().toMillis());
+                    if (this.isConnected()) return true;
+                }
+            }
+
+            return false;
+
+        } catch (Exception exception) {
+            throw new DatabaseException(exception, this, "reconnectIfDisconnected", "Failed to check if disconnected and reconnecting.");
+        }
+    }
+
+    @Override
     public @NotNull DatabaseStatus getStatus() {
+        try {
+
+            // Check if the database is reconnecting.
+            if (this.status.equals(DatabaseStatus.RECONNECTING)) return this.status;
+
+            // Check if the connection is closed.
+            if (this.connection.isClosed()) {
+                this.status = DatabaseStatus.DISCONNECTED;
+                return this.status;
+            }
+
+            this.status = DatabaseStatus.CONNECTED;
+
+        } catch (SQLException exception) {
+            this.status = DatabaseStatus.DISCONNECTED;
+        }
         return this.status;
     }
 
@@ -318,7 +366,7 @@ public class SqliteDatabase extends DatabaseRequestQueue implements Database {
                 // Should we reconnect?
                 if (reconnect) {
                     this.status = DatabaseStatus.RECONNECTING;
-                    this.connectAsync();
+                    this.connect();
                 }
 
                 // Complete future status.
@@ -329,7 +377,7 @@ public class SqliteDatabase extends DatabaseRequestQueue implements Database {
                 // Should we reconnect?
                 if (reconnect) {
                     this.status = DatabaseStatus.RECONNECTING;
-                    this.connectAsync();
+                    this.connect();
                 }
 
                 // Complete future status.

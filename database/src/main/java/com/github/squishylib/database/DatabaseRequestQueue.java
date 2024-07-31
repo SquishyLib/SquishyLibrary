@@ -22,7 +22,6 @@ import com.github.squishylib.common.CompletableFuture;
 import com.github.squishylib.common.task.TaskContainer;
 import org.jetbrains.annotations.NotNull;
 
-import java.time.Duration;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -31,22 +30,33 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * <p>
  * Uses a queue structure to manage requests.
  */
-public class DatabaseRequestQueue extends TaskContainer {
-
-    private final @NotNull Duration timeBetweenRequests;
-    private final long maxRequestsPending;
+public abstract class DatabaseRequestQueue extends TaskContainer {
 
     private final @NotNull Queue<Request<?>> queue;
     private boolean running;
     private boolean sentMaximumRequestsMessage;
 
-    public DatabaseRequestQueue(@NotNull Duration timeBetweenRequests, @NotNull long maxRequestsPending) {
-        this.timeBetweenRequests = timeBetweenRequests;
-        this.maxRequestsPending = maxRequestsPending;
+    public DatabaseRequestQueue() {
         this.queue = new ConcurrentLinkedQueue<>();
         this.running = false;
         this.sentMaximumRequestsMessage = false;
     }
+
+    /**
+     * The instance of the database that is being used.
+     *
+     * @return The database instance.
+     */
+    protected abstract @NotNull Database getDatabase();
+
+    /**
+     * Used to reconnect to the database if the connection was closed.
+     * <p>
+     * This will stop the current thread until complete.
+     *
+     * @return True if connected.
+     */
+    protected abstract boolean reconnectIfDisconnected();
 
     /**
      * Used to add a request to the queue.
@@ -63,7 +73,7 @@ public class DatabaseRequestQueue extends TaskContainer {
     public @NotNull <R> CompletableFuture<R> addRequest(@NotNull Request<R> request) {
 
         // Check if the queue has reached max requests.
-        if (this.queue.size() >= this.maxRequestsPending) {
+        if (this.queue.size() >= this.getDatabase().getMaxRequestsPending()) {
 
             // If we have already sent an error message, complete this request with a null value.
             if (this.sentMaximumRequestsMessage) {
@@ -113,11 +123,14 @@ public class DatabaseRequestQueue extends TaskContainer {
                     return;
                 }
 
+                // Check if disconnected.
+                this.reconnectIfDisconnected();
+
                 // Execute and wait for result.
                 request.executeSync();
 
                 // Wait for duration.
-                Thread.sleep(this.timeBetweenRequests.toMillis());
+                Thread.sleep(this.getDatabase().getTimeBetweenRequests().toMillis());
 
                 // Are there no tasks left?
                 if (this.queue.isEmpty()) {

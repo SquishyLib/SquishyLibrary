@@ -16,25 +16,23 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.github.squishylib.configuration.test;
+package com.github.squishylib.database.test.example;
 
-import com.github.squishylib.configuration.ConfigurationFactory;
-import com.github.squishylib.configuration.PreparedConfigurationFactory;
-import com.github.squishylib.configuration.test.tester.ConfigurationTester;
-import org.junit.jupiter.api.Test;
+import com.github.squishylib.database.Table;
+import com.github.squishylib.database.field.PrimaryFieldMap;
+import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
+public class ExampleTable extends Table<ExampleRecord> {
 
-public class YamlConfigurationTest {
+    public static final @NotNull String TABLE_NAME = "example";
 
-    @Test
-    public void test() {
-        PreparedConfigurationFactory factory = new PreparedConfigurationFactory(
-                ConfigurationFactory.YAML,
-                new File("src/test/resources/test.yml")
-        );
+    @Override
+    public @NotNull String getName() {
+        return ExampleTable.TABLE_NAME;
+    }
 
-        ConfigurationTester tester = new ConfigurationTester(factory);
-        tester.testAll();
+    @Override
+    public @NotNull ExampleRecord createEmpty(@NotNull PrimaryFieldMap identifiers) {
+        return new ExampleRecord(identifiers.getString(ExampleRecord.IDENTIFIER_KEY));
     }
 }

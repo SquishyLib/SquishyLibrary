@@ -16,9 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.github.squishylib.configuration;
+package com.github.squishylib.configuration.test.tester;
 
 import com.github.squishylib.common.testing.ResultChecker;
+import com.github.squishylib.configuration.Configuration;
+import com.github.squishylib.configuration.ConfigurationSection;
+import com.github.squishylib.configuration.PreparedConfigurationFactory;
 import com.github.squishylib.configuration.implementation.MemoryConfigurationSection;
 import com.github.squishylib.configuration.indicator.ConfigurationConvertible;
 import org.jetbrains.annotations.NotNull;
@@ -41,10 +44,10 @@ public class GetterTester {
         final Configuration configuration = this.factory.create().load();
         final Object object = configuration.get("get");
 
-        new ResultChecker()
+        new ResultChecker("testGet")
                 .fallBack("&etestGet Failed")
-                .expect(object instanceof String)
-                .expect(object.equals("test"))
+                .expect(object instanceof String, "object instanceof String")
+                .expect(object.equals("test"), "object.equals(\"test\")")
                 .then("&atestGet Passed");
     }
 
@@ -58,8 +61,8 @@ public class GetterTester {
 
         new ResultChecker()
                 .fallBack("&etestGetClass Failed")
-                .expect(instance != null)
-                .expect(instance.key.equals("value"))
+                .expect(instance != null, "instance != null")
+                .expect(instance.key.equals("value"), "instance.key.equals(\"value\")")
                 .then("&atestGetClass Passed");
     }
 
@@ -92,8 +95,8 @@ public class GetterTester {
 
         new ResultChecker()
                 .fallBack("&etestGetConvertable Failed")
-                .expect(instance != null)
-                .expect(instance.key.equals("value"))
+                .expect(instance != null, "instance != null")
+                .expect(instance.key.equals("value"), "instance.key.equals(\"value\")")
                 .then("&atestGetConvertable Passed");
     }
 }

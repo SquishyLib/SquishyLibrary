@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.github.squishylib.database.example;
+package com.github.squishylib.database.test.example;
 
 import com.github.squishylib.configuration.ConfigurationSection;
 import com.github.squishylib.configuration.implementation.MemoryConfigurationSection;
@@ -28,39 +28,40 @@ import org.jetbrains.annotations.NotNull;
 public class ExampleRecord implements Record<ExampleRecord> {
 
     public static final @NotNull String IDENTIFIER_KEY = "identifier";
-    public static final @NotNull String VALUE_KEY = "value";
+    public static final @NotNull String STRING_KEY = "value";
 
     private final @Field(IDENTIFIER_KEY) @Primary @NotNull String identifier;
-    private @Field(VALUE_KEY) String value;
+    private @Field(STRING_KEY) String string;
 
     public ExampleRecord(@NotNull String identifier) {
         this.identifier = identifier;
-        this.value = "The default value.";
+        this.string = "The default value.";
     }
 
     public @NotNull String getIdentifier() {
         return this.identifier;
     }
 
-    public @NotNull String getValue() {
-        return this.value;
+    public @NotNull String getString() {
+        return this.string;
     }
 
-    public @NotNull ExampleRecord setValue(@NotNull String value) {
-        this.value = value;
+    public @NotNull ExampleRecord setString(@NotNull String value) {
+        this.string = string;
         return this;
     }
 
     @Override
     public @NotNull ConfigurationSection convert() {
         ConfigurationSection section = new MemoryConfigurationSection();
-        section.set(ExampleRecord.VALUE_KEY, this.value);
+        section.set(IDENTIFIER_KEY, this.identifier);
+        section.set(ExampleRecord.STRING_KEY, this.string);
         return new MemoryConfigurationSection();
     }
 
     @Override
     public @NotNull ExampleRecord convert(@NotNull ConfigurationSection section) {
-        this.value = section.getString(ExampleRecord.VALUE_KEY);
+        this.string = section.getString(ExampleRecord.STRING_KEY);
         return this;
     }
 }

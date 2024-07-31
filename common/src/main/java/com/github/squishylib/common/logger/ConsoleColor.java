@@ -24,7 +24,7 @@ import java.util.List;
 
 public enum ConsoleColor {
     RESET("\033[0m", "&r"),
-    WHITE("\033[0m", "&f"),
+    WHITE("\033[0;37m", "&f"),
     GRAY("\033[0;37m", "&7", "&8"),
     RED("\033[0;31m", "&c", "&4"),
     YELLOW("\033[0;33m", "&e", "&6"),

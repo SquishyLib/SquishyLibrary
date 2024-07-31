@@ -16,24 +16,26 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.github.squishylib.configuration;
+package com.github.squishylib.database.test;
 
-import org.jetbrains.annotations.NotNull;
+import com.github.squishylib.database.DatabaseBuilder;
+import com.github.squishylib.database.test.tester.DatabaseTester;
+import org.junit.jupiter.api.Test;
 
-public class ConfigurationTester {
+import java.time.Duration;
 
-    private @NotNull final PreparedConfigurationFactory factory;
+public class Tests {
 
-    public ConfigurationTester(@NotNull final PreparedConfigurationFactory factory) {
-        this.factory = factory;
-    }
-
-    public void testAll() {
-        this.testGetters();
-    }
-
-    public void testGetters() {
-        GetterTester tester = new GetterTester(factory);
+    @Test
+    public void testSqlite() throws InterruptedException {
+        DatabaseTester tester = new DatabaseTester(new DatabaseBuilder()
+                .setReconnectCooldown(Duration.ofMillis(1000))
+                .setWillReconnect(true)
+                .setTimeBetweenRequests(Duration.ofMillis(500))
+                .setMaxRequestsPending(20)
+                .setSqliteEnabled(true)
+                .setSqlitePath("src/test/resources/database.sqlite3")
+        );
         tester.testAll();
     }
 }

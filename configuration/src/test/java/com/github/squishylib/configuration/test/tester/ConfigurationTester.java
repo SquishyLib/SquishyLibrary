@@ -16,23 +16,25 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.github.squishylib.database.example;
+package com.github.squishylib.configuration.test.tester;
 
-import com.github.squishylib.database.Table;
-import com.github.squishylib.database.field.PrimaryFieldMap;
+import com.github.squishylib.configuration.PreparedConfigurationFactory;
 import org.jetbrains.annotations.NotNull;
 
-public class ExampleTable extends Table<ExampleRecord> {
+public class ConfigurationTester {
 
-    public static final @NotNull String TABLE_NAME = "example";
+    private @NotNull final PreparedConfigurationFactory factory;
 
-    @Override
-    public @NotNull String getName() {
-        return ExampleTable.TABLE_NAME;
+    public ConfigurationTester(@NotNull final PreparedConfigurationFactory factory) {
+        this.factory = factory;
     }
 
-    @Override
-    public @NotNull ExampleRecord createEmpty(@NotNull PrimaryFieldMap identifiers) {
-        return new ExampleRecord(identifiers.getString(ExampleRecord.IDENTIFIER_KEY));
+    public void testAll() {
+        this.testGetters();
+    }
+
+    public void testGetters() {
+        GetterTester tester = new GetterTester(factory);
+        tester.testAll();
     }
 }
