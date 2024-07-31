@@ -67,18 +67,20 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
         return this.database.addRequest(new Request<>(() -> {
 
             // Create the sql statement.
-            final String statement = "PRAGMA table_indo({table});"
+            final String statement = "PRAGMA table_info({table});"
                     .replace("{table}", this.table.getName());
 
             try {
 
                 // Create the prepared statement.
                 PreparedStatement preparedStatement = this.database.getConnection().prepareStatement(statement);
-                ResultSet results = preparedStatement.executeQuery(statement);
-                preparedStatement.close();
+                ResultSet results = preparedStatement.executeQuery();
 
                 // Are there no results?
-                if (results == null) return null;
+                if (results == null) {
+                    preparedStatement.close();
+                    return null;
+                }
 
                 // Create name list.
                 List<String> columnNames = new ArrayList<>();
@@ -88,6 +90,7 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
                     columnNames.add(results.getString("name"));
                 }
 
+                preparedStatement.close();
                 return columnNames;
 
             } catch (Exception exception) {
@@ -115,7 +118,7 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
                 return success;
 
             } catch (Exception exception) {
-                throw new DatabaseException(exception, this, "getFirstRecord", "statement=&e" + statement + "&r");
+                throw new DatabaseException(exception, this, "addColumn", "statement=&e" + statement + "&r");
             }
         }));
     }
@@ -132,15 +135,19 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
 
                 // Create the prepared statement.
                 PreparedStatement preparedStatement = this.database.getConnection().prepareStatement(statement);
-                ResultSet results = preparedStatement.executeQuery(statement);
-                preparedStatement.close();
+                ResultSet results = preparedStatement.executeQuery();
 
                 // Are there no results?
-                if (results == null) return null;
-                if (!results.next()) return null;
+                if (results == null || !results.next()) {
+                    preparedStatement.close();
+                    return null;
+                }
 
-                return this.createEmpty(this.getPrimaryFieldMap(results))
+                R record = this.createEmpty(this.getPrimaryFieldMap(results))
                         .convert(results);
+
+                preparedStatement.close();
+                return record;
 
             } catch (Exception exception) {
                 throw new DatabaseException(exception, this, "getFirstRecord", "statement=&e" + statement + "&r");

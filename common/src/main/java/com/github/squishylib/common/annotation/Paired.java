@@ -19,12 +19,16 @@
 package com.github.squishylib.common.annotation;
 
 import org.jetbrains.annotations.NotNull;
-import org.reflections.Reflections;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.annotation.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Indicates if an annotation should be pared
@@ -67,7 +71,7 @@ public @interface Paired {
         public static boolean test(final @NotNull String packageName) {
 
             // Loop though classes.
-            for (final Class<?> clazz : new Reflections(packageName).getTypesAnnotatedWith(Paired.class)) {
+            for (final Class<?> clazz : findAllClasses(packageName)) {
 
                 // Check class annotations.
                 Checker.test(clazz.getDeclaredAnnotations(), (clazz::isAnnotationPresent));
@@ -89,6 +93,25 @@ public @interface Paired {
             }
 
             return true;
+        }
+
+        private static Set<Class> findAllClasses(String packageName) {
+            InputStream stream = ClassLoader.getSystemClassLoader()
+                    .getResourceAsStream(packageName.replaceAll("[.]", "/"));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+            return reader.lines()
+                    .filter(line -> line.endsWith(".class"))
+                    .map(line -> getClass(line, packageName))
+                    .collect(Collectors.toSet());
+        }
+
+        private static Class getClass(String className, String packageName) {
+            try {
+                return Class.forName(packageName + "."
+                        + className.substring(0, className.lastIndexOf('.')));
+            } catch (ClassNotFoundException exception) {
+                throw new RuntimeException(exception);
+            }
         }
 
         public static boolean test(@NotNull Annotation[] annotations, @NotNull Lambda lambda) {

@@ -18,6 +18,7 @@
 
 package com.github.squishylib.database;
 
+import com.github.squishylib.common.logger.Level;
 import com.github.squishylib.common.logger.Logger;
 import com.github.squishylib.configuration.ConfigurationSection;
 import com.github.squishylib.configuration.implementation.MemoryConfigurationSection;
@@ -28,6 +29,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.xml.crypto.Data;
 import java.io.File;
 import java.time.Duration;
+import java.util.logging.ConsoleHandler;
 
 /**
  * <pre>{@code
@@ -89,6 +91,15 @@ public class DatabaseBuilder {
     public DatabaseBuilder(@NotNull ConfigurationSection section) {
         this.section = section;
         this.logger = new Logger("com.github.squishylib.database");
+    }
+
+    public @NotNull DatabaseBuilder setDebugMode(boolean isDebugMode) {
+        if (isDebugMode) {
+            this.getLogger().setLevel(Level.ALL);
+        } else {
+            this.getLogger().setLevel(Level.INFO);
+        }
+        return this;
     }
 
     public @NotNull Logger getLogger() {

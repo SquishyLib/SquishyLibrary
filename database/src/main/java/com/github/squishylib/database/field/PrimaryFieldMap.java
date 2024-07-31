@@ -51,7 +51,7 @@ public class PrimaryFieldMap {
     public @NotNull String getString(@NotNull final String fieldName) {
         final Object value = get(fieldName);
         if (!(value instanceof String)) {
-            throw new DatabaseException(this, "getString", "The primary key is ether null or not a string. fieldName=" + fieldName);
+            throw new DatabaseException(this, "getString", "The primary key is ether null or not a string. &efieldName=" + fieldName + " value=" + get(fieldName));
         }
         return (String) value;
     }

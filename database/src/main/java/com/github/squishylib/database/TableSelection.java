@@ -216,22 +216,22 @@ public interface TableSelection<R extends Record, D extends Database> {
 
     @SuppressWarnings("unchecked")
     default @NotNull List<RecordField> getFieldList() {
-        return this.createEmpty(new PrimaryFieldMap(null)).getFieldList();
+        return this.createEmpty(new PrimaryFieldMap("null")).getFieldList();
     }
 
     @SuppressWarnings("unchecked")
     default @NotNull List<String> getFieldNameList() {
-        return this.createEmpty(new PrimaryFieldMap(null)).getFieldNameList();
+        return this.createEmpty(new PrimaryFieldMap("null")).getFieldNameList();
     }
 
     @SuppressWarnings("unchecked")
     default @NotNull List<PrimaryField> getPrimaryFieldList() {
-        return this.createEmpty(new PrimaryFieldMap(null)).getPrimaryFieldList();
+        return this.createEmpty(new PrimaryFieldMap("null")).getPrimaryFieldList();
     }
 
     @SuppressWarnings("unchecked")
     default @NotNull List<ForeignField> getForeignFieldList() {
-        return this.createEmpty(new PrimaryFieldMap(null)).getForeignFieldList();
+        return this.createEmpty(new PrimaryFieldMap("null")).getForeignFieldList();
     }
 
     default @NotNull PrimaryFieldMap getPrimaryFieldMap(@NotNull ResultSet results) {

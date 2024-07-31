@@ -20,6 +20,7 @@ package com.github.squishylib.database.test.tester;
 
 import com.github.squishylib.common.logger.Logger;
 import com.github.squishylib.common.testing.ResultChecker;
+import com.github.squishylib.common.testing.Testing;
 import com.github.squishylib.database.Database;
 import com.github.squishylib.database.DatabaseBuilder;
 import com.github.squishylib.database.test.example.ExampleTable;
@@ -33,6 +34,9 @@ public class DatabaseTester {
     public DatabaseTester(@NotNull DatabaseBuilder builder) {
         this.builder = builder;
         this.logger = builder.getLogger();
+
+        // Set up console logger.
+        Testing.setupConsoleLogger();
     }
 
     public void testAll() {
@@ -62,6 +66,7 @@ public class DatabaseTester {
         database.createTable(new ExampleTable());
         new ResultChecker("testCreateTable")
                 .expect(database.isConnected(), "database.isConnected()")
-                .expect(database.getAmountOfTables() == 1, "database.getTable(ExampleTable.class) != null");
+                .expect(database.getAmountOfTables() == 1, "database.getTable(ExampleTable.class) != null")
+                .expect(database.getTable(ExampleTable.class).getColumnNames().waitForComplete().size() == 2, "Are there the correct number of columns?");
     }
 }

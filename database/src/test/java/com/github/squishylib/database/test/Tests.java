@@ -35,6 +35,7 @@ public class Tests {
                 .setMaxRequestsPending(20)
                 .setSqliteEnabled(true)
                 .setSqlitePath("src/test/resources/database.sqlite3")
+                .setDebugMode(true)
         );
         tester.testAll();
     }

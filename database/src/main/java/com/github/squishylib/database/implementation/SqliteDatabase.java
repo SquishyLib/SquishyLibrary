@@ -55,8 +55,6 @@ public class SqliteDatabase extends DatabaseRequestQueue implements Database {
                           long maxRequestPending,
                           @NotNull File file) {
 
-        super(timeBetweenRequests, maxRequestPending);
-
         this.status = DatabaseStatus.DISCONNECTED;
         this.logger = logger.extend(" [SQLiteDatabase]");
         this.reconnectCooldown = reconnectCooldown;
@@ -66,6 +64,8 @@ public class SqliteDatabase extends DatabaseRequestQueue implements Database {
         this.file = file;
 
         this.tableList = new ArrayList<>();
+
+        this.logger.debug("Initialized sqlite database class.");
     }
 
     @Override
@@ -76,23 +76,45 @@ public class SqliteDatabase extends DatabaseRequestQueue implements Database {
     @Override
     protected boolean reconnectIfDisconnected() {
 
+        // Create this methods logger.
+        final Logger tempLogger = this.logger.extend(" &b.reconnectIfDisconnected() &7SqliteDatabase.java:77 &7");
+
         try {
+
+            tempLogger.debug("Checking if connected to the database. result=" + this.isConnected());
+
             // Is the database connected?
             if (this.isConnected()) return true;
 
             // Should the database reconnect?
             if (this.willReconnect) {
+
+                tempLogger.debug("Attempting to reconnect.");
+
+                // Attempt to reconnect.
+                this.status = DatabaseStatus.RECONNECTING;
                 this.connect();
 
                 // Is the database now connected?
-                if (this.isConnected()) return true;
+                if (this.isConnected()) {
+                    tempLogger.debug("Database is now connected.");
+                    return true;
+                }
 
                 // Otherwise, it will try to reconnect,
-                // so here we wait till connected.
-
+                // so here we wait till it has reconnected.
                 while (true) {
+
+                    tempLogger.debug("Checking if connected in &b" + this.getReconnectCooldown().toMillis() + "ms.");
+
+                    // Wait the cooldown time.
                     Thread.sleep(this.getReconnectCooldown().toMillis());
-                    if (this.isConnected()) return true;
+
+                    // Check if connected.
+                    if (this.isConnected()) {
+                        tempLogger.debug("Database is now connected.");
+                        return true;
+                    }
                 }
             }
 
@@ -116,11 +138,13 @@ public class SqliteDatabase extends DatabaseRequestQueue implements Database {
                 return this.status;
             }
 
+            // Otherwise, status is connected.
             this.status = DatabaseStatus.CONNECTED;
 
         } catch (SQLException exception) {
             this.status = DatabaseStatus.DISCONNECTED;
         }
+
         return this.status;
     }
 
@@ -170,31 +194,76 @@ public class SqliteDatabase extends DatabaseRequestQueue implements Database {
     @Override
     public @NotNull Database createTable(@NotNull Table<?> table) {
 
+        // Create this methods logger.
+        final Logger tempLogger = this.logger.extend(" &b.createTable() &7SqliteDatabase.java:195 table=" + table.getName() + "&7");
+        tempLogger.debug("Creating table.");
+
+        // Link the table to this database.
+        table.setDatabase(this);
+
         // Add the table to the list.
         this.tableList.add(table);
 
-        // Does the table exist?
+        // Does the table already exist in the database?
         if (this.hasTable(table.getName())) {
 
-            // Create a new record.
-            Record<?> record = table.createEmpty(new PrimaryFieldMap("temp"));
+            tempLogger.debug("Table already exists in database.");
 
-            // Get the fields and the current loaded fields.
-            final List<RecordField> fields = record.getFieldList();
-            final List<String> currentFields = table.getColumnNames().waitForComplete();
-
-            // Get the list of missing fields.
-            final List<RecordField> missingFields = fields.stream()
-                    .filter(field -> !currentFields.contains(field.getName()))
-                    .toList();
+            // The fields that are missing from the databases table.
+            final List<RecordField> missingFields = this.getMissingFields(table);
 
             // Are there no missing fields?
-            if (!missingFields.isEmpty()) return this;
+            if (missingFields.isEmpty()) {
+                tempLogger.debug("No missing fields.");
+                return this;
+            }
+
+            tempLogger.debug("Missing fields=" + missingFields.stream().map(RecordField::getName).toList());
 
             // Otherwise, add the missing columns.
-            missingFields.forEach(table::addColumn);
+            missingFields.forEach(field -> {
+                tempLogger.debug("Adding missing field &e" + field.getName() + ".");
+                table.addColumn(field).waitForComplete();
+            });
+            return this;
         }
-        return this;
+
+        // Create the sql create table statement.
+        final String statement = this.createTableStatement(table);
+
+        tempLogger.debug("Executing create table statement &b" + statement);
+
+        try {
+
+            // Execute the statement.
+            PreparedStatement preparedStatement = this.connection.prepareStatement(statement);
+            preparedStatement.execute();
+            return this;
+
+        } catch (Exception exception) {
+            throw new DatabaseException(exception, this, "createTable", "Failed to create the table &7" + table.getName() + ". &estatement=" + statement);
+        }
+    }
+
+    private @NotNull List<RecordField> getMissingFields(@NotNull Table<?> table) {
+
+        // Create this methods logger.
+        final Logger tempLogger = this.logger.extend(" &b.getMissingFields() &7SqliteDatabase.java:248 table=" + table.getName() + "&7");
+
+        // The fields that should be included.
+        final List<RecordField> fields = table.getFieldList();
+
+        tempLogger.debug("Fields that should be included= " + fields.stream().map(RecordField::getName).toList());
+
+        // The current fields.
+        final List<String> currentFields = table.getColumnNames().waitForComplete();
+
+        tempLogger.debug("Current fields= " + currentFields);
+
+        // The missing fields.
+        return fields.stream()
+                .filter(field -> !currentFields.contains(field.getName()))
+                .toList();
     }
 
     private @NotNull String createTableStatement(@NotNull Table<?> table) {
@@ -276,27 +345,34 @@ public class SqliteDatabase extends DatabaseRequestQueue implements Database {
     @Override
     public @NotNull CompletableFuture<DatabaseStatus> connectAsync() {
 
+        // Create this methods logger.
+        final Logger tempLogger = this.logger.extend(" &bconnectAsync() &7SqliteDatabase.java:346");
+        tempLogger.debug("Connecting to the database. currentStatus=" + this.status);
+
         // Create the future result.
         final CompletableFuture<DatabaseStatus> future = new CompletableFuture<>();
 
         new Thread(() -> {
             try {
 
-                this.logger.info("Attempting to connect to the SQLite database.");
+                this.logger.info("Attempting to connect to the &bsqlite database.");
+                tempLogger.debug("Initiating drivers.");
 
                 // Initiate drivers.
                 Class.forName("org.sqlite.JDBC");
 
                 // Create directory.
+                tempLogger.debug("Creating parent directories.");
                 new File(this.file.getParent()).mkdirs();
 
                 // Create database connection url.
                 String url = this.getUrl();
+                tempLogger.debug("Connecting with url &b" + url);
 
                 // Create a connection to the database.
                 this.connection = DriverManager.getConnection(url);
 
-                this.logger.info("Connected successfully to SQLite database.");
+                this.logger.info("Connected successfully to the &bsqlite database.");
 
                 // Set status and future.
                 this.status = DatabaseStatus.CONNECTED;
@@ -305,8 +381,12 @@ public class SqliteDatabase extends DatabaseRequestQueue implements Database {
 
             } catch (Exception exception) {
 
+                tempLogger.debug("Exception occurred while trying to connect.");
+
                 // Check if the database should attempt to reconnect later.
                 if (this.willReconnect) {
+
+                    tempLogger.debug("Attempting to reconnect in &b" + this.reconnectCooldown.toMillis() + "ms.");
 
                     // Attempt to reconnect to the database.
                     this.attemptReconnect();
@@ -319,6 +399,8 @@ public class SqliteDatabase extends DatabaseRequestQueue implements Database {
                                     + this.reconnectCooldown.toSeconds() + "s."
                     );
                 }
+
+                tempLogger.debug("The field willReconnect is false, disconnected.");
 
                 // Otherwise, disconnect.
                 this.status = DatabaseStatus.DISCONNECTED;
@@ -353,18 +435,34 @@ public class SqliteDatabase extends DatabaseRequestQueue implements Database {
     @Override
     public @NotNull CompletableFuture<DatabaseStatus> disconnectAsync(boolean reconnect) {
 
+        // Create this methods logger.
+        final Logger tempLogger = this.logger.extend(" &b.disconnectAsync() &7SqliteDatabase.java:433");
+        tempLogger.debug("Disconnecting from the database. &bcurrentStatus=" + this.status + " reconnect=" + reconnect);
+
         // Create the future result.
         final CompletableFuture<DatabaseStatus> future = new CompletableFuture<>();
 
         new Thread(() -> {
             try {
 
-                // Close connection.
-                this.connection.close();
-                this.status = DatabaseStatus.DISCONNECTED;
+                if (this.status.equals(DatabaseStatus.RECONNECTING)) {
+                    throw new DatabaseException(this, "disconnectAsync", "Attempted to disconnect when reconnecting.");
+                }
+
+                // Check if already disconnected.
+                if (this.isDisconnected() && status.equals(DatabaseStatus.DISCONNECTED)) {
+                    tempLogger.debug("Already disconnected.");
+
+                } else {
+                    // Close connection.
+                    this.connection.close();
+                    this.status = DatabaseStatus.DISCONNECTED;
+                    tempLogger.debug("Connection closed.");
+                }
 
                 // Should we reconnect?
                 if (reconnect) {
+                    tempLogger.debug("Reconnecting.");
                     this.status = DatabaseStatus.RECONNECTING;
                     this.connect();
                 }
@@ -374,8 +472,11 @@ public class SqliteDatabase extends DatabaseRequestQueue implements Database {
 
             } catch (Exception exception) {
 
+                tempLogger.debug("An error occurred while disconnecting.");
+
                 // Should we reconnect?
                 if (reconnect) {
+                    tempLogger.debug("Reconnecting.");
                     this.status = DatabaseStatus.RECONNECTING;
                     this.connect();
                 }
@@ -384,7 +485,7 @@ public class SqliteDatabase extends DatabaseRequestQueue implements Database {
                 future.complete(this.status);
 
                 throw new DatabaseException(exception, this, "disconnectAsync",
-                        "Error while disconnecting. reconnect=" + reconnect
+                        "Error while disconnecting. &ereconnect=" + reconnect
                 );
             }
         }).start();
