@@ -23,6 +23,7 @@ import com.github.squishylib.common.testing.ResultChecker;
 import com.github.squishylib.common.testing.Testing;
 import com.github.squishylib.database.Database;
 import com.github.squishylib.database.DatabaseBuilder;
+import com.github.squishylib.database.test.example.ExampleRecord;
 import com.github.squishylib.database.test.example.ExampleTable;
 import org.jetbrains.annotations.NotNull;
 
@@ -43,6 +44,7 @@ public class DatabaseTester {
         this.testConnection();
         this.testReconnection();
         this.testCreateTable();
+        this.testInsertAndGetFirst();
     }
 
     public void testConnection() {
@@ -70,7 +72,16 @@ public class DatabaseTester {
                 .expect(database.getTable(ExampleTable.class).getColumnNames().waitForComplete().size() == 2, "Are there the correct number of columns?");
     }
 
-    public void testGetFirstRecord() {
-
+    public void testInsertAndGetFirst() {
+        this.logger.info("&aRunning test: &ftestInsertAndGetFirst");
+        final Database database = this.builder.create().connect().createTable(new ExampleTable());
+        database.getTable(ExampleTable.class).insertRecord(
+                new ExampleRecord("testInsertAndGetFirst").setString("testInsertAndGetFirst")
+        );
+        ExampleRecord record = database.getTable(ExampleTable.class).getFirstRecord().waitForComplete();
+        new ResultChecker("testInsertAndGetFirst")
+                .expect(record != null, "record != null")
+                .expect(record.getIdentifier().equals("testInsertAndGetFirst"), "record.getIdentifier().equals(\"testInsertAndGetFirst\")")
+                .expect(record.getString().equals("testInsertAndGetFirst"), "record.getString().equals(\"testInsertAndGetFirst\")");
     }
 }

@@ -23,18 +23,21 @@ import com.github.squishylib.database.test.tester.DatabaseTester;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
+import java.util.UUID;
 
 public class Tests {
 
     @Test
     public void testSqlite() throws InterruptedException {
+        UUID uuid = UUID.randomUUID();
+
         DatabaseTester tester = new DatabaseTester(new DatabaseBuilder()
                 .setReconnectCooldown(Duration.ofMillis(1000))
                 .setWillReconnect(true)
                 .setTimeBetweenRequests(Duration.ofMillis(500))
                 .setMaxRequestsPending(20)
                 .setSqliteEnabled(true)
-                .setSqlitePath("src/test/resources/database.sqlite3")
+                .setSqlitePath("src/test/resources/{uuid}.sqlite3".replace("{uuid}", uuid.toString()))
                 .setDebugMode(true)
         );
         tester.testAll();

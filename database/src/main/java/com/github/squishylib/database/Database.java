@@ -166,7 +166,7 @@ public interface Database {
      * @param <R>   The type of record being using.
      * @return The table selection implementation.
      */
-    <R extends Record> @NotNull TableSelection<R, ?> createTableSelection(@NotNull Table<R> table);
+    <R extends Record<R>> @NotNull TableSelection<R, ?> createTableSelection(@NotNull Table<R> table);
 
     /**
      * Used to attempt to connect to the database.

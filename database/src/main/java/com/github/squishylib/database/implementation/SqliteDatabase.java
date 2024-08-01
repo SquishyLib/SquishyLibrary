@@ -338,7 +338,7 @@ public class SqliteDatabase extends DatabaseRequestQueue implements Database {
     }
 
     @Override
-    public @NotNull <R extends Record> TableSelection<R, ?> createTableSelection(@NotNull Table<R> table) {
+    public @NotNull <R extends Record<R>> TableSelection<R, ?> createTableSelection(@NotNull Table<R> table) {
         return new SqliteTableSelection<>(this, table);
     }
 

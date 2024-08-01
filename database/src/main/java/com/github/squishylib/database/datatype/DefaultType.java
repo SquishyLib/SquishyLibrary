@@ -39,7 +39,8 @@ public class DefaultType implements DataType<Map<String, Object>> {
     }
 
     @Override
-    public @NotNull String toSqlite(@Nullable Map<String, Object> object) {
+    public @NotNull String toSqlite(@Nullable Object object) {
+        if (!(object instanceof Map)) throw new DatabaseException(this, "toSqlite", "Object is not a map. object=" + object);
         return new Gson().toJson(object);
     }
 

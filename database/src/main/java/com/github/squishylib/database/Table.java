@@ -21,6 +21,7 @@ package com.github.squishylib.database;
 import com.github.squishylib.common.CompletableFuture;
 import com.github.squishylib.database.field.RecordField;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
@@ -30,7 +31,7 @@ import java.util.Optional;
  *
  * @param <R> The type of record in the table.
  */
-public abstract class Table<R extends Record> implements TableSelection<R, Database> {
+public abstract class Table<R extends Record<R>> implements TableSelection<R, Database> {
 
     private Database database;
 
@@ -56,12 +57,12 @@ public abstract class Table<R extends Record> implements TableSelection<R, Datab
     }
 
     @Override
-    public @NotNull CompletableFuture<@NotNull R> getFirstRecord() {
+    public @NotNull CompletableFuture<@Nullable R> getFirstRecord() {
         return this.database.createTableSelection(this).getFirstRecord();
     }
 
     @Override
-    public @NotNull CompletableFuture<@NotNull R> getFirstRecord(@NotNull Query query) {
+    public @NotNull CompletableFuture<@Nullable R> getFirstRecord(@NotNull Query query) {
         return this.database.createTableSelection(this).getFirstRecord(query);
     }
 

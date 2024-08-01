@@ -30,7 +30,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
 import java.util.Optional;
 
 public class SqliteTableSelection<R extends Record<R>> implements TableSelection<R, SqliteDatabase> {
@@ -229,10 +229,87 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
 
     private boolean addRecord(@NotNull R record) {
 
+        // Get the list of fields.
+        final Map<RecordField, Object> map = record.getFieldValues();
+
+        // Build the statement.
+        StringBuilder builder = new StringBuilder("INSERT INTO `{table}` ("
+                .replace("{table}", this.table.getName()));
+
+        // Append record fields and delete the last ", ".
+        map.keySet().forEach(field -> builder.append(field.getName()).append(", "));
+        builder.replace(builder.length() - 2, builder.length(), "");
+
+        // Add next part.
+        builder.append(") VALUES (");
+
+        // Add the wild cards and delete the last ", ".
+        map.keySet().forEach(field -> builder.append("?, "));
+        builder.replace(builder.length() - 2, builder.length(), "");
+
+        // Finish the statement.
+        builder.append(");");
+
+        try {
+
+            // Create the prepared statement.
+            PreparedStatement statement = this.database.getConnection().prepareStatement(builder.toString());
+
+            // Add the values.
+            int index = 0;
+            for (final Map.Entry<RecordField, Object> entry : map.entrySet()) {
+                statement.setObject(index, entry.getKey());
+                index++;
+            }
+
+            boolean success = statement.execute();
+            statement.close();
+            return success;
+
+        } catch (Exception exception) {
+            throw new DatabaseException(exception, this, "addRecord", "statement=&e" + builder + "&r");
+        }
     }
 
     private boolean updateRecord(@NotNull R record) {
 
+        // Get the list of fields.
+        final Map<RecordField, Object> map = record.getFieldValues();
+
+        // Create the statement.
+        StringBuilder builder = new StringBuilder("UPDATE `{table}` SET "
+                .replace("{table}", this.table.getName()));
+
+        // Add each condition.
+        map.forEach((field, value) -> builder.append("{field} = ?, "
+                .replace("{field}", field.getName())));
+
+        // Remove the last ", ".
+        builder.replace(builder.length() - 2, builder.length(), "");
+        builder.append(") WHERE {where};".replace(
+                "{where}",
+                new Query().match(record).buildSqliteWhere()
+        ));
+
+        try {
+
+            // Create the prepared statement.
+            PreparedStatement statement = this.database.getConnection().prepareStatement(builder.toString());
+
+            // Add the values.
+            int index = 0;
+            for (final Map.Entry<RecordField, Object> entry : map.entrySet()) {
+                statement.setObject(index, entry.getKey());
+                index++;
+            }
+
+            boolean success = statement.execute();
+            statement.close();
+            return success;
+
+        } catch (Exception exception) {
+            throw new DatabaseException(exception, this, "updateRecord", "statement=&e" + builder + "&r");
+        }
     }
 
     @Override

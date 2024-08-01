@@ -37,7 +37,7 @@ public interface DataType<T> {
     String getSqliteName();
 
     @NotNull
-    String toSqlite(@Nullable T object);
+    String toSqlite(@Nullable Object object);
 
     @Nullable
     T fromSqlite(@Nullable ResultSet results, @NotNull String fieldName);
