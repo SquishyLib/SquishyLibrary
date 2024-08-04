@@ -64,7 +64,6 @@ public class SqliteDatabase extends DatabaseRequestQueue implements Database {
         this.file = file;
 
         this.tableList = new ArrayList<>();
-
         this.logger.debug("Initialized sqlite database class.");
     }
 

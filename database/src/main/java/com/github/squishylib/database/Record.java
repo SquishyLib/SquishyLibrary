@@ -146,7 +146,7 @@ public interface Record<R extends Record<R>> extends ConfigurationConvertible<R>
         final PrimaryFieldMap map = new PrimaryFieldMap(null);
 
         for (final PrimaryField field : this.getPrimaryFieldList()) {
-            map.set(field.getName(), section.get(field.getName(), null));
+            map.set(field, section.get(field.getName(), null));
         }
 
         return map;
@@ -187,6 +187,7 @@ public interface Record<R extends Record<R>> extends ConfigurationConvertible<R>
     default @NotNull R convert(@NotNull ResultSet results) {
         ConfigurationSection section = new MemoryConfigurationSection();
 
+        // Create the configuration section.
         for (String fieldName : this.getFieldNameList()) {
             try {
                 section.set(fieldName, results.getObject(fieldName));
@@ -195,6 +196,8 @@ public interface Record<R extends Record<R>> extends ConfigurationConvertible<R>
             }
         }
 
+        // Convert this object using the configuration section.
+        this.convert(section);
         return (R) this;
     }
 }

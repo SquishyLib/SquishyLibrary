@@ -47,16 +47,18 @@ public class ExampleRecord implements Record<ExampleRecord> {
     }
 
     public @NotNull ExampleRecord setString(@NotNull String value) {
-        this.string = string;
+        this.string = value;
         return this;
     }
 
     @Override
     public @NotNull ConfigurationSection convert() {
         ConfigurationSection section = new MemoryConfigurationSection();
+
         section.set(IDENTIFIER_KEY, this.identifier);
         section.set(ExampleRecord.STRING_KEY, this.string);
-        return new MemoryConfigurationSection();
+
+        return section;
     }
 
     @Override

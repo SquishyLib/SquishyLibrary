@@ -19,6 +19,7 @@
 package com.github.squishylib.database.field;
 
 import com.github.squishylib.database.DatabaseException;
+import com.github.squishylib.database.datatype.DataType;
 import com.github.squishylib.database.datatype.DefaultType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -61,7 +62,12 @@ public class PrimaryFieldMap {
     }
 
     public @Nullable PrimaryFieldMap set(@NotNull final String fieldName, @NotNull final Object value) {
-        this.map.put(new PrimaryField(fieldName, new DefaultType()), value);
+        this.map.put(new PrimaryField(fieldName, DataType.of(value.getClass())), value);
+        return this;
+    }
+
+    public @Nullable PrimaryFieldMap set(@NotNull final PrimaryField field, @NotNull final Object value) {
+        this.map.put(field, value);
         return this;
     }
 }

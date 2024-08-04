@@ -19,6 +19,7 @@
 package com.github.squishylib.database.implementation;
 
 import com.github.squishylib.common.CompletableFuture;
+import com.github.squishylib.common.logger.Logger;
 import com.github.squishylib.database.Record;
 import com.github.squishylib.database.*;
 import com.github.squishylib.database.field.PrimaryFieldMap;
@@ -67,11 +68,16 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
     public @NotNull CompletableFuture<@NotNull List<String>> getColumnNames() {
         return this.database.addRequest(new Request<>(() -> {
 
+            // Create this requests logger.
+            final Logger tempLogger = this.database.getLogger().extend(" &b.getColumnNames() &7SqliteTableSelection.java:68");
+
             // Create the sql statement.
             final String statement = "PRAGMA table_info({table});"
                     .replace("{table}", this.table.getName());
 
             try {
+
+                tempLogger.debug("&d⎡ &7Executing statement &b" + statement);
 
                 // Create the prepared statement.
                 PreparedStatement preparedStatement = this.database.getConnection().prepareStatement(statement);
@@ -79,6 +85,7 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
 
                 // Are there no results?
                 if (results == null) {
+                    tempLogger.debug("&d⎣ &7Result was null.");
                     preparedStatement.close();
                     return null;
                 }
@@ -88,9 +95,12 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
 
                 // Loop though results.
                 while (results.next()) {
-                    columnNames.add(results.getString("name"));
+                    final String columnName = results.getString("name");
+                    tempLogger.debug("&d│ &7Adding column name &b" + columnName);
+                    columnNames.add(columnName);
                 }
 
+                tempLogger.debug("&d⎣ &7Final result is &b" + columnNames);
                 preparedStatement.close();
                 return columnNames;
 
@@ -104,6 +114,9 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
     public @NotNull CompletableFuture<@NotNull Boolean> addColumn(@NotNull RecordField field) {
         return this.database.addRequest(new Request<>(() -> {
 
+            // Create this requests logger.
+            final Logger tempLogger = this.database.getLogger().extend(" &b.addColumn() &7SqliteTableSelection.java:114");
+
             // Create statement.
             final String statement = "ALTER TABLE {table} ADD COLUMN {key} {type};"
                     .replace("{table}", this.getName())
@@ -113,9 +126,12 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
             try {
 
                 // Execute statement.
+                tempLogger.debug("&d⎡ &7Executing statement &b" + statement);
                 PreparedStatement preparedStatement = this.database.getConnection().prepareStatement(statement);
                 boolean success = preparedStatement.execute();
+
                 preparedStatement.close();
+                tempLogger.debug("&d⎣ &7Success &b" + success);
                 return success;
 
             } catch (Exception exception) {
@@ -128,6 +144,9 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
     public @NotNull CompletableFuture<R> getFirstRecord() {
         return this.database.addRequest(new Request<>(() -> {
 
+            // Create this requests logger.
+            final Logger tempLogger = this.database.getLogger().extend(" &b.getFirstRecord() &7SqliteTableSelection.java:144");
+
             // Create the sql statement.
             final String statement = "SELECT * FROM {table} LIMIT 1"
                     .replace("{table}", this.table.getName());
@@ -135,11 +154,13 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
             try {
 
                 // Create the prepared statement.
+                tempLogger.debug("&d⎡ &7Executing statement &b" + statement);
                 PreparedStatement preparedStatement = this.database.getConnection().prepareStatement(statement);
                 ResultSet results = preparedStatement.executeQuery();
 
                 // Are there no results?
                 if (results == null || !results.next()) {
+                    tempLogger.debug("&d⎣ &7Result was null.");
                     preparedStatement.close();
                     return null;
                 }
@@ -148,6 +169,7 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
                         .convert(results);
 
                 preparedStatement.close();
+                tempLogger.debug("&d⎣ &7Final result is &b" + record.convertToMap());
                 return record;
 
             } catch (Exception exception) {
@@ -163,20 +185,25 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
 
     private @Nullable R getFirstRecordSync(@NotNull Query query) {
 
+        // Create this requests logger.
+        final Logger tempLogger = this.database.getLogger().extend(" &b.getFirstRecordSync() &7SqliteTableSelection.java:182");
+
         // Create the sql statement.
-        final String statement = "SELECT * FROM {table} LIMIT 1 WHERE {where};"
+        final String statement = "SELECT * FROM {table} WHERE {where} LIMIT 1;"
                 .replace("{table}", this.table.getName())
                 .replace("{where}", query.buildSqliteWhere());
 
         try {
 
             // Create the prepared statement.
+            tempLogger.debug("&d⎡ &7Executing statement &b" + statement);
             PreparedStatement preparedStatement = this.database.getConnection().prepareStatement(statement);
             query.appendSqlite(preparedStatement);
             ResultSet results = preparedStatement.executeQuery();
 
             // Are there no results?
             if (results == null || !results.next()) {
+                tempLogger.debug("&d⎣ &7Result was null.");
                 preparedStatement.close();
                 return null;
             }
@@ -185,10 +212,11 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
                     .convert(results);
 
             preparedStatement.close();
+            tempLogger.debug("&d⎣ &7Final result is &b" + record.convertToMap());
             return record;
 
         } catch (Exception exception) {
-            throw new DatabaseException(exception, this, "getFirstRecord", "statement=&e" + statement + "&r");
+            throw new DatabaseException(exception, this, "getFirstRecordSync", "statement=&e" + statement + "&r");
         }
     }
 
@@ -229,8 +257,12 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
 
     private boolean addRecord(@NotNull R record) {
 
+        // Create this requests logger.
+        final Logger tempLogger = this.database.getLogger().extend(" &b.addRecord() &7SqliteTableSelection.java:258");
+
         // Get the list of fields.
         final Map<RecordField, Object> map = record.getFieldValues();
+        tempLogger.debug("&d⎡ &7Field map &b" + map);
 
         // Build the statement.
         StringBuilder builder = new StringBuilder("INSERT INTO `{table}` ("
@@ -256,12 +288,14 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
             PreparedStatement statement = this.database.getConnection().prepareStatement(builder.toString());
 
             // Add the values.
-            int index = 0;
+            int index = 1;
             for (final Map.Entry<RecordField, Object> entry : map.entrySet()) {
-                statement.setObject(index, entry.getKey());
+                tempLogger.debug("&d│ &7Set wild card &b" + index + " to " + entry.getValue());
+                statement.setObject(index, entry.getValue());
                 index++;
             }
 
+            tempLogger.debug("&d⎣ &7Execute statement &b" + builder);
             boolean success = statement.execute();
             statement.close();
             return success;
@@ -273,8 +307,12 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
 
     private boolean updateRecord(@NotNull R record) {
 
+        // Create this requests logger.
+        final Logger tempLogger = this.database.getLogger().extend(" &b.updateRecord() &7SqliteTableSelection.java:308");
+
         // Get the list of fields.
         final Map<RecordField, Object> map = record.getFieldValues();
+        tempLogger.debug("&d⎡ &7Field map &b" + map);
 
         // Create the statement.
         StringBuilder builder = new StringBuilder("UPDATE `{table}` SET "
@@ -299,10 +337,12 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
             // Add the values.
             int index = 0;
             for (final Map.Entry<RecordField, Object> entry : map.entrySet()) {
+                tempLogger.debug("&d│ &7Set wild card &b" + index + " to " + entry.getKey());
                 statement.setObject(index, entry.getKey());
                 index++;
             }
 
+            tempLogger.debug("&d⎣ &7Execute statement &b" + builder);
             boolean success = statement.execute();
             statement.close();
             return success;
