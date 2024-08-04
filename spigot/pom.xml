@@ -12,7 +12,7 @@
 
     <groupId>com.github.squishylib</groupId>
     <artifactId>spigot</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.1</version>
     <packaging>jar</packaging>
 
     <name>spigot</name>

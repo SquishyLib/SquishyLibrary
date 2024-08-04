@@ -367,7 +367,7 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
 
         // Remove the last ", ".
         builder.replace(builder.length() - 2, builder.length(), "");
-        builder.append(") WHERE {where};".replace(
+        builder.append(" WHERE {where};".replace(
                 "{where}",
                 new Query().match(record).buildSqliteWhere()
         ));
