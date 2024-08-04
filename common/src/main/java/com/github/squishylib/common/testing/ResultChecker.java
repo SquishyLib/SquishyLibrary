@@ -96,7 +96,7 @@ public class ResultChecker {
 
         this.runFallBack();
         this.logger.info("&eTest failed: &f" + this.name + " &e" + subName + ". &7{value1=" + value1 + ", &7value2=" + value2 + "}");
-        Assertions.assertEquals(value1, value2);
+        Assertions.assertEquals(value2, value1);
         return this;
     }
 

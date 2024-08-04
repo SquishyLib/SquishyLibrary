@@ -19,8 +19,10 @@
 package com.github.squishylib.common;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Adds option to wait for the future to complete without
@@ -30,11 +32,31 @@ import java.util.concurrent.CancellationException;
  */
 public class CompletableFuture<T> extends java.util.concurrent.CompletableFuture<T> {
 
-    public T waitForComplete() {
+    /**
+     * Used to wait for the completable future to finish.
+     * If the completable future was canceled this will return null.
+     *
+     * @return The result.
+     */
+    public @Nullable T waitAndGet() {
         try {
             return this.get();
         } catch (CancellationException exception) {
             return null;
+        } catch (Exception exception) {
+            throw new RuntimeException(exception);
+        }
+    }
+
+    /**
+     * Used to wait for the completable future to finish.
+     * If the completable future was canceled this will throw a runtime error.
+     *
+     * @return The result.
+     */
+    public @NotNull T waitAndGetNotNull() {
+        try {
+            return this.get();
         } catch (Exception exception) {
             throw new RuntimeException(exception);
         }

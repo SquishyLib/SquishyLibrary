@@ -19,19 +19,16 @@
 package com.github.squishylib.database.datatype;
 
 import com.github.squishylib.database.DatabaseException;
-import com.google.gson.Gson;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.sql.ResultSet;
-import java.util.HashMap;
-import java.util.Map;
 
-public class DefaultType implements DataType<Object> {
+public class StringType implements DataType<String> {
 
     @Override
     public boolean isType(@NotNull Object value) {
-        return true;
+        return value instanceof String;
     }
 
     @Override
@@ -41,15 +38,14 @@ public class DefaultType implements DataType<Object> {
 
     @Override
     public @NotNull String toSqlite(@Nullable Object object) {
-        final Map<String, Object> map = new HashMap<>();
-        map.put("value", object);
-        return new Gson().toJson(map);
+        if (!(object instanceof String)) throw new DatabaseException(this, "toSqlite", "Object is not a instance of a string.");
+        return (String) object;
     }
 
     @Override
-    public @Nullable Object fromSqlite(@Nullable ResultSet results, @NotNull String fieldName) {
+    public @Nullable String fromSqlite(@Nullable ResultSet results, @NotNull String fieldName) {
         try {
-            return new Gson().fromJson(results.getString(fieldName), Map.class).get("value");
+            return results.getString(fieldName);
         } catch (Exception exception) {
             throw new DatabaseException(exception, this, "fromSqlite",
                     "Unable to get the result value from the result set as a string. fieldName=" + fieldName

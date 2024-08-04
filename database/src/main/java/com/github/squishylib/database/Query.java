@@ -18,6 +18,7 @@
 
 package com.github.squishylib.database;
 
+import com.github.squishylib.common.logger.Logger;
 import com.github.squishylib.database.field.PrimaryField;
 import com.github.squishylib.database.field.RecordField;
 import org.jetbrains.annotations.NotNull;
@@ -95,11 +96,12 @@ public class Query {
         return builder.toString();
     }
 
-    public void appendSqlite(@NotNull PreparedStatement statement) {
+    public void setSqliteWildCards(PreparedStatement statement, Logger logger) {
         try {
 
             int index = 1;
             for (Map.Entry<String, Object> map : this.patterns.entrySet()) {
+                logger.debug("&d│ &7Set wild card &b" + index + " to " + map.getValue());
                 statement.setObject(index, map.getValue());
                 index++;
             }

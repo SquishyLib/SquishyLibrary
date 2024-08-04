@@ -66,13 +66,13 @@ public class TomlConfiguration extends MemoryConfigurationSection implements Con
 
     @Override
     public @NotNull Configuration load() {
-        this.loadAsync().waitForComplete();
+        this.loadAsync().waitAndGet();
         return this;
     }
 
     @Override
     public boolean loadWithResult() {
-        return this.loadAsync().waitForComplete();
+        return this.loadAsync().waitAndGet();
     }
 
     @Override
@@ -132,13 +132,13 @@ public class TomlConfiguration extends MemoryConfigurationSection implements Con
 
     @Override
     public @NotNull Configuration save() {
-        this.saveAsync().waitForComplete();
+        this.saveAsync().waitAndGet();
         return this;
     }
 
     @Override
     public boolean saveWithResult() {
-        return this.saveAsync().waitForComplete();
+        return this.saveAsync().waitAndGet();
     }
 
     @Override

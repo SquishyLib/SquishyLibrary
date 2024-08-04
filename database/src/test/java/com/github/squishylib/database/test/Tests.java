@@ -28,7 +28,7 @@ import java.util.UUID;
 public class Tests {
 
     @Test
-    public void testSqlite() throws InterruptedException {
+    public void testSqlite() {
         UUID uuid = UUID.randomUUID();
 
         DatabaseTester tester = new DatabaseTester(new DatabaseBuilder()

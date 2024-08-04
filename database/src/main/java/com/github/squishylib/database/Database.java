@@ -183,7 +183,7 @@ public interface Database {
      * Returns the status of the database once it has
      * tried to connect once.
      * <p>
-     * You can use the {@link CompletableFuture#waitForComplete()}
+     * You can use the {@link CompletableFuture#waitAndGet()}
      * to wait until it has attempted to connect.
      *
      * @return The completable status.
@@ -200,7 +200,7 @@ public interface Database {
      * @return This instance.
      */
     default @NotNull Database connect() {
-        this.connectAsync().waitForComplete();
+        this.connectAsync().waitAndGet();
         return this;
     }
 
@@ -210,7 +210,7 @@ public interface Database {
      * Returns the status of the database once it has
      * tried to disconnect.
      * <p>
-     * You can use the {@link CompletableFuture#waitForComplete()}
+     * You can use the {@link CompletableFuture#waitAndGet()}
      * to wait until it has attempted to connect.
      *
      * @param reconnect If the database should still try to reconnect.
@@ -226,7 +226,7 @@ public interface Database {
      * @return This instance.
      */
     default @NotNull Database disconnect(boolean reconnect) {
-        this.disconnectAsync(reconnect).waitForComplete();
+        this.disconnectAsync(reconnect).waitAndGet();
         return this;
     }
 

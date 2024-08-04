@@ -45,6 +45,7 @@ public interface DataType<T> {
     static @NotNull DataType<?> of(@NotNull Class<?> type) {
         return switch (type.getName()) {
             case "boolean", "java.land.Boolean" -> new BooleanType();
+            case "string", "java.lang.String" -> new StringType();
             default -> new DefaultType();
         };
     }

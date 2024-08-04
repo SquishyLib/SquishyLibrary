@@ -130,7 +130,7 @@ public interface TableSelection<R extends Record<?>, D extends Database> {
      * @return The first record in this table.
      */
     @NotNull
-    CompletableFuture<@Nullable R> getFirstRecord(@NotNull Query query);
+    CompletableFuture<@Nullable R> getFirstRecord(@Nullable Query query);
 
     /**
      * Requests the list of records within this table.
@@ -155,7 +155,7 @@ public interface TableSelection<R extends Record<?>, D extends Database> {
      * @return The optional list.
      */
     @NotNull
-    CompletableFuture<@NotNull List<R>> getRecordList(@NotNull Query query);
+    CompletableFuture<@NotNull List<R>> getRecordList(@Nullable Query query);
 
     /**
      * Requests the amount of records in this table.
@@ -176,7 +176,7 @@ public interface TableSelection<R extends Record<?>, D extends Database> {
      * @return The optional list.
      */
     @NotNull
-    CompletableFuture<@NotNull Integer> getAmountOfRecords(@NotNull Query query);
+    CompletableFuture<@NotNull Integer> getAmountOfRecords(@Nullable Query query);
 
     /**
      * Used to insert a record into the database.

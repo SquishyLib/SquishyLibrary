@@ -230,7 +230,7 @@ public class SqliteDatabase extends DatabaseRequestQueue implements Database {
             // Otherwise, add the missing columns.
             missingFields.forEach(field -> {
                 tempLogger.debug("Adding missing field &e" + field.getName() + ".");
-                table.addColumn(field).waitForComplete();
+                table.addColumn(field).waitAndGet();
             });
             return this;
         }
@@ -263,7 +263,7 @@ public class SqliteDatabase extends DatabaseRequestQueue implements Database {
         tempLogger.debug("Fields that should be included= " + fields.stream().map(RecordField::getName).toList());
 
         // The current fields.
-        final List<String> currentFields = table.getColumnNames().waitForComplete();
+        final List<String> currentFields = table.getColumnNames().waitAndGet();
 
         tempLogger.debug("Current fields= " + currentFields);
 

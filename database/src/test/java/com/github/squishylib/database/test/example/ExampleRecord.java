@@ -27,15 +27,26 @@ import org.jetbrains.annotations.NotNull;
 
 public class ExampleRecord implements Record<ExampleRecord> {
 
+    public class ObjectTest {
+        private final @NotNull String testString = "test";
+        private int testInt = 123;
+    }
+
     public static final @NotNull String IDENTIFIER_KEY = "identifier";
     public static final @NotNull String STRING_KEY = "value";
+    public static final @NotNull String BOOL_KEY = "bool";
+    public static final @NotNull String OBJECT_KEY = "object";
 
     private final @Field(IDENTIFIER_KEY) @Primary @NotNull String identifier;
     private @Field(STRING_KEY) String string;
+    private @Field(BOOL_KEY) boolean bool;
+    private @Field(OBJECT_KEY) ObjectTest object;
 
     public ExampleRecord(@NotNull String identifier) {
         this.identifier = identifier;
         this.string = "The default value.";
+        this.bool = true;
+        this.object = new ObjectTest();
     }
 
     public @NotNull String getIdentifier() {
@@ -57,6 +68,8 @@ public class ExampleRecord implements Record<ExampleRecord> {
 
         section.set(IDENTIFIER_KEY, this.identifier);
         section.set(ExampleRecord.STRING_KEY, this.string);
+        section.set(ExampleRecord.BOOL_KEY, this.bool);
+        section.set(ExampleRecord.OBJECT_KEY, this.object);
 
         return section;
     }
@@ -64,6 +77,8 @@ public class ExampleRecord implements Record<ExampleRecord> {
     @Override
     public @NotNull ExampleRecord convert(@NotNull ConfigurationSection section) {
         this.string = section.getString(ExampleRecord.STRING_KEY);
+        this.bool = section.getBoolean(ExampleRecord.BOOL_KEY);
+        this.object = section.getClass(OBJECT_KEY, ObjectTest.class);
         return this;
     }
 }

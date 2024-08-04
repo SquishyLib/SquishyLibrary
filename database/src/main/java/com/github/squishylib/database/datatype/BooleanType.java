@@ -49,7 +49,7 @@ public class BooleanType implements DataType<Boolean> {
             final int value = results.getInt(fieldName);
             return value == 1 ? Boolean.TRUE : Boolean.FALSE;
         } catch (Exception exception) {
-            throw new DatabaseException(this, "fromSqlite", "Unable to get integer from result set. fieldName=" + fieldName);
+            throw new DatabaseException(this, "fromSqlite", "Unable to get integer from result set as a int. fieldName=" + fieldName);
         }
     }
 }

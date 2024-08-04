@@ -62,7 +62,7 @@ public abstract class Table<R extends Record<R>> implements TableSelection<R, Da
     }
 
     @Override
-    public @NotNull CompletableFuture<@Nullable R> getFirstRecord(@NotNull Query query) {
+    public @NotNull CompletableFuture<@Nullable R> getFirstRecord(@Nullable Query query) {
         return this.database.createTableSelection(this).getFirstRecord(query);
     }
 
@@ -72,7 +72,7 @@ public abstract class Table<R extends Record<R>> implements TableSelection<R, Da
     }
 
     @Override
-    public @NotNull CompletableFuture<@NotNull List<R>> getRecordList(@NotNull Query query) {
+    public @NotNull CompletableFuture<@NotNull List<R>> getRecordList(@Nullable Query query) {
         return this.database.createTableSelection(this).getRecordList(query);
     }
 
@@ -82,7 +82,7 @@ public abstract class Table<R extends Record<R>> implements TableSelection<R, Da
     }
 
     @Override
-    public @NotNull CompletableFuture<@NotNull Integer> getAmountOfRecords(@NotNull Query query) {
+    public @NotNull CompletableFuture<@NotNull Integer> getAmountOfRecords(@Nullable Query query) {
         return this.database.createTableSelection(this).getAmountOfRecords(query);
     }
 
