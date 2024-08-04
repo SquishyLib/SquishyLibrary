@@ -367,9 +367,10 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
 
         // Remove the last ", ".
         builder.replace(builder.length() - 2, builder.length(), "");
+        Query recordQuery = new Query().match(record);
         builder.append(" WHERE {where};".replace(
                 "{where}",
-                new Query().match(record).buildSqliteWhere()
+                recordQuery.buildSqliteWhere()
         ));
 
         try {
@@ -380,6 +381,11 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
             // Set the wild cards.
             int index = 1;
             for (final Map.Entry<RecordField, Object> entry : map.entrySet()) {
+                tempLogger.debug("&d│ &7Set wild card &b" + index + " to " + entry.getValue());
+                statement.setObject(index, entry.getValue());
+                index++;
+            }
+            for (final Map.Entry<String, Object> entry : recordQuery.getPatterns().entrySet()) {
                 tempLogger.debug("&d│ &7Set wild card &b" + index + " to " + entry.getValue());
                 statement.setObject(index, entry.getValue());
                 index++;

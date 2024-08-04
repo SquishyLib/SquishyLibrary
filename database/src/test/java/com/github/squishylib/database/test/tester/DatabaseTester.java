@@ -54,6 +54,7 @@ public class DatabaseTester {
         this.testGetAmountOfRecords();
         this.testGetAmountOfRecordsQuery();
         this.testRemoveRecord();
+        this.testUpdateRecord();
     }
 
     public void testConnection() {
@@ -201,5 +202,25 @@ public class DatabaseTester {
         // Check if the records are the same.
         new ResultChecker("testRemoveRecord")
                 .expect(recordRemoved == null, "recordRemoved == null");
+    }
+
+    public void testUpdateRecord() {
+        this.logger.info("&aRunning test: &ftestUpdateRecord");
+        final Database database = this.builder.create().connect().createTable(new ExampleTable());
+
+        // Insert record.
+        database.getTable(ExampleTable.class).insertRecord(new ExampleRecord("testUpdateRecord").setString("value1"));
+
+        // Update record.
+        database.getTable(ExampleTable.class).insertRecord(new ExampleRecord("testUpdateRecord").setString("value2"));
+
+        // Get record.
+        ExampleRecord record = database.getTable(ExampleTable.class)
+                .getFirstRecord(new Query().match(ExampleRecord.IDENTIFIER_KEY, "testUpdateRecord"))
+                .waitAndGet();
+
+        // Check if the records are the same.
+        new ResultChecker("testRemoveRecord")
+                .expect(record.getString().equals("value2"), "record.getString().equals(\"value2\")");
     }
 }
