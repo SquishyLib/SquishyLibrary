@@ -31,6 +31,7 @@
         <module>common</module>
         <module>configuration</module>
         <module>database</module>
+        <module>spigot</module>
     </modules>
 
     <build>
