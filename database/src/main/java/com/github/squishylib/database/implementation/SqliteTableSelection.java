@@ -29,6 +29,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -96,8 +97,8 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
                 // Loop though results.
                 while (results.next()) {
                     final String columnName = results.getString("name");
-                    tempLogger.debug("&d│ &7Adding column name &b" + columnName);
                     columnNames.add(columnName);
+                    tempLogger.debug("&d│ &7Added column name &b" + columnName);
                 }
 
                 tempLogger.debug("&d⎣ &7Final result is &b" + columnNames);
@@ -115,7 +116,7 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
         return this.database.addRequest(new Request<>(() -> {
 
             // Create this requests logger.
-            final Logger tempLogger = this.database.getLogger().extend(" &b.addColumn() &7SqliteTableSelection.java:114");
+            final Logger tempLogger = this.database.getLogger().extend(" &b.addColumn(field) &7SqliteTableSelection.java:114");
 
             // Create statement.
             final String statement = "ALTER TABLE {table} ADD COLUMN {key} {type};"
@@ -186,7 +187,7 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
     private @Nullable R getFirstRecordSync(@NotNull Query query) {
 
         // Create this requests logger.
-        final Logger tempLogger = this.database.getLogger().extend(" &b.getFirstRecordSync() &7SqliteTableSelection.java:182");
+        final Logger tempLogger = this.database.getLogger().extend(" &b.getFirstRecordSync(query) &7SqliteTableSelection.java:187");
 
         // Create the sql statement.
         final String statement = "SELECT * FROM {table} WHERE {where} LIMIT 1;"
@@ -222,22 +223,166 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
 
     @Override
     public @NotNull CompletableFuture<@NotNull List<R>> getRecordList() {
-        return null;
+        return this.database.addRequest(new Request<>(() -> {
+
+            // Create this requests logger.
+            final Logger tempLogger = this.database.getLogger().extend(" &b.getRecordList() &7SqliteTableSelection.java:224");
+
+            // Create the sql statement.
+            final String statement = "SELECT * FROM {table}"
+                    .replace("{table}", this.table.getName());
+
+            try {
+
+                // Create the prepared statement.
+                tempLogger.debug("&d⎡ &7Executing statement &b" + statement);
+                PreparedStatement preparedStatement = this.database.getConnection().prepareStatement(statement);
+                ResultSet results = preparedStatement.executeQuery();
+
+                // Are there no results?
+                if (results == null) {
+                    tempLogger.debug("&d⎣ &7Result was null.");
+                    preparedStatement.close();
+                    return null;
+                }
+
+                // Create the list of records.
+                List<R> recordList = new ArrayList<>();
+
+                // Loop though all records.
+                while (results.next()) {
+                    R record = this.createEmpty(this.getPrimaryFieldMap(results)).convert(results);
+                    recordList.add(record);
+                    tempLogger.debug("&d│ &7Added record &b" + record);
+                }
+
+                preparedStatement.close();
+                tempLogger.debug("&d⎣ &7Amount of records added &b" + recordList.size());
+                return recordList;
+
+            } catch (Exception exception) {
+                throw new DatabaseException(exception, this, "getRecordList", "statement=&e" + statement + "&r");
+            }
+        }));
     }
 
     @Override
     public @NotNull CompletableFuture<@NotNull List<R>> getRecordList(@NotNull Query query) {
-        return null;
+        return this.database.addRequest(new Request<>(() -> {
+
+            // Create this requests logger.
+            final Logger tempLogger = this.database.getLogger().extend(" &b.getRecordList(query) &7SqliteTableSelection.java:269");
+
+            // Create the sql statement.
+            final String statement = "SELECT * FROM {table} WHERE {where};"
+                    .replace("{table}", this.table.getName())
+                    .replace("{where}", query.buildSqliteWhere());
+
+            try {
+
+                // Create the prepared statement.
+                tempLogger.debug("&d⎡ &7Executing statement &b" + statement);
+                PreparedStatement preparedStatement = this.database.getConnection().prepareStatement(statement);
+                ResultSet results = preparedStatement.executeQuery();
+
+                // Are there no results?
+                if (results == null) {
+                    tempLogger.debug("&d⎣ &7Result was null.");
+                    preparedStatement.close();
+                    return null;
+                }
+
+                // Create the list of records.
+                List<R> recordList = new ArrayList<>();
+
+                // Loop though all records.
+                while (results.next()) {
+                    R record = this.createEmpty(this.getPrimaryFieldMap(results)).convert(results);
+                    recordList.add(record);
+                    tempLogger.debug("&d│ &7Added record &b" + record);
+                }
+
+                preparedStatement.close();
+                tempLogger.debug("&d⎣ &7Amount of records added &b" + recordList.size());
+                return recordList;
+
+            } catch (Exception exception) {
+                throw new DatabaseException(exception, this, "getRecordList", "statement=&e" + statement + "&r");
+            }
+        }));
     }
 
     @Override
     public @NotNull CompletableFuture<@NotNull Integer> getAmountOfRecords() {
-        return null;
+        return this.database.addRequest(new Request<>(() -> {
+
+            // Create this requests logger.
+            final Logger tempLogger = this.database.getLogger().extend(" &b.getAmountOfRecords() &7SqliteTableSelection.java:315");
+
+            // Create the sql statement.
+            final String statement = "SELECT COUNT(*) AS amount FROM {table};"
+                    .replace("{table}", this.table.getName());
+
+            try {
+
+                // Create the prepared statement.
+                tempLogger.debug("&d⎡ &7Executing statement &b" + statement);
+                PreparedStatement preparedStatement = this.database.getConnection().prepareStatement(statement);
+                ResultSet results = preparedStatement.executeQuery();
+
+                // Are there no results?
+                if (results == null || !results.next()) {
+                    tempLogger.debug("&d⎣ &7Result was null.");
+                    preparedStatement.close();
+                    return 0;
+                }
+
+                int amount = results.getInt("amount");
+                preparedStatement.close();
+                tempLogger.debug("&d⎣ &7Amount of records &b" + amount);
+                return results.getInt("amount");
+
+            } catch (Exception exception) {
+                throw new DatabaseException(exception, this, "getAmountOfRecords", "statement=&e" + statement + "&r");
+            }
+        }));
     }
 
     @Override
     public @NotNull CompletableFuture<@NotNull Integer> getAmountOfRecords(@NotNull Query query) {
-        return null;
+        return this.database.addRequest(new Request<>(() -> {
+
+            // Create this requests logger.
+            final Logger tempLogger = this.database.getLogger().extend(" &b.getAmountOfRecords(query) &7SqliteTableSelection.java:350");
+
+            // Create the sql statement.
+            final String statement = "SELECT COUNT(*) AS amount FROM {table} WHERE {where};"
+                    .replace("{table}", this.table.getName())
+                    .replace("{where}", query.buildSqliteWhere());
+
+            try {
+
+                // Create the prepared statement.
+                tempLogger.debug("&d⎡ &7Executing statement &b" + statement);
+                PreparedStatement preparedStatement = this.database.getConnection().prepareStatement(statement);
+                ResultSet results = preparedStatement.executeQuery();
+
+                // Are there no results?
+                if (results == null || !results.next()) {
+                    tempLogger.debug("&d⎣ &7Result was null.");
+                    preparedStatement.close();
+                    return 0;
+                }
+
+                int amount = results.getInt("amount");
+                preparedStatement.close();
+                tempLogger.debug("&d⎣ &7Amount of records &b" + amount);
+                return results.getInt("amount");
+
+            } catch (Exception exception) {
+                throw new DatabaseException(exception, this, "getAmountOfRecords", "statement=&e" + statement + "&r");
+            }
+        }));
     }
 
     @Override
@@ -258,7 +403,7 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
     private boolean addRecord(@NotNull R record) {
 
         // Create this requests logger.
-        final Logger tempLogger = this.database.getLogger().extend(" &b.addRecord() &7SqliteTableSelection.java:258");
+        final Logger tempLogger = this.database.getLogger().extend(" &b.addRecord() &7SqliteTableSelection.java:402");
 
         // Get the list of fields.
         final Map<RecordField, Object> map = record.getFieldValues();
@@ -308,7 +453,7 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
     private boolean updateRecord(@NotNull R record) {
 
         // Create this requests logger.
-        final Logger tempLogger = this.database.getLogger().extend(" &b.updateRecord() &7SqliteTableSelection.java:308");
+        final Logger tempLogger = this.database.getLogger().extend(" &b.updateRecord() &7SqliteTableSelection.java:453");
 
         // Get the list of fields.
         final Map<RecordField, Object> map = record.getFieldValues();
@@ -354,11 +499,34 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
 
     @Override
     public @NotNull CompletableFuture<@NotNull Boolean> removeRecord(@NotNull R record) {
-        return null;
+        return this.removeAllRecords(new Query().match(record));
     }
 
     @Override
     public @NotNull CompletableFuture<@NotNull Boolean> removeAllRecords(@NotNull Query query) {
-        return null;
+        return this.database.addRequest(new Request<>(() -> {
+
+            // Create this requests logger.
+            final Logger tempLogger = this.database.getLogger().extend(" &b.removeAllRecords(query) &7SqliteTableSelection.java:503");
+
+            // Create the sql statement.
+            final String statement = "DELETE FROM {table} WHERE {where};"
+                    .replace("{table}", this.table.getName())
+                    .replace("{where}", query.buildSqliteWhere());
+
+            try {
+
+                // Create the prepared statement.
+                tempLogger.debug("&d⎡ &7Executing statement &b" + statement);
+                PreparedStatement preparedStatement = this.database.getConnection().prepareStatement(statement);
+                boolean success = preparedStatement.execute();
+                preparedStatement.close();
+                tempLogger.debug("&d⎣ &7Success &b" + success);
+                return success;
+
+            } catch (Exception exception) {
+                throw new DatabaseException(exception, this, "getAmountOfRecords", "statement=&e" + statement + "&r");
+            }
+        }));
     }
 }

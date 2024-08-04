@@ -39,6 +39,7 @@ public class SqliteDatabase extends DatabaseRequestQueue implements Database {
 
     private @NotNull DatabaseStatus status;
     private final @NotNull Logger logger;
+    private final boolean shouldReconnectEveryCycle;
     private final @NotNull Duration reconnectCooldown;
     private final boolean willReconnect;
     private final @NotNull Duration timeBetweenRequests;
@@ -49,6 +50,7 @@ public class SqliteDatabase extends DatabaseRequestQueue implements Database {
     private Connection connection;
 
     public SqliteDatabase(@NotNull Logger logger,
+                          boolean shouldReconnectEveryCycle,
                           @NotNull Duration reconnectCooldown,
                           boolean willReconnect,
                           @NotNull Duration timeBetweenRequests,
@@ -57,6 +59,7 @@ public class SqliteDatabase extends DatabaseRequestQueue implements Database {
 
         this.status = DatabaseStatus.DISCONNECTED;
         this.logger = logger.extend(" [SQLiteDatabase]");
+        this.shouldReconnectEveryCycle = shouldReconnectEveryCycle;
         this.reconnectCooldown = reconnectCooldown;
         this.willReconnect = willReconnect;
         this.timeBetweenRequests = timeBetweenRequests;
@@ -150,6 +153,11 @@ public class SqliteDatabase extends DatabaseRequestQueue implements Database {
     @Override
     public @NotNull Logger getLogger() {
         return this.logger;
+    }
+
+    @Override
+    public boolean shouldReconnectEveryCycle() {
+        return this.shouldReconnectEveryCycle;
     }
 
     @Override

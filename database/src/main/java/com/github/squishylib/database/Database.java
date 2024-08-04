@@ -72,6 +72,15 @@ public interface Database {
     Logger getLogger();
 
     /**
+     * If the database should actively disconnect and reconnect if there
+     * have not been any requests in a while.
+     *
+     * @return True if the database should be disconnected and
+     * reconnected every cycle.
+     */
+    boolean shouldReconnectEveryCycle();
+
+    /**
      * The amount of time the database will wait before
      * attempting to reconnect.
      * <p>

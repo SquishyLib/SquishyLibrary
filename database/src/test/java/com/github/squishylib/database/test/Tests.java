@@ -33,8 +33,9 @@ public class Tests {
 
         DatabaseTester tester = new DatabaseTester(new DatabaseBuilder()
                 .setReconnectCooldown(Duration.ofMillis(1000))
+                .setShouldReconnectEveryCycle(true)
                 .setWillReconnect(true)
-                .setTimeBetweenRequests(Duration.ofMillis(500))
+                .setTimeBetweenRequests(Duration.ofMillis(100))
                 .setMaxRequestsPending(20)
                 .setSqliteEnabled(true)
                 .setSqlitePath("src/test/resources/{uuid}.sqlite3".replace("{uuid}", uuid.toString()))

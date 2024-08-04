@@ -105,6 +105,11 @@ public abstract class DatabaseRequestQueue extends TaskContainer {
         // Set running to true.
         this.running = true;
 
+        // Should we reconnect to the database?
+        if (this.getDatabase().shouldReconnectEveryCycle()) {
+            this.getDatabase().disconnect(true);
+        }
+
         // Start the iteration of the queue.
         this.startNextTask();
         return future;

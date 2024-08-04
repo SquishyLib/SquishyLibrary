@@ -33,6 +33,7 @@ import java.util.logging.ConsoleHandler;
 
 /**
  * <pre>{@code
+ * should_reconnect_every_cycle: Boolean
  * reconnect_cooldown_millis: Long
  * will_reconnect: Boolean
  * time_between_requests_millis: Long
@@ -45,6 +46,7 @@ import java.util.logging.ConsoleHandler;
  */
 public class DatabaseBuilder {
 
+    public static final @NotNull String SHOULD_RECONNECT_EVERY_CYCLE = "should_reconnect_every_cycle";
     public static final @NotNull String RECONNECT_COOLDOWN_IDENTIFIER = "reconnect_cooldown_millis";
     public static final @NotNull String WILL_RECONNECT_IDENTIFIER = "will_reconnect";
     public static final @NotNull String TIME_BETWEEN_REQUESTS_IDENTIFIER = "time_between_requests_millis";
@@ -111,6 +113,15 @@ public class DatabaseBuilder {
         return this;
     }
 
+    public boolean getShouldReconnectEveryCycle() {
+        return this.section.getBoolean(SHOULD_RECONNECT_EVERY_CYCLE, true);
+    }
+
+    public @NotNull DatabaseBuilder setShouldReconnectEveryCycle(boolean shouldReconnectEveryCycle) {
+        this.section.set(SHOULD_RECONNECT_EVERY_CYCLE, shouldReconnectEveryCycle);
+        return this;
+    }
+
     public @NotNull Duration getReconnectCooldown() {
         return Duration.ofMillis(this.section.getLong(RECONNECT_COOLDOWN_IDENTIFIER, 500));
     }
@@ -173,6 +184,7 @@ public class DatabaseBuilder {
 
             return new SqliteDatabase(
                     this.getLogger(),
+                    this.getShouldReconnectEveryCycle(),
                     this.getReconnectCooldown(),
                     this.getWillReconnect(),
                     this.getTimeBetweenRequests(),
