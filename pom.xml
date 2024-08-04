@@ -23,13 +23,9 @@
 
     <groupId>com.github.squishylib</groupId>
     <artifactId>SquishyLibrary</artifactId>
-    <version>${revision}</version>
+    <version>HIDDEN</version>
     <packaging>pom</packaging>
     <name>SquishyLibrary</name>
-
-    <properties>
-        <revision>0.0.0</revision>
-    </properties>
 
     <modules>
         <module>common</module>
