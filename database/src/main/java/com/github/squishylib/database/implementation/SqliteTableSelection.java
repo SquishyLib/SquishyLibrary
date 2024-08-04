@@ -380,8 +380,8 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
             // Set the wild cards.
             int index = 1;
             for (final Map.Entry<RecordField, Object> entry : map.entrySet()) {
-                tempLogger.debug("&d│ &7Set wild card &b" + index + " to " + entry.getKey());
-                statement.setObject(index, entry.getKey());
+                tempLogger.debug("&d│ &7Set wild card &b" + index + " to " + entry.getValue());
+                statement.setObject(index, entry.getValue());
                 index++;
             }
 
