@@ -2,7 +2,39 @@
 name: SquishyLibrary
 description: Java configuration and database library.
 author: Smuddgge and Contributors
-status: In Development
+status: Beta
+```
+
+# Using the Library
+
+[![](https://jitpack.io/v/Smuddgge/SquishyLibrary.svg)](https://jitpack.io/#Smuddgge/SquishyLibrary)
+
+```xml
+<repositories>
+    <repository>
+        <id>jitpack.io</id>
+        <url>https://jitpack.io</url>
+    </repository>
+</repositories>
+```
+```xml
+<dependency>
+    <groupId>com.github.Smuddgge.SquishyLibrary</groupId>
+    <artifactId>common</artifactId>
+    <version>Tag</version>
+</dependency>
+
+<dependency>
+    <groupId>com.github.Smuddgge.SquishyLibrary</groupId>
+    <artifactId>configuration</artifactId>
+    <version>Tag</version>
+</dependency>
+
+<dependency>
+    <groupId>com.github.Smuddgge.SquishyLibrary</groupId>
+    <artifactId>database</artifactId>
+    <version>Tag</version>
+</dependency>
 ```
 
 # Configuration File
