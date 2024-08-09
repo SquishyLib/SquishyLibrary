@@ -33,16 +33,28 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class TaskContainer {
 
-    public static final int SLEEP_TIME_MILLIS = 100;
+    public static final int DEFAULT_TIMEOUT_MILLIS = 100;
+    private static Map<String, Task> globalTaskMap;
 
-    private @NotNull Map<String, Task> taskMap;
+    private final int timeoutMillis;
+    private @NotNull Map<String, Task> localTaskMap;
 
-    /**
-     * Used to create a new task container.
-     * Lets you run tasks on threads.
-     */
     public TaskContainer() {
-        this.taskMap = new HashMap<>();
+        this.timeoutMillis = DEFAULT_TIMEOUT_MILLIS;
+        this.localTaskMap = new HashMap<>();
+    }
+
+    public TaskContainer(int timeoutMillis) {
+        this.timeoutMillis = timeoutMillis;
+        this.localTaskMap = new HashMap<>();
+    }
+
+    public @NotNull TaskContainer runTaskLater(@NotNull String identifier,
+                                               @NotNull Duration duration,
+                                               @NotNull Runnable runnable) {
+
+        // Check if the identifier already exists.
+
     }
 
     /**
@@ -81,7 +93,7 @@ public class TaskContainer {
                     if (System.currentTimeMillis() - from >= duration.toMillis()) break;
 
                     // Wait a few mills.
-                    Thread.sleep(SLEEP_TIME_MILLIS);
+                    Thread.sleep(DEFAULT_TIMEOUT_MILLIS);
 
                     // Check if the task was canceled.
                     if (!running.get()) {

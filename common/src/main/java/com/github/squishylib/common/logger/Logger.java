@@ -23,8 +23,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * A logger where you can use color codes
- * to write color to the console easily.
+ * A logger that supports the use of color codes
+ * making it easy to use colors in the console.
  * <p>
  * It also offers extending the logger with tags.
  * <p>

@@ -18,6 +18,10 @@
 
 package com.github.squishylib.common.logger;
 
+/**
+ * Similar levels to {@link java.util.logging.Level}
+ * but with updated names.
+ */
 public class Level extends java.util.logging.Level {
 
     private static final String defaultBundle = "sun.util.logging.resources.logging";
@@ -32,7 +36,7 @@ public class Level extends java.util.logging.Level {
 
     public static final Level DEBUG = new Level("DEBUG", 500, defaultBundle);
 
-    public static final Level ALL = new Level("DEBUG", Integer.MIN_VALUE, defaultBundle);
+    public static final Level ALL = new Level("ALL", Integer.MIN_VALUE, defaultBundle);
 
     protected Level(String name, int value, String resourceBundleName) {
         super(name, value, resourceBundleName);

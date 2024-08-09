@@ -16,26 +16,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.github.squishylib.common.logger;
+package com.github.squishylib.common.task;
 
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.logging.LogRecord;
+import org.jetbrains.annotations.NotNull;
+
+import java.time.Duration;
 
 /**
- * A compact formatter for logging.
+ * Represents a class that handles tasks.
  */
-public class Formatter extends java.util.logging.Formatter {
+public interface TaskHandler {
 
-    @Override
-    public String format(LogRecord record) {
-
-        final String time = record.getInstant().atZone(ZoneId.of("GMT+1")).format(DateTimeFormatter.ofPattern("dd/mm/yyyy hh:m"));
-        final String level = record.getLevel().getName().split("")[0];
-
-        return "\u001B[30m[{time}] [{level}] {message}\n"
-                .replace("{time}", time)
-                .replace("{level}", level)
-                .replace("{message}", record.getMessage());
-    }
+    @NotNull Task runTaskLater(
+            @NotNull String identifier,
+            @NotNull Duration duration,
+            @NotNull Runnable runnable
+    );
 }

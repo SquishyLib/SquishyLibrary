@@ -31,31 +31,32 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Indicates if an annotation should be pared
- * with another annotation.
+ * Indicates if an annotation should be pared with
+ * another annotation.
  * <p>
- * If this is used within your project, please use the {@link Checker#test(String)} to
- * test for paired annotations. Otherwise, this will not be checked.
+ * If this is used within your project, please use the method
+ * {@link Checker#isUsedCorrectly(String)} to test for paired annotations.
+ * Otherwise, pairs will not be checked.
  */
 @Target(ElementType.ANNOTATION_TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Paired {
 
     /**
-     * The annotation that should be prepared
-     * with the annotation at runtime.
+     * The annotation that should be pared with the
+     * targeted annotation.
      *
      * @return The paired annotation.
      */
     Class<? extends Annotation> value();
 
     /**
-     * Contains the method used to check all annotations
-     * within this project.
+     * Provides a way of checking the {@link Paired} annotation
+     * within your project.
      */
     final class Checker {
 
-        public interface Lambda {
+        private interface Lambda {
             boolean isAnnotationPresent(final @NotNull Class<? extends Annotation> annotation);
         }
 
@@ -63,58 +64,72 @@ public @interface Paired {
          * Used to test if the annotation is correctly
          * used within a package.
          * <p>
-         * This will check classes, constructors, fields, and methods.
+         * This will check classes, constructors, fields,
+         * and methods.
          *
          * @param packageName The packages name.
          * @return True if correctly used.
          */
-        public static boolean test(final @NotNull String packageName) {
+        public static boolean isUsedCorrectly(final @NotNull String packageName) {
 
             // Loop though classes.
-            for (final Class<?> clazz : findAllClasses(packageName)) {
+            for (final Class<?> clazz : Checker.findAllClasses(packageName)) {
 
                 // Check class annotations.
-                Checker.test(clazz.getDeclaredAnnotations(), (clazz::isAnnotationPresent));
+                boolean classes = Checker.isUsedCorrectly(clazz.getDeclaredAnnotations(), (clazz::isAnnotationPresent));
+                if (!classes) return false;
 
                 // Loop though constructors.
                 for (final Constructor<?> constructor : clazz.getConstructors()) {
-                    Checker.test(constructor.getDeclaredAnnotations(), (constructor::isAnnotationPresent));
+                    boolean constructors = Checker.isUsedCorrectly(constructor.getDeclaredAnnotations(), (constructor::isAnnotationPresent));
+                    if (!constructors) return false;
                 }
 
                 // Loop though field annotations.
                 for (final Field field : clazz.getFields()) {
-                    Checker.test(field.getDeclaredAnnotations(), (field::isAnnotationPresent));
+                    boolean fields = Checker.isUsedCorrectly(field.getDeclaredAnnotations(), (field::isAnnotationPresent));
+                    if (!fields) return false;
                 }
 
                 // Loop though method annotations.
                 for (final Method method : clazz.getMethods()) {
-                    Checker.test(method.getDeclaredAnnotations(), (method::isAnnotationPresent));
+                    boolean methods = Checker.isUsedCorrectly(method.getDeclaredAnnotations(), (method::isAnnotationPresent));
+                    if (!methods) return false;
                 }
             }
 
             return true;
         }
 
-        private static Set<Class> findAllClasses(String packageName) {
-            InputStream stream = ClassLoader.getSystemClassLoader()
-                    .getResourceAsStream(packageName.replaceAll("[.]", "/"));
+        private static @NotNull Set<Class<?>> findAllClasses(final @NotNull String packageName) {
+            InputStream stream = ClassLoader.getSystemClassLoader().getResourceAsStream(
+                    packageName.replaceAll("[.]", "/")
+            );
+
+            // Is the stream null?
+            if (stream == null) throw new RuntimeException(
+                    "Could not find classes in package " + packageName + " because the input stream returned null."
+            );
+
+            // Create the reader.
             BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+
+            // Return the classes in the package.
             return reader.lines()
                     .filter(line -> line.endsWith(".class"))
-                    .map(line -> getClass(line, packageName))
+                    .map(line -> Checker.getClass(line, packageName))
                     .collect(Collectors.toSet());
         }
 
-        private static Class getClass(String className, String packageName) {
+        private static @NotNull Class<?> getClass(@NotNull String className, @NotNull String packageName) {
             try {
-                return Class.forName(packageName + "."
-                        + className.substring(0, className.lastIndexOf('.')));
+                return Class.forName(packageName + "." + className.substring(0, className.lastIndexOf('.')));
             } catch (ClassNotFoundException exception) {
                 throw new RuntimeException(exception);
             }
         }
 
-        public static boolean test(@NotNull Annotation[] annotations, @NotNull Lambda lambda) {
+        private static boolean isUsedCorrectly(@NotNull Annotation[] annotations, @NotNull Lambda lambda) {
             for (final Annotation annotation : annotations) {
 
                 // Check if there is a paired annotation.

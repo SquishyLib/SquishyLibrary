@@ -22,6 +22,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
+/**
+ * The console colors that can be used in
+ * the java console.
+ */
 public enum ConsoleColor {
     RESET("\033[0m", "&r"),
     WHITE("\033[0;37m", "&f"),
