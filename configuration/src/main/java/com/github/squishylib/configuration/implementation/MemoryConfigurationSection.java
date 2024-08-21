@@ -406,9 +406,9 @@ public class MemoryConfigurationSection implements ConfigurationSection {
     private @Nullable <T> T parseValue(@NotNull Object value, @NotNull StringParser<T> parser) {
         if (value instanceof Integer number) return parser.parse(Integer.toString(number));
         if (value instanceof Long number) return parser.parse(Long.toString(number));
-        if (value instanceof Double number) return parser.parse(Double.toString(number));
-        if (value instanceof Float number) return parser.parse(Float.toString(number));
-        if (value instanceof String string) return parser.parse(string);
+        if (value instanceof Double number) return parser.parse(Double.toString(number).split("\\.")[0]);
+        if (value instanceof Float number) return parser.parse(Float.toString(number).split("\\.")[0]);
+        if (value instanceof String string) return parser.parse(string.split("\\.")[0]);
         return null;
     }
 
