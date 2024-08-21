@@ -19,19 +19,19 @@ status: Beta
 ```
 ```xml
 <dependency>
-    <groupId>com.github.Smuddgge.SquishyLibrary</groupId>
+    <groupId>com.github.squishylib.SquishyLibrary</groupId>
     <artifactId>common</artifactId>
     <version>Tag</version>
 </dependency>
 
 <dependency>
-    <groupId>com.github.Smuddgge.SquishyLibrary</groupId>
+    <groupId>com.github.squishylib.SquishyLibrary</groupId>
     <artifactId>configuration</artifactId>
     <version>Tag</version>
 </dependency>
 
 <dependency>
-    <groupId>com.github.Smuddgge.SquishyLibrary</groupId>
+    <groupId>com.github.squishylib.SquishyLibrary</groupId>
     <artifactId>database</artifactId>
     <version>Tag</version>
 </dependency>
