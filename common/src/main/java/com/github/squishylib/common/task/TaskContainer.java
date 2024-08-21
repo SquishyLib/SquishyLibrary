@@ -31,6 +31,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Represents a task container.
  * This can be implemented to run tasks in the class instance.
  */
+@Deprecated
 public class TaskContainer {
 
     public static final int DEFAULT_TIMEOUT_MILLIS = 100;
@@ -55,6 +56,7 @@ public class TaskContainer {
 
         // Check if the identifier already exists.
 
+        return this;
     }
 
     /**
@@ -68,7 +70,7 @@ public class TaskContainer {
     protected @NotNull TaskContainer runTask(@NotNull Runnable runnable, @NotNull Duration duration, @NotNull String identifier) {
 
         // Check if the identifier already exists.
-        if (this.taskMap.containsKey(identifier)) {
+        if (this.localTaskMap.containsKey(identifier)) {
             throw new RuntimeException("Identifier already exists within task container.");
         }
 
@@ -83,7 +85,7 @@ public class TaskContainer {
 
             // Create the instance of the task.
             Task task = () -> running.set(false);
-            this.taskMap.put(identifier, task);
+            this.localTaskMap.put(identifier, task);
 
             // Wait till duration has completed.
             while (running.get()) {
@@ -97,7 +99,7 @@ public class TaskContainer {
 
                     // Check if the task was canceled.
                     if (!running.get()) {
-                        this.taskMap.remove(identifier);
+                        this.localTaskMap.remove(identifier);
                         return;
                     }
 
@@ -108,12 +110,12 @@ public class TaskContainer {
 
             // Check if the task was canceled.
             if (!running.get()) {
-                this.taskMap.remove(identifier);
+                this.localTaskMap.remove(identifier);
                 return;
             }
 
             // Run the task.
-            this.taskMap.remove(identifier);
+            this.localTaskMap.remove(identifier);
             runnable.run();
 
         }).start();
@@ -128,14 +130,14 @@ public class TaskContainer {
      * @return This instance.
      */
     public @NotNull TaskContainer stopTask(@NotNull String identifier) {
-        Task task = this.taskMap.get(identifier);
+        Task task = this.localTaskMap.get(identifier);
 
         // Check if the task doesn't exist.
         if (task == null) return this;
 
         // Cancel the task.
         task.cancel();
-        this.taskMap.remove(identifier);
+        this.localTaskMap.remove(identifier);
         return this;
     }
 
@@ -145,11 +147,11 @@ public class TaskContainer {
      * @return This instance.
      */
     public @NotNull TaskContainer stopAllTasks() {
-        for (Task task : this.taskMap.values()) {
+        for (Task task : this.localTaskMap.values()) {
             task.cancel();
         }
 
-        this.taskMap = new HashMap<>();
+        this.localTaskMap = new HashMap<>();
         return this;
     }
 }
