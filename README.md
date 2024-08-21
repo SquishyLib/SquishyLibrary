@@ -7,7 +7,7 @@ status: Beta
 
 # Using the Library
 
-[![](https://jitpack.io/v/squishylib/SquishyLibrary.svg)](https://jitpack.io/#squishylib/SquishyLibrary)
+[![](https://jitpack.io/v/SquishyLib/SquishyLibrary.svg)](https://jitpack.io/#SquishyLib/SquishyLibrary)
 
 ```xml
 <repositories>
