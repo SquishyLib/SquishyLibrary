@@ -22,6 +22,8 @@ import com.github.squishylib.common.indicator.Replicable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.logging.Handler;
+
 /**
  * A logger that supports the use of color codes
  * making it easy to use colors in the console.
@@ -35,6 +37,7 @@ public class Logger implements Replicable<Logger> {
     private final @NotNull java.util.logging.Logger logger;
 
     private @Nullable String prefix;
+    private boolean debugForwarding = false; // Send debug messages to info.
 
     /**
      * Used to create a new squishy logger adapter.
@@ -142,6 +145,24 @@ public class Logger implements Replicable<Logger> {
     }
 
     /**
+     * Should debug messages be sent on the info level?
+     * <p>
+     * The level of this logger should still be set to Debug
+     * for debug messages to come though.
+     * <p>
+     * Sometimes the root logger doesn't let debug statements though,
+     * so ths can be used as an alternative.
+     * Otherwise, you can use {@link Logger#setRootLoggerLevel(Level)}.
+     *
+     * @param debugForwarding If debug messages should be sent though info.
+     * @return This instance.
+     */
+    public @NotNull Logger setDebugForwarding(boolean debugForwarding) {
+        this.debugForwarding = debugForwarding;
+        return this;
+    }
+
+    /**
      * Used to check if the logger is outputting
      * debug messages.
      *
@@ -167,6 +188,13 @@ public class Logger implements Replicable<Logger> {
     }
 
     public @NotNull Logger debug(@NotNull String message) {
+
+        // Check if debug forwarding is enabled.
+        // Debug forwarding is where debugs should be sent though the info level.
+        if (debugForwarding && this.logger.isLoggable(Level.DEBUG)) {
+            this.logger.log(Level.INFO, ConsoleColor.parse("&7" + this.getPrefixFormatted() + message));
+        }
+
         this.logger.log(Level.DEBUG, ConsoleColor.parse("&7" + this.getPrefixFormatted() + message));
         return this;
     }
@@ -192,7 +220,7 @@ public class Logger implements Replicable<Logger> {
      * you should include it within the name extension.
      *
      * @param prefixExtension The prefix to add to the current prefix.
-     * @param nameExtension The name to add to the current name.
+     * @param nameExtension   The name to add to the current name.
      * @return A new logger, unless the name already exists, with a new prefix.
      */
     public @NotNull Logger extendFully(@NotNull String prefixExtension, @NotNull String nameExtension) {
@@ -208,5 +236,12 @@ public class Logger implements Replicable<Logger> {
     @Override
     public @NotNull Logger duplicate() {
         return new Logger(this.logger, this.prefix);
+    }
+
+    public static void setRootLoggerLevel(@NotNull Level level) {
+        java.util.logging.Logger rootLogger = java.util.logging.Logger.getLogger("");
+        rootLogger.setLevel(level);
+        Handler handler = rootLogger.getHandlers()[0];
+        handler.setLevel(level);
     }
 }
