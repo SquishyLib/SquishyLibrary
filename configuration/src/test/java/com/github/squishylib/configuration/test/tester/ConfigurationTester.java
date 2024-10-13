@@ -23,7 +23,8 @@ import org.jetbrains.annotations.NotNull;
 
 public class ConfigurationTester {
 
-    private @NotNull final PreparedConfigurationFactory factory;
+    private @NotNull
+    final PreparedConfigurationFactory factory;
 
     public ConfigurationTester(@NotNull final PreparedConfigurationFactory factory) {
         this.factory = factory;

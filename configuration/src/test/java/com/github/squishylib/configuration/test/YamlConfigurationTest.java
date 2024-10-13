@@ -18,6 +18,7 @@
 
 package com.github.squishylib.configuration.test;
 
+import com.github.squishylib.configuration.Configuration;
 import com.github.squishylib.configuration.ConfigurationFactory;
 import com.github.squishylib.configuration.PreparedConfigurationFactory;
 import com.github.squishylib.configuration.test.tester.ConfigurationTester;
@@ -31,7 +32,7 @@ public class YamlConfigurationTest {
     public void test() {
         PreparedConfigurationFactory factory = new PreparedConfigurationFactory(
                 ConfigurationFactory.YAML,
-                new File("src/test/resources/test.yml")
+                new File("src/test/resources/test.yaml")
         );
 
         ConfigurationTester tester = new ConfigurationTester(factory);

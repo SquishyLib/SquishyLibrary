@@ -56,6 +56,13 @@ public class DatabaseBuilder {
     public static final @NotNull String SQLITE_ENABLED_IDENTIFIER = "enabled";
     public static final @NotNull String SQLITE_PATH_IDENTIFIER = "path";
 
+    public static final @NotNull String MYSQL_IDENTIFIER = "mysql";
+    public static final @NotNull String MYSQL_ENABLED_IDENTIFIER = "enabled";
+    public static final @NotNull String MYSQL_CONNECTION_STRING_IDENTIFIER = "connection_string";
+    public static final @NotNull String MYSQL_DATABASE_NAME_IDENTIFIER = "database_name";
+    public static final @NotNull String MYSQL_USERNAME_IDENTIFIER = "username";
+    public static final @NotNull String MYSQL_PASSWORD_IDENTIFIER = "password";
+
     private final @NotNull ConfigurationSection section;
     private @NotNull Logger logger;
 
@@ -98,8 +105,10 @@ public class DatabaseBuilder {
     public @NotNull DatabaseBuilder setDebugMode(boolean isDebugMode) {
         if (isDebugMode) {
             this.getLogger().setLevel(Level.ALL);
+            this.logger.setDebugForwarding(true);
         } else {
             this.getLogger().setLevel(Level.INFO);
+            this.logger.setDebugForwarding(false);
         }
         return this;
     }
@@ -173,6 +182,51 @@ public class DatabaseBuilder {
 
     public @NotNull DatabaseBuilder setSqlitePath(@Nullable String path) {
         this.section.set(SQLITE_IDENTIFIER + "." + SQLITE_PATH_IDENTIFIER, path);
+        return this;
+    }
+
+    public boolean isMySqlEnabled() {
+        return this.section.getSection(MYSQL_IDENTIFIER).getBoolean(MYSQL_ENABLED_IDENTIFIER, false);
+    }
+
+    public @NotNull DatabaseBuilder setMySqlEnabled(boolean mySqlEnabled) {
+        this.section.getSection(MYSQL_IDENTIFIER).set(MYSQL_ENABLED_IDENTIFIER, mySqlEnabled);
+        return this;
+    }
+
+    public @Nullable String getMySqlConnectionString() {
+        return this.section.getSection(MYSQL_IDENTIFIER).getString(MYSQL_CONNECTION_STRING_IDENTIFIER);
+    }
+
+    public @NotNull DatabaseBuilder setMySqlConnectionString(@Nullable String connectionString) {
+        this.section.getSection(MYSQL_IDENTIFIER).set(MYSQL_CONNECTION_STRING_IDENTIFIER, connectionString);
+        return this;
+    }
+
+    public @Nullable String getMySqlDatabaseName() {
+        return this.section.getSection(MYSQL_IDENTIFIER).getString(MYSQL_DATABASE_NAME_IDENTIFIER);
+    }
+
+    public @NotNull DatabaseBuilder setMySqlDatabaseName(@Nullable String databaseName) {
+        this.section.getSection(MYSQL_IDENTIFIER).set(MYSQL_DATABASE_NAME_IDENTIFIER, databaseName);
+        return this;
+    }
+
+    public @Nullable String getMySqlUsername() {
+        return this.section.getSection(MYSQL_IDENTIFIER).getString(MYSQL_USERNAME_IDENTIFIER);
+    }
+
+    public @NotNull DatabaseBuilder setMySqlUsername(@Nullable String username) {
+        this.section.getSection(MYSQL_IDENTIFIER).set(MYSQL_USERNAME_IDENTIFIER, username);
+        return this;
+    }
+
+    public @Nullable String getMySqlPassword() {
+        return this.section.getSection(MYSQL_IDENTIFIER).getString(MYSQL_PASSWORD_IDENTIFIER);
+    }
+
+    public @NotNull DatabaseBuilder setMySqlPassword(@Nullable String password) {
+        this.section.getSection(MYSQL_IDENTIFIER).set(MYSQL_PASSWORD_IDENTIFIER, password);
         return this;
     }
 

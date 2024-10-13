@@ -18,6 +18,7 @@
 
 package com.github.squishylib.common.test;
 
+import com.github.squishylib.common.logger.Level;
 import com.github.squishylib.common.logger.Logger;
 import org.junit.jupiter.api.Test;
 

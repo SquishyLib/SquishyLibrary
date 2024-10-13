@@ -16,31 +16,25 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.github.squishylib.database.test;
+package com.github.squishylib.configuration.test;
 
-import com.github.squishylib.database.DatabaseBuilder;
-import com.github.squishylib.database.test.tester.DatabaseTester;
+import com.github.squishylib.configuration.ConfigurationFactory;
+import com.github.squishylib.configuration.PreparedConfigurationFactory;
+import com.github.squishylib.configuration.test.tester.ConfigurationTester;
 import org.junit.jupiter.api.Test;
 
-import java.time.Duration;
-import java.util.UUID;
+import java.io.File;
 
-public class Tests {
+public class TomlConfigurationTest {
 
     @Test
-    public void testSqlite() {
-        UUID uuid = UUID.randomUUID();
-
-        DatabaseTester tester = new DatabaseTester(new DatabaseBuilder()
-                .setReconnectCooldown(Duration.ofMillis(1000))
-                .setShouldReconnectEveryCycle(true)
-                .setWillReconnect(true)
-                .setTimeBetweenRequests(Duration.ofMillis(100))
-                .setMaxRequestsPending(20)
-                .setSqliteEnabled(true)
-                .setSqlitePath("src/test/resources/{uuid}.sqlite3".replace("{uuid}", uuid.toString()))
-                .setDebugMode(true)
+    public void test() {
+        PreparedConfigurationFactory factory = new PreparedConfigurationFactory(
+                ConfigurationFactory.TOML,
+                new File("src/test/resources/test.toml")
         );
+
+        ConfigurationTester tester = new ConfigurationTester(factory);
         tester.testAll();
     }
 }

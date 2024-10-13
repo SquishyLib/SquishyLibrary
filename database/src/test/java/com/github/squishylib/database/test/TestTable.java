@@ -16,25 +16,27 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.github.squishylib.database.test.example;
+package com.github.squishylib.database.test;
 
 import com.github.squishylib.database.Table;
 import com.github.squishylib.database.field.PrimaryFieldMap;
-import com.github.squishylib.database.test.TestRecord;
 import org.jetbrains.annotations.NotNull;
 
-public class ExampleTable extends Table<ExampleRecord> {
+public class TestTable extends Table<TestRecord> {
 
-    public static final @NotNull String TABLE_NAME = "example";
+    public static final @NotNull String TABLE_NAME = "test";
 
     @Override
     public @NotNull String getName() {
-        return ExampleTable.TABLE_NAME;
+        return TestTable.TABLE_NAME;
     }
 
-    @NotNull
     @Override
-    public ExampleRecord createEmpty(@NotNull PrimaryFieldMap identifiers) {
-        return new ExampleRecord(identifiers.getString(TestRecord.IDENTIFIER_KEY));
+    public @NotNull TestRecord createEmpty(@NotNull PrimaryFieldMap identifiers) {
+        return new TestRecord(identifiers.getString(TestRecord.IDENTIFIER_KEY));
+    }
+
+    public @NotNull String getFirstValue() {
+        return this.getFirstRecord().waitAndGet().getIdentifier();
     }
 }

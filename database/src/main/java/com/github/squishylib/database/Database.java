@@ -20,6 +20,7 @@ package com.github.squishylib.database;
 
 import com.github.squishylib.common.CompletableFuture;
 import com.github.squishylib.common.logger.Logger;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.Duration;
@@ -32,10 +33,19 @@ import java.util.List;
 public interface Database {
 
     /**
+     * The different kinds of database connections.
+     * Each database instance will be connected to one of these.
+     */
+    enum Type {
+        SQLITE,
+        MYSQL
+    }
+
+    /**
      * Represents the connection status of a database.
      * Weather or not it is connected, disconnected or reconnecting.
      */
-    enum DatabaseStatus {
+    enum Status {
         CONNECTED,
         DISCONNECTED,
         RECONNECTING;
@@ -49,11 +59,18 @@ public interface Database {
         }
     }
 
+    /**
+     * The database type that is being used
+     * behind the scenes!
+     *
+     * @return The type of database.
+     */
+    @NotNull Type getType();
 
     /**
      * The status of the database connection.
      * <p>
-     * The status of {@link DatabaseStatus#DISCONNECTED} and {@link DatabaseStatus#RECONNECTING}
+     * The status of {@link Status#DISCONNECTED} and {@link Status#RECONNECTING}
      * both mean that the database is currently disconnected.
      * It is advised to use the method {@link Database#isDisconnected()}
      * for this check.
@@ -61,7 +78,19 @@ public interface Database {
      * @return The database status.
      */
     @NotNull
-    DatabaseStatus getStatus();
+    Database.Status getStatus();
+
+    /**
+     * This method should only be used by the library.
+     * If you are trying to disconnect use the
+     * {@link Database#disconnect(boolean)} method.
+     *
+     * @param status The status to set the database.
+     * @return This instance.
+     */
+    @ApiStatus.Internal
+    @NotNull
+    Database setStatus(@NotNull Database.Status status);
 
     /**
      * The logger that the database type is using.
@@ -189,7 +218,7 @@ public interface Database {
      * @return The completable status.
      */
     @NotNull
-    CompletableFuture<DatabaseStatus> connectAsync();
+    CompletableFuture<Status> connectAsync();
 
     /**
      * Used to attempt to connect to the database.
@@ -217,7 +246,7 @@ public interface Database {
      * @return The completable status.
      */
     @NotNull
-    CompletableFuture<DatabaseStatus> disconnectAsync(boolean reconnect);
+    CompletableFuture<Status> disconnectAsync(boolean reconnect);
 
     /**
      * Used to close the connection to the database.
@@ -234,7 +263,7 @@ public interface Database {
      * Used to check if the database is currently connected.
      * <p>
      * This method checks if the status is
-     * {@link DatabaseStatus#CONNECTED}.
+     * {@link Status#CONNECTED}.
      *
      * @return True if connected.
      */
@@ -258,5 +287,63 @@ public interface Database {
      */
     default boolean isInDebugMode() {
         return this.getLogger().isInDebugMode();
+    }
+
+    /**
+     * Used to reconnect to the database if the connection was closed.
+     * <p>
+     * This will stop the current thread until complete.
+     *
+     * @return True if connected.
+     */
+    default boolean reconnectIfDisconnected() {
+
+        // Create this methods logger.
+        final Logger tempLogger = this.getLogger().extend(" &b.reconnectIfDisconnected() &Database.java:263 &7type=" + this.getType().name());
+
+        try {
+
+            tempLogger.debug("Checking if connected to the database. result=" + this.isConnected());
+
+            // Is the database connected?
+            if (this.isConnected()) return true;
+
+            // Should the database reconnect?
+            if (this.willReconnect()) {
+
+                tempLogger.debug("Attempting to reconnect.");
+
+                // Attempt to reconnect.
+                this.setStatus(Status.RECONNECTING);
+                this.connect();
+
+                // Is the database now connected?
+                if (this.isConnected()) {
+                    tempLogger.debug("Database is now connected.");
+                    return true;
+                }
+
+                // Otherwise, it will try to reconnect,
+                // so here we wait till it has reconnected.
+                while (true) {
+
+                    tempLogger.debug("Checking if connected in &b" + this.getReconnectCooldown().toMillis() + "ms.");
+
+                    // Wait the cooldown time.
+                    Thread.sleep(this.getReconnectCooldown().toMillis());
+
+                    // Check if connected.
+                    if (this.isConnected()) {
+                        tempLogger.debug("Database is now connected.");
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+
+        } catch (Exception exception) {
+            throw new DatabaseException(exception, this, "reconnectIfDisconnected", "Failed to check if disconnected and reconnecting.");
+        }
     }
 }

@@ -22,7 +22,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.concurrent.CancellationException;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Adds option to wait for the future to complete without

@@ -35,19 +35,19 @@ import java.util.List;
 /**
  * A database that is represented by a local file.
  */
-public class SqliteDatabase extends DatabaseRequestQueue implements Database {
+public class SqliteDatabase extends RequestQueueDatabase {
 
-    private @NotNull DatabaseStatus status;
-    private final @NotNull Logger logger;
-    private final boolean shouldReconnectEveryCycle;
-    private final @NotNull Duration reconnectCooldown;
-    private final boolean willReconnect;
-    private final @NotNull Duration timeBetweenRequests;
-    private final long maxRequestPending;
-    private final @NotNull File file;
+    protected @NotNull Database.Status status;
+    protected final @NotNull Logger logger;
+    protected final boolean shouldReconnectEveryCycle;
+    protected final @NotNull Duration reconnectCooldown;
+    protected final boolean willReconnect;
+    protected final @NotNull Duration timeBetweenRequests;
+    protected final long maxRequestPending;
+    protected final @NotNull File file;
 
-    private final @NotNull List<Table<?>> tableList;
-    private Connection connection;
+    protected final @NotNull List<Table<?>> tableList;
+    protected Connection connection;
 
     public SqliteDatabase(@NotNull Logger logger,
                           boolean shouldReconnectEveryCycle,
@@ -57,8 +57,8 @@ public class SqliteDatabase extends DatabaseRequestQueue implements Database {
                           long maxRequestPending,
                           @NotNull File file) {
 
-        this.status = DatabaseStatus.DISCONNECTED;
-        this.logger = logger.extend(" [SQLiteDatabase]");
+        this.status = Status.DISCONNECTED;
+        this.logger = logger.extend(" [SqliteDatabase]");
         this.shouldReconnectEveryCycle = shouldReconnectEveryCycle;
         this.reconnectCooldown = reconnectCooldown;
         this.willReconnect = willReconnect;
@@ -71,83 +71,37 @@ public class SqliteDatabase extends DatabaseRequestQueue implements Database {
     }
 
     @Override
-    protected @NotNull Database getDatabase() {
-        return this;
+    public @NotNull Type getType() {
+        return Type.SQLITE;
     }
 
     @Override
-    protected boolean reconnectIfDisconnected() {
-
-        // Create this methods logger.
-        final Logger tempLogger = this.logger.extend(" &b.reconnectIfDisconnected() &7SqliteDatabase.java:77 &7");
-
-        try {
-
-            tempLogger.debug("Checking if connected to the database. result=" + this.isConnected());
-
-            // Is the database connected?
-            if (this.isConnected()) return true;
-
-            // Should the database reconnect?
-            if (this.willReconnect) {
-
-                tempLogger.debug("Attempting to reconnect.");
-
-                // Attempt to reconnect.
-                this.status = DatabaseStatus.RECONNECTING;
-                this.connect();
-
-                // Is the database now connected?
-                if (this.isConnected()) {
-                    tempLogger.debug("Database is now connected.");
-                    return true;
-                }
-
-                // Otherwise, it will try to reconnect,
-                // so here we wait till it has reconnected.
-                while (true) {
-
-                    tempLogger.debug("Checking if connected in &b" + this.getReconnectCooldown().toMillis() + "ms.");
-
-                    // Wait the cooldown time.
-                    Thread.sleep(this.getReconnectCooldown().toMillis());
-
-                    // Check if connected.
-                    if (this.isConnected()) {
-                        tempLogger.debug("Database is now connected.");
-                        return true;
-                    }
-                }
-            }
-
-            return false;
-
-        } catch (Exception exception) {
-            throw new DatabaseException(exception, this, "reconnectIfDisconnected", "Failed to check if disconnected and reconnecting.");
-        }
-    }
-
-    @Override
-    public @NotNull DatabaseStatus getStatus() {
+    public @NotNull Database.Status getStatus() {
         try {
 
             // Check if the database is reconnecting.
-            if (this.status.equals(DatabaseStatus.RECONNECTING)) return this.status;
+            if (this.status.equals(Status.RECONNECTING)) return this.status;
 
             // Check if the connection is closed.
             if (this.connection.isClosed()) {
-                this.status = DatabaseStatus.DISCONNECTED;
+                this.status = Status.DISCONNECTED;
                 return this.status;
             }
 
             // Otherwise, status is connected.
-            this.status = DatabaseStatus.CONNECTED;
+            this.status = Status.CONNECTED;
 
         } catch (SQLException exception) {
-            this.status = DatabaseStatus.DISCONNECTED;
+            this.status = Status.DISCONNECTED;
         }
 
         return this.status;
+    }
+
+    @Override
+    public @NotNull Database setStatus(@NotNull Database.Status status) {
+        this.status = status;
+        return this;
     }
 
     @Override
@@ -350,14 +304,14 @@ public class SqliteDatabase extends DatabaseRequestQueue implements Database {
     }
 
     @Override
-    public @NotNull CompletableFuture<DatabaseStatus> connectAsync() {
+    public @NotNull CompletableFuture<Status> connectAsync() {
 
         // Create this methods logger.
         final Logger tempLogger = this.logger.extend(" &bconnectAsync() &7SqliteDatabase.java:346");
         tempLogger.debug("Connecting to the database. currentStatus=" + this.status);
 
         // Create the future result.
-        final CompletableFuture<DatabaseStatus> future = new CompletableFuture<>();
+        final CompletableFuture<Status> future = new CompletableFuture<>();
 
         new Thread(() -> {
             try {
@@ -382,7 +336,7 @@ public class SqliteDatabase extends DatabaseRequestQueue implements Database {
                 this.logger.info("Connected successfully to the &bsqlite database.");
 
                 // Set status and future.
-                this.status = DatabaseStatus.CONNECTED;
+                this.status = Status.CONNECTED;
                 future.complete(this.status);
 
 
@@ -399,7 +353,7 @@ public class SqliteDatabase extends DatabaseRequestQueue implements Database {
                     this.attemptReconnect();
 
                     // Set and return status.
-                    this.status = DatabaseStatus.RECONNECTING;
+                    this.status = Status.RECONNECTING;
                     future.complete(this.status);
                     throw new DatabaseException(exception, this, "connectAsync",
                             "Could not connect to SQLite database. Attempting to reconnect in "
@@ -410,7 +364,7 @@ public class SqliteDatabase extends DatabaseRequestQueue implements Database {
                 tempLogger.debug("The field willReconnect is false, disconnected.");
 
                 // Otherwise, disconnect.
-                this.status = DatabaseStatus.DISCONNECTED;
+                this.status = Status.DISCONNECTED;
                 future.complete(this.status);
                 throw new DatabaseException(exception, this, "connectAsync",
                         "Could not connect to SQLite database. Reconnecting is set to false."
@@ -440,37 +394,37 @@ public class SqliteDatabase extends DatabaseRequestQueue implements Database {
     }
 
     @Override
-    public @NotNull CompletableFuture<DatabaseStatus> disconnectAsync(boolean reconnect) {
+    public @NotNull CompletableFuture<Status> disconnectAsync(boolean reconnect) {
 
         // Create this methods logger.
         final Logger tempLogger = this.logger.extend(" &b.disconnectAsync() &7SqliteDatabase.java:433");
         tempLogger.debug("Disconnecting from the database. &bcurrentStatus=" + this.status + " reconnect=" + reconnect);
 
         // Create the future result.
-        final CompletableFuture<DatabaseStatus> future = new CompletableFuture<>();
+        final CompletableFuture<Status> future = new CompletableFuture<>();
 
         new Thread(() -> {
             try {
 
-                if (this.status.equals(DatabaseStatus.RECONNECTING)) {
+                if (this.status.equals(Status.RECONNECTING)) {
                     throw new DatabaseException(this, "disconnectAsync", "Attempted to disconnect when reconnecting.");
                 }
 
                 // Check if already disconnected.
-                if (this.isDisconnected() && status.equals(DatabaseStatus.DISCONNECTED)) {
+                if (this.isDisconnected() && status.equals(Status.DISCONNECTED)) {
                     tempLogger.debug("Already disconnected.");
 
                 } else {
                     // Close connection.
                     this.connection.close();
-                    this.status = DatabaseStatus.DISCONNECTED;
+                    this.status = Status.DISCONNECTED;
                     tempLogger.debug("Connection closed.");
                 }
 
                 // Should we reconnect?
                 if (reconnect) {
                     tempLogger.debug("Reconnecting.");
-                    this.status = DatabaseStatus.RECONNECTING;
+                    this.status = Status.RECONNECTING;
                     this.connect();
                 }
 
@@ -484,7 +438,7 @@ public class SqliteDatabase extends DatabaseRequestQueue implements Database {
                 // Should we reconnect?
                 if (reconnect) {
                     tempLogger.debug("Reconnecting.");
-                    this.status = DatabaseStatus.RECONNECTING;
+                    this.status = Status.RECONNECTING;
                     this.connect();
                 }
 

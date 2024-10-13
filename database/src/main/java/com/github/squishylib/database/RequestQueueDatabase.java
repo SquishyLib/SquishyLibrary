@@ -30,33 +30,17 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * <p>
  * Uses a queue structure to manage requests.
  */
-public abstract class DatabaseRequestQueue extends TaskContainer {
+public abstract class RequestQueueDatabase extends TaskContainer implements Database {
 
     private final @NotNull Queue<Request<?>> queue;
     private boolean running;
     private boolean sentMaximumRequestsMessage;
 
-    public DatabaseRequestQueue() {
+    public RequestQueueDatabase() {
         this.queue = new ConcurrentLinkedQueue<>();
         this.running = false;
         this.sentMaximumRequestsMessage = false;
     }
-
-    /**
-     * The instance of the database that is being used.
-     *
-     * @return The database instance.
-     */
-    protected abstract @NotNull Database getDatabase();
-
-    /**
-     * Used to reconnect to the database if the connection was closed.
-     * <p>
-     * This will stop the current thread until complete.
-     *
-     * @return True if connected.
-     */
-    protected abstract boolean reconnectIfDisconnected();
 
     /**
      * Used to add a request to the queue.
@@ -73,7 +57,7 @@ public abstract class DatabaseRequestQueue extends TaskContainer {
     public @NotNull <R> CompletableFuture<R> addRequest(@NotNull Request<R> request) {
 
         // Check if the queue has reached max requests.
-        if (this.queue.size() >= this.getDatabase().getMaxRequestsPending()) {
+        if (this.queue.size() >= this.getMaxRequestsPending()) {
 
             // If we have already sent an error message, complete this request with a null value.
             if (this.sentMaximumRequestsMessage) {
@@ -106,8 +90,8 @@ public abstract class DatabaseRequestQueue extends TaskContainer {
         this.running = true;
 
         // Should we reconnect to the database?
-        if (this.getDatabase().shouldReconnectEveryCycle()) {
-            this.getDatabase().disconnect(true);
+        if (this.shouldReconnectEveryCycle()) {
+            this.disconnect(true);
         }
 
         // Start the iteration of the queue.
@@ -135,7 +119,7 @@ public abstract class DatabaseRequestQueue extends TaskContainer {
                 request.executeSync();
 
                 // Wait for duration.
-                Thread.sleep(this.getDatabase().getTimeBetweenRequests().toMillis());
+                Thread.sleep(this.getTimeBetweenRequests().toMillis());
 
                 // Are there no tasks left?
                 if (this.queue.isEmpty()) {

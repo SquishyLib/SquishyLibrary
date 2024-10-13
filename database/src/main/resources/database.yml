@@ -1,0 +1,12 @@
+# Database Library Author: Smudge
+# File: database.yml
+
+should_reconnect_every_cycle: true
+reconnect_cooldown_millis: 2000
+will_reconnect: true
+time_between_requests_millis: 100
+max_requests_pending: 40
+
+sqlite:
+  enabled: true
+  path: "plugins/CozyJoinLeave/database.sqlite3"

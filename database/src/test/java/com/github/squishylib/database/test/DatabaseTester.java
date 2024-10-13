@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.github.squishylib.database.test.tester;
+package com.github.squishylib.database.test;
 
 import com.github.squishylib.common.logger.Logger;
 import com.github.squishylib.common.testing.ResultChecker;
@@ -24,8 +24,6 @@ import com.github.squishylib.common.testing.Testing;
 import com.github.squishylib.database.Database;
 import com.github.squishylib.database.DatabaseBuilder;
 import com.github.squishylib.database.Query;
-import com.github.squishylib.database.test.example.ExampleRecord;
-import com.github.squishylib.database.test.example.ExampleTable;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -81,26 +79,26 @@ public class DatabaseTester {
         final Database database = this.builder.create().connect();
 
         // Create database table.
-        database.createTable(new ExampleTable());
+        database.createTable(new TestTable());
 
         // Check if the database table was created.
         new ResultChecker("testCreateTable")
                 .expect(database.isConnected(), "database.isConnected()")
                 .expect(database.getAmountOfTables() == 1, "database.getTable(ExampleTable.class) != null")
-                .expect(database.getTable(ExampleTable.class).getColumnNames().waitAndGet().size() == 4, "Are there the correct number of columns?");
+                .expect(database.getTable(TestTable.class).getColumnNames().waitAndGet().size() == 4, "Are there the correct number of columns?");
     }
 
     public void testInsertAndGetFirst() {
         this.logger.info("&aRunning test: &ftestInsertAndGetFirst");
-        final Database database = this.builder.create().connect().createTable(new ExampleTable());
+        final Database database = this.builder.create().connect().createTable(new TestTable());
 
         // Insert record.
-        database.getTable(ExampleTable.class).insertRecord(
-                new ExampleRecord("testInsertAndGetFirst").setString("testInsertAndGetFirst")
+        database.getTable(TestTable.class).insertRecord(
+                new TestRecord("testInsertAndGetFirst").setString("testInsertAndGetFirst")
         );
 
         // Get the first record in the database.
-        ExampleRecord record = database.getTable(ExampleTable.class).getFirstRecord().waitAndGet();
+        TestRecord record = database.getTable(TestTable.class).getFirstRecord().waitAndGet();
 
         // Check if the record is the same.
         new ResultChecker("testInsertAndGetFirst")
@@ -111,16 +109,16 @@ public class DatabaseTester {
 
     public void testInsertAndGetFirstQuery() {
         this.logger.info("&aRunning test: &ftestInsertAndGetFirstQuery");
-        final Database database = this.builder.create().connect().createTable(new ExampleTable());
+        final Database database = this.builder.create().connect().createTable(new TestTable());
 
         // Insert another record into the database.
-        database.getTable(ExampleTable.class).insertRecord(
-                new ExampleRecord("testInsertAndGetFirstQuery").setString("testInsertAndGetFirstQuery")
+        database.getTable(TestTable.class).insertRecord(
+                new TestRecord("testInsertAndGetFirstQuery").setString("testInsertAndGetFirstQuery")
         );
 
         // Get the recently inserted record.
-        ExampleRecord record = database.getTable(ExampleTable.class).getFirstRecord(new Query()
-                .match(ExampleRecord.IDENTIFIER_KEY, "testInsertAndGetFirstQuery")
+        TestRecord record = database.getTable(TestTable.class).getFirstRecord(new Query()
+                .match(TestRecord.IDENTIFIER_KEY, "testInsertAndGetFirstQuery")
         ).waitAndGet();
 
         // Check if the records are the same.
@@ -132,27 +130,27 @@ public class DatabaseTester {
 
     public void testGetRecordList() {
         this.logger.info("&aRunning test: &ftestGetRecordList");
-        final Database database = this.builder.create().connect().createTable(new ExampleTable());
+        final Database database = this.builder.create().connect().createTable(new TestTable());
 
         // Get the list of records.
-        List<ExampleRecord> list = database.getTable(ExampleTable.class).getRecordList().waitAndGet();
+        List<TestRecord> list = database.getTable(TestTable.class).getRecordList().waitAndGet();
 
         // Check if the records are the same.
         new ResultChecker("testGetRecordList")
                 .expect(list != null, "list != null")
-                .expect(list.stream().map(ExampleRecord::getIdentifier).toList().contains("testInsertAndGetFirst"), "contains identifier testInsertAndGetFirst")
-                .expect(list.stream().map(ExampleRecord::getIdentifier).toList().contains("testInsertAndGetFirstQuery"), "contains identifier testInsertAndGetFirstQuery")
-                .expect(list.stream().map(ExampleRecord::getString).toList().contains("testInsertAndGetFirst"), "contains value testInsertAndGetFirst")
-                .expect(list.stream().map(ExampleRecord::getString).toList().contains("testInsertAndGetFirstQuery"), "contains value testInsertAndGetFirstQuery");
+                .expect(list.stream().map(TestRecord::getIdentifier).toList().contains("testInsertAndGetFirst"), "contains identifier testInsertAndGetFirst")
+                .expect(list.stream().map(TestRecord::getIdentifier).toList().contains("testInsertAndGetFirstQuery"), "contains identifier testInsertAndGetFirstQuery")
+                .expect(list.stream().map(TestRecord::getString).toList().contains("testInsertAndGetFirst"), "contains value testInsertAndGetFirst")
+                .expect(list.stream().map(TestRecord::getString).toList().contains("testInsertAndGetFirstQuery"), "contains value testInsertAndGetFirstQuery");
 
     }
 
     public void testGetRecordListQuery() {
         this.logger.info("&aRunning test: &ftestGetRecordList");
-        final Database database = this.builder.create().connect().createTable(new ExampleTable());
+        final Database database = this.builder.create().connect().createTable(new TestTable());
 
         // Get the list of records.
-        List<ExampleRecord> list = database.getTable(ExampleTable.class).getRecordList(new Query().match(ExampleRecord.IDENTIFIER_KEY, "testInsertAndGetFirst")).waitAndGet();
+        List<TestRecord> list = database.getTable(TestTable.class).getRecordList(new Query().match(TestRecord.IDENTIFIER_KEY, "testInsertAndGetFirst")).waitAndGet();
 
         // Check if the records are the same.
         new ResultChecker("testGetRecordList")
@@ -164,10 +162,10 @@ public class DatabaseTester {
 
     public void testGetAmountOfRecords() {
         this.logger.info("&aRunning test: &ftestGetAmountOfRecords");
-        final Database database = this.builder.create().connect().createTable(new ExampleTable());
+        final Database database = this.builder.create().connect().createTable(new TestTable());
 
         // Get the list of records.
-        int amount = database.getTable(ExampleTable.class).getAmountOfRecords().waitAndGetNotNull();
+        int amount = database.getTable(TestTable.class).getAmountOfRecords().waitAndGetNotNull();
 
         // Check if the records are the same.
         new ResultChecker("testGetAmountOfRecords")
@@ -176,11 +174,11 @@ public class DatabaseTester {
 
     public void testGetAmountOfRecordsQuery() {
         this.logger.info("&aRunning test: &ftestGetAmountOfRecordsQuery");
-        final Database database = this.builder.create().connect().createTable(new ExampleTable());
+        final Database database = this.builder.create().connect().createTable(new TestTable());
 
         // Get the list of records.
-        int amount = database.getTable(ExampleTable.class).getAmountOfRecords(new Query()
-                .match(ExampleRecord.IDENTIFIER_KEY, "testInsertAndGetFirst")
+        int amount = database.getTable(TestTable.class).getAmountOfRecords(new Query()
+                .match(TestRecord.IDENTIFIER_KEY, "testInsertAndGetFirst")
         ).waitAndGetNotNull();
 
         // Check if the records are the same.
@@ -190,14 +188,14 @@ public class DatabaseTester {
 
     public void testRemoveRecord() {
         this.logger.info("&aRunning test: &ftestRemoveRecord");
-        final Database database = this.builder.create().connect().createTable(new ExampleTable());
+        final Database database = this.builder.create().connect().createTable(new TestTable());
 
         // Get the list of records.
-        ExampleRecord record = database.getTable(ExampleTable.class).getFirstRecord().waitAndGet();
+        TestRecord record = database.getTable(TestTable.class).getFirstRecord().waitAndGet();
         assert record != null;
-        database.getTable(ExampleTable.class).removeRecord(record);
+        database.getTable(TestTable.class).removeRecord(record);
 
-        ExampleRecord recordRemoved = database.getTable(ExampleTable.class).getFirstRecord(new Query().match(record)).waitAndGet();
+        TestRecord recordRemoved = database.getTable(TestTable.class).getFirstRecord(new Query().match(record)).waitAndGet();
 
         // Check if the records are the same.
         new ResultChecker("testRemoveRecord")
@@ -206,17 +204,17 @@ public class DatabaseTester {
 
     public void testUpdateRecord() {
         this.logger.info("&aRunning test: &ftestUpdateRecord");
-        final Database database = this.builder.create().connect().createTable(new ExampleTable());
+        final Database database = this.builder.create().connect().createTable(new TestTable());
 
         // Insert record.
-        database.getTable(ExampleTable.class).insertRecord(new ExampleRecord("testUpdateRecord").setString("value1"));
+        database.getTable(TestTable.class).insertRecord(new TestRecord("testUpdateRecord").setString("value1"));
 
         // Update record.
-        database.getTable(ExampleTable.class).insertRecord(new ExampleRecord("testUpdateRecord").setString("value2"));
+        database.getTable(TestTable.class).insertRecord(new TestRecord("testUpdateRecord").setString("value2"));
 
         // Get record.
-        ExampleRecord record = database.getTable(ExampleTable.class)
-                .getFirstRecord(new Query().match(ExampleRecord.IDENTIFIER_KEY, "testUpdateRecord"))
+        TestRecord record = database.getTable(TestTable.class)
+                .getFirstRecord(new Query().match(TestRecord.IDENTIFIER_KEY, "testUpdateRecord"))
                 .waitAndGet();
 
         // Check if the records are the same.

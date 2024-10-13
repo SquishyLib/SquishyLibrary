@@ -235,7 +235,7 @@ public class Logger implements Replicable<Logger> {
 
     @Override
     public @NotNull Logger duplicate() {
-        return new Logger(this.logger, this.prefix);
+        return new Logger(this.logger, this.prefix).setDebugForwarding(this.debugForwarding);
     }
 
     public static void setRootLoggerLevel(@NotNull Level level) {

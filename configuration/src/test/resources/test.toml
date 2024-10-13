@@ -1,0 +1,7 @@
+get = "test"
+
+[getClass]
+key = "value"
+
+[getConvertable]
+key = "value"
