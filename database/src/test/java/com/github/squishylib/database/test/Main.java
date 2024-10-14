@@ -39,6 +39,7 @@ public class Main {
 
                 .setSqliteEnabled(true)
                 .setSqlitePath("src/test/resources/{uuid}.sqlite3".replace("{uuid}", uuid.toString()))
+
                 .setDebugMode(true)
         );
         tester.testAll();
@@ -58,6 +59,7 @@ public class Main {
                 .setMySqlDatabaseName("testing")
                 .setMySqlUsername("admin")
                 .setMySqlPassword("123")
+
                 .setDebugMode(true)
         );
         tester.testAll();

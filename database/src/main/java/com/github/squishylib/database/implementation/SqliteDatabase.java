@@ -274,7 +274,7 @@ public class SqliteDatabase extends RequestQueueDatabase {
         }
 
         throw new DatabaseException(this, "getTable", "Table was not registered with the database: " + clazz.getName()
-                + ". Please use database.createTable(Table<?> table) before trying to get the table isntance."
+                + ". Please use database.createTable(Table<?> table) before trying to get the table instance."
         );
     }
 
@@ -375,82 +375,8 @@ public class SqliteDatabase extends RequestQueueDatabase {
         return future;
     }
 
-    private void attemptReconnect() {
-        new Thread(() -> {
-            try {
-
-                // Wait cooldown.
-                Thread.sleep(this.reconnectCooldown.toMillis());
-
-                // Attempt to reconnect.
-                this.connectAsync();
-
-            } catch (Exception exception) {
-                throw new DatabaseException(exception, this, "attemptReconnect",
-                        "Error occurred while waiting to reconnect to the database."
-                );
-            }
-        }).start();
-    }
-
     @Override
-    public @NotNull CompletableFuture<Status> disconnectAsync(boolean reconnect) {
-
-        // Create this methods logger.
-        final Logger tempLogger = this.logger.extend(" &b.disconnectAsync() &7SqliteDatabase.java:433");
-        tempLogger.debug("Disconnecting from the database. &bcurrentStatus=" + this.status + " reconnect=" + reconnect);
-
-        // Create the future result.
-        final CompletableFuture<Status> future = new CompletableFuture<>();
-
-        new Thread(() -> {
-            try {
-
-                if (this.status.equals(Status.RECONNECTING)) {
-                    throw new DatabaseException(this, "disconnectAsync", "Attempted to disconnect when reconnecting.");
-                }
-
-                // Check if already disconnected.
-                if (this.isDisconnected() && status.equals(Status.DISCONNECTED)) {
-                    tempLogger.debug("Already disconnected.");
-
-                } else {
-                    // Close connection.
-                    this.connection.close();
-                    this.status = Status.DISCONNECTED;
-                    tempLogger.debug("Connection closed.");
-                }
-
-                // Should we reconnect?
-                if (reconnect) {
-                    tempLogger.debug("Reconnecting.");
-                    this.status = Status.RECONNECTING;
-                    this.connect();
-                }
-
-                // Complete future status.
-                future.complete(this.status);
-
-            } catch (Exception exception) {
-
-                tempLogger.debug("An error occurred while disconnecting.");
-
-                // Should we reconnect?
-                if (reconnect) {
-                    tempLogger.debug("Reconnecting.");
-                    this.status = Status.RECONNECTING;
-                    this.connect();
-                }
-
-                // Complete future status.
-                future.complete(this.status);
-
-                throw new DatabaseException(exception, this, "disconnectAsync",
-                        "Error while disconnecting. &ereconnect=" + reconnect
-                );
-            }
-        }).start();
-
-        return future;
+    public void closeConnection() throws Exception {
+        this.connection.close();
     }
 }

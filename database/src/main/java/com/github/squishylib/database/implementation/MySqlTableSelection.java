@@ -21,25 +21,35 @@ package com.github.squishylib.database.implementation;
 import com.github.squishylib.common.CompletableFuture;
 import com.github.squishylib.database.Query;
 import com.github.squishylib.database.Record;
+import com.github.squishylib.database.Table;
 import com.github.squishylib.database.TableSelection;
 import com.github.squishylib.database.field.PrimaryFieldMap;
 import com.github.squishylib.database.field.RecordField;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
 
 public class MySqlTableSelection<R extends Record<R>> implements TableSelection<R, MySqlDatabase> {
 
+    private final @NotNull MySqlDatabase database;
+    private final @NotNull Table<R> table;
+
+    public MySqlTableSelection(final @NotNull MySqlDatabase database, @NotNull Table<R> table) {
+        this.database = database;
+        this.table = table;
+    }
+
     @Override
     public @NotNull String getName() {
-        return "";
+        return this.table.getName();
     }
 
     @Override
     public @NotNull Optional<MySqlDatabase> getDatabase() {
-        return Optional.empty();
+        return Optional.of(this.database);
     }
 
     @Override

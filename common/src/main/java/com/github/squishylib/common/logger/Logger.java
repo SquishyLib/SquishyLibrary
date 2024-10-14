@@ -193,6 +193,7 @@ public class Logger implements Replicable<Logger> {
         // Debug forwarding is where debugs should be sent though the info level.
         if (debugForwarding && this.logger.isLoggable(Level.DEBUG)) {
             this.logger.log(Level.INFO, ConsoleColor.parse("&7" + this.getPrefixFormatted() + message));
+            return this;
         }
 
         this.logger.log(Level.DEBUG, ConsoleColor.parse("&7" + this.getPrefixFormatted() + message));

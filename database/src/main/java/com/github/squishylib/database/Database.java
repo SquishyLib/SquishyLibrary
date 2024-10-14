@@ -234,6 +234,13 @@ public interface Database {
     }
 
     /**
+     * Should only be used by the library to access
+     * the close connection method.
+     */
+    @ApiStatus.Internal
+    void closeConnection() throws Exception;
+
+    /**
      * Used to close the connection to the database.
      * <p>
      * Returns the status of the database once it has
@@ -245,8 +252,65 @@ public interface Database {
      * @param reconnect If the database should still try to reconnect.
      * @return The completable status.
      */
-    @NotNull
-    CompletableFuture<Status> disconnectAsync(boolean reconnect);
+    default @NotNull CompletableFuture<Status> disconnectAsync(boolean reconnect) {
+
+        // Create this methods logger.
+        final Logger tempLogger = this.getLogger().extend(" &b.disconnectAsync() &7Database.java:248");
+        tempLogger.debug("Disconnecting from the database. &bcurrentStatus=" + this.getStatus() + " reconnect=" + reconnect);
+
+        // Create the future result.
+        final CompletableFuture<Status> future = new CompletableFuture<>();
+
+        new Thread(() -> {
+            try {
+
+                if (this.getStatus().equals(Status.RECONNECTING)) {
+                    throw new DatabaseException(this, "disconnectAsync", "Attempted to disconnect when reconnecting.");
+                }
+
+                // Check if already disconnected.
+                if (this.isDisconnected() && this.getStatus().equals(Status.DISCONNECTED)) {
+                    tempLogger.debug("Already disconnected.");
+
+                } else {
+                    // Close connection.
+                    this.closeConnection();
+                    this.setStatus(Status.DISCONNECTED);
+                    tempLogger.debug("Connection closed.");
+                }
+
+                // Should we reconnect?
+                if (reconnect) {
+                    tempLogger.debug("Reconnecting.");
+                    this.setStatus(Status.RECONNECTING);
+                    this.connect();
+                }
+
+                // Complete future status.
+                future.complete(this.getStatus());
+
+            } catch (Exception exception) {
+
+                tempLogger.debug("An error occurred while disconnecting.");
+
+                // Should we reconnect?
+                if (reconnect) {
+                    tempLogger.debug("Reconnecting.");
+                    this.setStatus(Status.RECONNECTING);
+                    this.connect();
+                }
+
+                // Complete future status.
+                future.complete(this.getStatus());
+
+                throw new DatabaseException(exception, this, "disconnectAsync",
+                        "Error while disconnecting. &ereconnect=" + reconnect
+                );
+            }
+        }).start();
+
+        return future;
+    }
 
     /**
      * Used to close the connection to the database.
@@ -345,5 +409,23 @@ public interface Database {
         } catch (Exception exception) {
             throw new DatabaseException(exception, this, "reconnectIfDisconnected", "Failed to check if disconnected and reconnecting.");
         }
+    }
+
+    default void attemptReconnect() {
+        new Thread(() -> {
+            try {
+
+                // Wait cooldown.
+                Thread.sleep(this.getReconnectCooldown().toMillis());
+
+                // Attempt to reconnect.
+                this.connectAsync();
+
+            } catch (Exception exception) {
+                throw new DatabaseException(exception, this, "attemptReconnect",
+                        "Error occurred while waiting to reconnect to the database."
+                );
+            }
+        }).start();
     }
 }

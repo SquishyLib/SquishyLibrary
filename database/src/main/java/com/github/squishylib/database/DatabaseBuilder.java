@@ -22,6 +22,7 @@ import com.github.squishylib.common.logger.Level;
 import com.github.squishylib.common.logger.Logger;
 import com.github.squishylib.configuration.ConfigurationSection;
 import com.github.squishylib.configuration.implementation.MemoryConfigurationSection;
+import com.github.squishylib.database.implementation.MySqlDatabase;
 import com.github.squishylib.database.implementation.SqliteDatabase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -231,6 +232,7 @@ public class DatabaseBuilder {
     }
 
     public @NotNull Database create() {
+
         if (this.isSqliteEnabled()) {
 
             final String path = this.getSqlitePath();
@@ -244,6 +246,40 @@ public class DatabaseBuilder {
                     this.getTimeBetweenRequests(),
                     this.getMaxRequestsPending(),
                     new File(path)
+            );
+        }
+
+        if (this.isMySqlEnabled()) {
+
+            final String connectionString = this.getMySqlConnectionString();
+            final String databaseName = this.getMySqlDatabaseName();
+            final String username = this.getMySqlUsername();
+            final String password = this.getMySqlPassword();
+
+            if (connectionString == null) {
+                throw new DatabaseException(this, "create", "Connection string for mysql database is not defined.");
+            }
+            if (databaseName == null) {
+                throw new DatabaseException(this, "create", "Database name for mysql database is not defined.");
+            }
+            if (username == null) {
+                throw new DatabaseException(this, "create", "Username for mysql database is not defined.");
+            }
+            if (password == null) {
+                throw new DatabaseException(this, "create", "Password for mysql database is not defined.");
+            }
+
+            return new MySqlDatabase(
+                    this.getLogger(),
+                    this.getShouldReconnectEveryCycle(),
+                    this.getReconnectCooldown(),
+                    this.getWillReconnect(),
+                    this.getTimeBetweenRequests(),
+                    this.getMaxRequestsPending(),
+                    connectionString,
+                    databaseName,
+                    username,
+                    password
             );
         }
 
