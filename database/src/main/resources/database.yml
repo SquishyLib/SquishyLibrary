@@ -10,3 +10,10 @@ max_requests_pending: 40
 sqlite:
   enabled: true
   path: "plugins/CozyJoinLeave/database.sqlite3"
+
+mysql:
+  enabled: false
+  connection_string: "address:port"
+  database_name: ""
+  username: ""
+  password: ""
