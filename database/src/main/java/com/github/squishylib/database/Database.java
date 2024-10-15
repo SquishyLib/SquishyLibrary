@@ -207,6 +207,13 @@ public interface Database {
     <R extends Record<R>> @NotNull TableSelection<R, ?> createTableSelection(@NotNull Table<R> table);
 
     /**
+     * This will delete the database and close the connection.
+     *
+     * @return True if successful.
+     */
+    @NotNull CompletableFuture<Boolean> drop();
+
+    /**
      * Used to attempt to connect to the database.
      * <p>
      * Returns the status of the database once it has

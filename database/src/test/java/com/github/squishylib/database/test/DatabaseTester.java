@@ -55,6 +55,11 @@ public class DatabaseTester {
         this.testUpdateRecord();
     }
 
+    public void drop() {
+        final Database database = this.builder.create().connect();
+        database.drop();
+    }
+
     public void testConnection() {
         this.logger.info("&aRunning test: &ftestConnection");
         final Database database = this.builder.create().connect();

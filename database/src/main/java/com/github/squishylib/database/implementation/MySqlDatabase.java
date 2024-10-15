@@ -312,6 +312,36 @@ public class MySqlDatabase extends RequestQueueDatabase {
     }
 
     @Override
+    public @NotNull CompletableFuture<Boolean> drop() {
+        return this.addRequest(new Request<>(() -> {
+
+            // Create this requests logger.
+            final Logger tempLogger = this.getLogger().extend(" &b.drop() &7MySqlDatabase.java:315");
+
+            // Create the sql statement.
+            final String statement = "DROP DATABASE {database};"
+                    .replace("{database}", this.databaseName);
+
+            try {
+
+                // Create the prepared statement.
+                tempLogger.debug("&d⎡ &7Executing statement &b" + statement);
+                PreparedStatement preparedStatement = this.getConnection().prepareStatement(statement);
+                preparedStatement.execute();
+                preparedStatement.close();
+                tempLogger.debug("&d⎣ &7Success &btrue");
+
+                // Disconnect.
+                this.disconnect(false);
+                return true;
+
+            } catch (Exception exception) {
+                throw new DatabaseException(exception, this, "getAmountOfRecords", "statement=&e" + statement + "&r");
+            }
+        }));
+    }
+
+    @Override
     public @NotNull CompletableFuture<Status> connectAsync() {
 
         // Create this methods logger.

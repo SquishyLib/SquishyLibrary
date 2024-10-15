@@ -304,6 +304,22 @@ public class SqliteDatabase extends RequestQueueDatabase {
     }
 
     @Override
+    public @NotNull CompletableFuture<Boolean> drop() {
+        return this.addRequest(new Request<>(() -> {
+
+            // Create this requests logger.
+            final Logger tempLogger = this.getLogger().extend(" &b.drop() &7SqliteDatabase.java:307");
+
+            // Disconnect.
+            this.disconnect(false);
+
+            // Delete file.
+            tempLogger.debug("Deleting database file.");
+            return this.file.delete();
+        }));
+    }
+
+    @Override
     public @NotNull CompletableFuture<Status> connectAsync() {
 
         // Create this methods logger.

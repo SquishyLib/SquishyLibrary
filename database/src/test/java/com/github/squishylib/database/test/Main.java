@@ -43,6 +43,7 @@ public class Main {
                 .setDebugMode(true)
         );
         tester.testAll();
+        tester.drop();
     }
 
     @Test
@@ -63,5 +64,6 @@ public class Main {
                 .setDebugMode(true)
         );
         tester.testAll();
+        tester.drop();
     }
 }
