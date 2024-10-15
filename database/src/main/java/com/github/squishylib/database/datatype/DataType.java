@@ -74,12 +74,35 @@ public interface DataType<T> {
     @Nullable
     Object toMySql(@Nullable Object object);
 
+    /**
+     * Converts a sqlite result back into the datatype.
+     *
+     * @param results   The result set.
+     * @param fieldName The field's name.
+     * @return The original type.
+     */
     @Nullable
     T fromSqlite(@NotNull ResultSet results, @NotNull String fieldName);
 
+    /**
+     * Converts a mysql result back into the datatype.
+     *
+     * @param results   The result set.
+     * @param fieldName The field's name.
+     * @return The original type.
+     */
     @Nullable
     T fromMySql(@NotNull ResultSet results, @NotNull String fieldName);
 
+    /**
+     * Used to get the datatype class of a java type
+     * <p>
+     * This should not be used when converting a database
+     * type back into a java type as they could be different.
+     *
+     * @param type The class type.
+     * @return The data type.
+     */
     static @NotNull DataType<?> of(@NotNull Class<?> type) {
         return switch (type.getName()) {
             case "boolean", "java.land.Boolean" -> new BooleanType();

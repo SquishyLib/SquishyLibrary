@@ -20,14 +20,10 @@ package com.github.squishylib.database;
 
 import com.github.squishylib.common.logger.Logger;
 import com.github.squishylib.database.field.PrimaryField;
-import com.github.squishylib.database.field.RecordField;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.sqlite.SQLiteErrorCode;
-import org.sqlite.SQLiteException;
 
 import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;

@@ -34,13 +34,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 /**
  * A database record.
@@ -49,11 +46,6 @@ import java.util.function.Consumer;
  */
 public interface Record<R extends Record<R>> extends ConfigurationConvertible<R> {
 
-    /**
-     * The list of fields within the inherited class.
-     *
-     * @return The list of records.
-     */
     default @NotNull List<RecordField> getFieldList() {
         final List<RecordField> fields = new ArrayList<>();
 
@@ -80,12 +72,6 @@ public interface Record<R extends Record<R>> extends ConfigurationConvertible<R>
         return fields;
     }
 
-    /**
-     * The list of field names that should be used in
-     * the database table.
-     *
-     * @return The list of field names.
-     */
     default @NotNull List<String> getFieldNameList() {
         final List<String> fieldNames = new ArrayList<>();
 
@@ -103,11 +89,6 @@ public interface Record<R extends Record<R>> extends ConfigurationConvertible<R>
         return fieldNames;
     }
 
-    /**
-     * The map of field to value within the inherited class.
-     *
-     * @return The field values.
-     */
     default @NotNull Map<RecordField, Object> getFieldValues() {
         final ConfigurationSection section = this.convert();
         final Map<RecordField, Object> fieldMap = new HashMap<>();
@@ -123,11 +104,6 @@ public interface Record<R extends Record<R>> extends ConfigurationConvertible<R>
         return fieldMap;
     }
 
-    /**
-     * The list of primary fields within the inherited class.
-     *
-     * @return The primary field list.
-     */
     default @NotNull List<PrimaryField> getPrimaryFieldList() {
         final List<PrimaryField> primaryFields = new ArrayList<>();
 

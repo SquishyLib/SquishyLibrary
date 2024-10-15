@@ -418,6 +418,11 @@ public interface Database {
         }
     }
 
+    /**
+     * This is an async method. It will wait the
+     * {@link Database#getReconnectCooldown()} duration
+     * and then reconnect.
+     */
     default void attemptReconnect() {
         new Thread(() -> {
             try {

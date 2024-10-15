@@ -27,10 +27,8 @@ import com.github.squishylib.database.implementation.SqliteDatabase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.xml.crypto.Data;
 import java.io.File;
 import java.time.Duration;
-import java.util.logging.ConsoleHandler;
 
 /**
  * <pre>{@code
@@ -236,7 +234,8 @@ public class DatabaseBuilder {
         if (this.isSqliteEnabled()) {
 
             final String path = this.getSqlitePath();
-            if (path == null) throw new DatabaseException(this, "create", "Path for sqlite database is not defined in the configuration.");
+            if (path == null)
+                throw new DatabaseException(this, "create", "Path for sqlite database is not defined in the configuration.");
 
             return new SqliteDatabase(
                     this.getLogger(),

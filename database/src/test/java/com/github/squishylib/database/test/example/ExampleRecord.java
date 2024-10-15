@@ -30,7 +30,9 @@ public class ExampleRecord implements Record<ExampleRecord> {
     public static final @NotNull String IDENTIFIER_KEY = "identifier";
     public static final @NotNull String STRING_KEY = "value";
 
-    private final @Field(IDENTIFIER_KEY) @Primary @NotNull String identifier;
+    private final @Field(IDENTIFIER_KEY)
+    @Primary
+    @NotNull String identifier;
     private @Field(STRING_KEY) String string;
 
     public ExampleRecord(@NotNull String identifier) {

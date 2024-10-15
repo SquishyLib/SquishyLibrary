@@ -20,8 +20,8 @@ package com.github.squishylib.database.implementation;
 
 import com.github.squishylib.common.CompletableFuture;
 import com.github.squishylib.common.logger.Logger;
-import com.github.squishylib.database.*;
 import com.github.squishylib.database.Record;
+import com.github.squishylib.database.*;
 import com.github.squishylib.database.field.PrimaryFieldMap;
 import com.github.squishylib.database.field.RecordField;
 import org.jetbrains.annotations.NotNull;

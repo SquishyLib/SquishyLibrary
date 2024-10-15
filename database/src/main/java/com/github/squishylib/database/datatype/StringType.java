@@ -45,7 +45,8 @@ public class StringType implements DataType<String> {
 
     @Override
     public @Nullable Object toSqlite(@Nullable Object object) {
-        if (!(object instanceof String)) throw new DatabaseException(this, "toSqlite", "Object is not a instance of a string.");
+        if (!(object instanceof String))
+            throw new DatabaseException(this, "toSqlite", "Object is not a instance of a string.");
         return object;
     }
 

@@ -20,7 +20,6 @@ package com.github.squishylib.database.field;
 
 import com.github.squishylib.database.DatabaseException;
 import com.github.squishylib.database.datatype.DataType;
-import com.github.squishylib.database.datatype.DefaultType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
