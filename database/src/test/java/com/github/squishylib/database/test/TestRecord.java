@@ -24,6 +24,7 @@ import com.github.squishylib.database.Record;
 import com.github.squishylib.database.annotation.Field;
 import com.github.squishylib.database.annotation.Foreign;
 import com.github.squishylib.database.annotation.Primary;
+import com.github.squishylib.database.annotation.Size;
 import org.jetbrains.annotations.NotNull;
 
 public class TestRecord implements Record<TestRecord> {
@@ -38,8 +39,8 @@ public class TestRecord implements Record<TestRecord> {
     public static final @NotNull String BOOL_KEY = "bool";
     public static final @NotNull String OBJECT_KEY = "object";
 
-    private final @Field(IDENTIFIER_KEY) @Primary @NotNull String identifier;
-    private @Field(STRING_KEY) @Foreign(table = TestTable.TABLE_NAME, tableField = TestRecord.BOOL_KEY) String string;
+    private final @Field(IDENTIFIER_KEY) @Primary @Size(255) @NotNull String identifier;
+    private @Field(STRING_KEY) @Size(255) String string;
     private @Field(BOOL_KEY) boolean bool;
     private @Field(OBJECT_KEY) ObjectTest object;
 

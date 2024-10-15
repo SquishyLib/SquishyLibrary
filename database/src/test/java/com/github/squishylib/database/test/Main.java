@@ -31,10 +31,10 @@ public class Main {
         UUID uuid = UUID.randomUUID();
 
         DatabaseTester tester = new DatabaseTester(new DatabaseBuilder()
-                .setReconnectCooldown(Duration.ofMillis(1000))
+                .setReconnectCooldown(Duration.ofMillis(100))
                 .setShouldReconnectEveryCycle(true)
                 .setWillReconnect(true)
-                .setTimeBetweenRequests(Duration.ofMillis(100))
+                .setTimeBetweenRequests(Duration.ofMillis(10))
                 .setMaxRequestsPending(20)
 
                 .setSqliteEnabled(true)
@@ -48,10 +48,10 @@ public class Main {
     @Test
     public void testMySql() {
         DatabaseTester tester = new DatabaseTester(new DatabaseBuilder()
-                .setReconnectCooldown(Duration.ofMillis(1000))
+                .setReconnectCooldown(Duration.ofMillis(100))
                 .setShouldReconnectEveryCycle(true)
                 .setWillReconnect(true)
-                .setTimeBetweenRequests(Duration.ofMillis(100))
+                .setTimeBetweenRequests(Duration.ofMillis(10))
                 .setMaxRequestsPending(20)
 
                 .setMySqlEnabled(true)

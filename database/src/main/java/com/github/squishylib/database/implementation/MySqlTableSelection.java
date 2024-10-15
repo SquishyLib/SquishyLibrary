@@ -28,7 +28,6 @@ import com.github.squishylib.database.field.RecordField;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
 
