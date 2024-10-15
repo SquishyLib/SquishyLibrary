@@ -40,7 +40,19 @@ public class DefaultType implements DataType<Object> {
     }
 
     @Override
-    public @NotNull String toSqlite(@Nullable Object object) {
+    public @NotNull String getMySqlName(long size) {
+        return "LONGTEXT";
+    }
+
+    @Override
+    public @Nullable String toSqlite(@Nullable Object object) {
+        final Map<String, Object> map = new HashMap<>();
+        map.put("value", object);
+        return new Gson().toJson(map);
+    }
+
+    @Override
+    public @Nullable Object toMySql(@Nullable Object object) {
         final Map<String, Object> map = new HashMap<>();
         map.put("value", object);
         return new Gson().toJson(map);

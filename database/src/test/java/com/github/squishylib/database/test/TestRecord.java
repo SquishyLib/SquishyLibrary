@@ -40,7 +40,7 @@ public class TestRecord implements Record<TestRecord> {
     public static final @NotNull String OBJECT_KEY = "object";
 
     private final @Field(IDENTIFIER_KEY) @Primary @Size(255) @NotNull String identifier;
-    private @Field(STRING_KEY) @Size(255) String string;
+    private @Field(STRING_KEY) String string;
     private @Field(BOOL_KEY) boolean bool;
     private @Field(OBJECT_KEY) ObjectTest object;
 

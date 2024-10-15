@@ -25,12 +25,15 @@ public class RecordField {
 
     private final @NotNull String name;
     private final @NotNull DataType<?> type;
+    private final long maxSize;
 
     public RecordField(final @NotNull String name,
-                       final @NotNull DataType<?> type) {
+                       final @NotNull DataType<?> type,
+                       final long maxSize) {
 
         this.name = name;
         this.type = type;
+        this.maxSize = maxSize;
     }
 
     public @NotNull String getName() {
@@ -39,5 +42,9 @@ public class RecordField {
 
     public @NotNull DataType<?> getType() {
         return this.type;
+    }
+
+    public long getMaxSize() {
+        return this.maxSize;
     }
 }

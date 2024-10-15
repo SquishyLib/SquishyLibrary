@@ -141,11 +141,6 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
     }
 
     @Override
-    public @NotNull CompletableFuture<R> getFirstRecord() {
-        return this.getFirstRecord(null);
-    }
-
-    @Override
     public @NotNull CompletableFuture<R> getFirstRecord(@Nullable Query query) {
         return this.database.addRequest(new Request<>(() -> this.getFirstRecordSync(query)));
     }
@@ -185,11 +180,6 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
         } catch (Exception exception) {
             throw new DatabaseException(exception, this, "getFirstRecordSync", "statement=&e" + statement + "&r");
         }
-    }
-
-    @Override
-    public @NotNull CompletableFuture<@NotNull List<R>> getRecordList() {
-        return this.getRecordList(null);
     }
 
     @Override
@@ -237,11 +227,6 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
                 throw new DatabaseException(exception, this, "getRecordList", "statement=&e" + statement + "&r");
             }
         }));
-    }
-
-    @Override
-    public @NotNull CompletableFuture<@NotNull Integer> getAmountOfRecords() {
-        return this.getAmountOfRecords(null);
     }
 
     @Override
@@ -399,11 +384,6 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
         } catch (Exception exception) {
             throw new DatabaseException(exception, this, "updateRecord", "statement=&e" + builder + "&r");
         }
-    }
-
-    @Override
-    public @NotNull CompletableFuture<@NotNull Boolean> removeRecord(@NotNull R record) {
-        return this.removeAllRecords(new Query().match(record));
     }
 
     @Override

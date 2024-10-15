@@ -37,7 +37,14 @@ public interface DataType<T> {
     String getSqliteName();
 
     @NotNull
+    String getMySqlName(long size);
+
+    @Nullable
     String toSqlite(@Nullable Object object);
+
+    @Nullable
+    Object toMySql(@Nullable Object object);
+
 
     @Nullable
     T fromSqlite(@Nullable ResultSet results, @NotNull String fieldName);

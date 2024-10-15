@@ -24,6 +24,7 @@ import com.github.squishylib.configuration.indicator.ConfigurationConvertible;
 import com.github.squishylib.database.annotation.Field;
 import com.github.squishylib.database.annotation.Foreign;
 import com.github.squishylib.database.annotation.Primary;
+import com.github.squishylib.database.annotation.Size;
 import com.github.squishylib.database.datatype.DataType;
 import com.github.squishylib.database.field.ForeignField;
 import com.github.squishylib.database.field.PrimaryField;
@@ -59,11 +60,17 @@ public interface Record<R extends Record<R>> extends ConfigurationConvertible<R>
             Field annotation = field.getAnnotation(Field.class);
             if (annotation == null) continue;
 
+            // Does the field have a size annotation?
+            long maxSize = Long.MAX_VALUE;
+            Size size = field.getAnnotation(Size.class);
+            if (size != null) maxSize = size.value();
+
             // Add the field to the list.
             fields.add(new RecordField(
                     annotation.value(),
-                    DataType.of(field.getType()))
-            );
+                    DataType.of(field.getType()),
+                    maxSize
+            ));
         }
 
         return fields;
@@ -131,10 +138,16 @@ public interface Record<R extends Record<R>> extends ConfigurationConvertible<R>
             Primary primaryAnnotation = field.getAnnotation(Primary.class);
             if (primaryAnnotation == null) continue;
 
+            // Does the field have a size annotation?
+            long maxSize = Long.MAX_VALUE;
+            Size size = field.getAnnotation(Size.class);
+            if (size != null) maxSize = size.value();
+
             // Add the primary field.
             primaryFields.add(new PrimaryField(
                     annotation.value(),
-                    DataType.of(field.getType())
+                    DataType.of(field.getType()),
+                    maxSize
             ));
         }
 
@@ -166,10 +179,16 @@ public interface Record<R extends Record<R>> extends ConfigurationConvertible<R>
             Foreign foreignAnnotation = field.getAnnotation(Foreign.class);
             if (foreignAnnotation == null) continue;
 
+            // Does the field have a size annotation?
+            long maxSize = Long.MAX_VALUE;
+            Size size = field.getAnnotation(Size.class);
+            if (size != null) maxSize = size.value();
+
             // Add the foreign field.
             foreignFields.add(new ForeignField(
                     annotation.value(),
                     DataType.of(field.getType()),
+                    maxSize,
                     foreignAnnotation.tableField(),
                     foreignAnnotation.table()
             ));

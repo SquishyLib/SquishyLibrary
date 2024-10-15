@@ -37,9 +37,26 @@ public class StringType implements DataType<String> {
     }
 
     @Override
-    public @NotNull String toSqlite(@Nullable Object object) {
+    public @NotNull String getMySqlName(long size) {
+        if (size <= 255) {
+            return "CHAR(255)";
+        }
+        if (size <= 65535) {
+            return "VARCHAR(65535)";
+        }
+
+        return "LONGTEXT";
+    }
+
+    @Override
+    public @Nullable String toSqlite(@Nullable Object object) {
         if (!(object instanceof String)) throw new DatabaseException(this, "toSqlite", "Object is not a instance of a string.");
         return (String) object;
+    }
+
+    @Override
+    public @Nullable Object toMySql(@Nullable Object object) {
+        return object;
     }
 
     @Override

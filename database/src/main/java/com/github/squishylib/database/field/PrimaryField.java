@@ -24,8 +24,9 @@ import org.jetbrains.annotations.NotNull;
 public class PrimaryField extends RecordField {
 
     public PrimaryField(final @NotNull String name,
-                        final @NotNull DataType<?> type) {
+                        final @NotNull DataType<?> type,
+                        final long maxSize) {
 
-        super(name, type);
+        super(name, type, maxSize);
     }
 }

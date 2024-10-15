@@ -28,10 +28,11 @@ public class ForeignField extends RecordField {
 
     public ForeignField(final @NotNull String name,
                         final @NotNull DataType<?> type,
+                        final long maxSize,
                         final @NotNull String foreignName,
                         final @NotNull String foreignTableName) {
 
-        super(name, type);
+        super(name, type, maxSize);
 
         this.foreignName = foreignName;
         this.foreignTableName = foreignTableName;

@@ -116,8 +116,10 @@ public interface TableSelection<R extends Record<?>, D extends Database> {
      *
      * @return The first record in this table.
      */
-    @NotNull
-    CompletableFuture<@Nullable R> getFirstRecord();
+    default @NotNull
+    CompletableFuture<@Nullable R> getFirstRecord() {
+        return this.getFirstRecord(null);
+    }
 
     /**
      * Requests the first record from this
@@ -141,8 +143,10 @@ public interface TableSelection<R extends Record<?>, D extends Database> {
      *
      * @return The optional list.
      */
-    @NotNull
-    CompletableFuture<@NotNull List<R>> getRecordList();
+    default @NotNull
+    CompletableFuture<@NotNull List<R>> getRecordList() {
+        return this.getRecordList(null);
+    }
 
     /**
      * Requests the list of records within this table
@@ -164,8 +168,10 @@ public interface TableSelection<R extends Record<?>, D extends Database> {
      *
      * @return The optional list.
      */
-    @NotNull
-    CompletableFuture<@NotNull Integer> getAmountOfRecords();
+    default @NotNull
+    CompletableFuture<@NotNull Integer> getAmountOfRecords() {
+        return this.getAmountOfRecords(null);
+    }
 
     /**
      * Requests the amount of records in this table
@@ -199,8 +205,10 @@ public interface TableSelection<R extends Record<?>, D extends Database> {
      *
      * @return The optional list.
      */
-    @NotNull
-    CompletableFuture<@NotNull Boolean> removeRecord(@NotNull R record);
+    default @NotNull
+    CompletableFuture<@NotNull Boolean> removeRecord(@NotNull R record) {
+        return this.removeAllRecords(new Query().match(record));
+    }
 
     /**
      * Used to remove a record from this table.
@@ -239,7 +247,7 @@ public interface TableSelection<R extends Record<?>, D extends Database> {
 
         for (RecordField field : this.getPrimaryFieldList()) {
             try {
-                map.set(field.getName(), results.getObject(field.getName()));
+                map.set(field.getName(), field.getMaxSize(), results.getObject(field.getName()));
             } catch (Exception exception) {
                 throw new DatabaseException(exception, this, "getPrimaryFieldMap", "Unable tp get field from result set. field=" + field);
             }

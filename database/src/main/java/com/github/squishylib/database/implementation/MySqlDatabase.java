@@ -154,6 +154,10 @@ public class MySqlDatabase extends RequestQueueDatabase {
         return this.tableList.size();
     }
 
+    public @NotNull Connection getConnection() {
+        return this.connection;
+    }
+
     @Override
     public @NotNull Database createTable(@NotNull Table<?> table) {
 
@@ -241,7 +245,7 @@ public class MySqlDatabase extends RequestQueueDatabase {
         record.getPrimaryFieldList().forEach(primaryField -> builder.append(
                 "`{key}` {type} PRIMARY KEY,"
                         .replace("{key}", primaryField.getName())
-                        .replace("{type}", primaryField.getType().getSqliteName())
+                        .replace("{type}", primaryField.getType().getMySqlName(primaryField.getMaxSize()))
         ));
 
         // Loop though fields.
@@ -250,14 +254,14 @@ public class MySqlDatabase extends RequestQueueDatabase {
                 .forEach(field -> builder.append(
                         "`{key}` {type},"
                                 .replace("{key}", field.getName())
-                                .replace("{type}", field.getType().getSqliteName())
+                                .replace("{type}", field.getType().getMySqlName(field.getMaxSize()))
                 ));
 
         // Loop though foreign keys.
         record.getForeignFieldList().forEach(foreignField -> builder.append(
                 "`{key}` {type} REFERENCES {reference}({reference_field}),"
                         .replace("{key}", foreignField.getName())
-                        .replace("{type}", foreignField.getType().getSqliteName())
+                        .replace("{type}", foreignField.getType().getMySqlName(foreignField.getMaxSize()))
                         .replace("{reference}", foreignField.getForeignTableName())
                         .replace("{reference_field}", foreignField.getForeignName())
         ));
@@ -283,9 +287,12 @@ public class MySqlDatabase extends RequestQueueDatabase {
     public boolean hasTable(@NotNull String tableName) {
         try {
 
-            // Get the table.
-            DatabaseMetaData metaData = this.connection.getMetaData();
-            ResultSet resultSet = metaData.getTables(null, null, tableName, null);
+            // Create the statement
+            String statement = "SHOW TABLES LIKE '{table}'"
+                    .replace("{table}", tableName);
+
+            // Execute the statement.
+            ResultSet resultSet = this.connection.prepareStatement(statement).executeQuery();
 
             // Check if the result is null.
             if (resultSet == null) return false;

@@ -37,9 +37,20 @@ public class BooleanType implements DataType<Boolean> {
     }
 
     @Override
-    public @NotNull String toSqlite(@Nullable Object object) {
+    public @NotNull String getMySqlName(long size) {
+        return "TINYINT(2)";
+    }
+
+    @Override
+    public @Nullable String toSqlite(@Nullable Object object) {
         if (!(object instanceof Boolean)) throw new DatabaseException(this, "toSqlite", "Object is not a boolean. object=" + object);
         return Boolean.TRUE.equals(object) ? "1" : "0";
+    }
+
+    @Override
+    public @Nullable Object toMySql(@Nullable Object object) {
+        if (object instanceof Boolean bool) return bool ? 1 : 0;
+        return 0;
     }
 
     @Override

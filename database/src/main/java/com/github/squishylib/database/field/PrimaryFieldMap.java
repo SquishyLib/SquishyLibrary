@@ -61,8 +61,8 @@ public class PrimaryFieldMap {
         return (String) value;
     }
 
-    public @Nullable PrimaryFieldMap set(@NotNull final String fieldName, @NotNull final Object value) {
-        this.map.put(new PrimaryField(fieldName, DataType.of(value.getClass())), value);
+    public @Nullable PrimaryFieldMap set(@NotNull final String fieldName, final long maxSize, @NotNull final Object value) {
+        this.map.put(new PrimaryField(fieldName, DataType.of(value.getClass()), maxSize), value);
         return this;
     }
 
