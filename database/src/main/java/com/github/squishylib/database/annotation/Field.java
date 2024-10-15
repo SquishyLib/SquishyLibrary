@@ -24,8 +24,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Indicates if a field should be in the
- * database table.
+ * Indicates if a java field should be included
+ * in the database table/collection.
  */
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
@@ -35,7 +35,7 @@ public @interface Field {
      * This field's name / column name that should
      * be used in the database table.
      * <p>
-     * This will be used at runtime to get the field names.
+     * This will be used at runtime to get the field's name.
      *
      * @return The field's name.
      */

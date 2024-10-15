@@ -22,16 +22,15 @@ import com.github.squishylib.configuration.ConfigurationSection;
 import com.github.squishylib.configuration.implementation.MemoryConfigurationSection;
 import com.github.squishylib.database.Record;
 import com.github.squishylib.database.annotation.Field;
-import com.github.squishylib.database.annotation.Foreign;
 import com.github.squishylib.database.annotation.Primary;
 import com.github.squishylib.database.annotation.Size;
 import org.jetbrains.annotations.NotNull;
 
 public class TestRecord implements Record<TestRecord> {
 
-    public class ObjectTest {
-        private final @NotNull String testString = "test";
-        private int testInt = 123;
+    public static class ObjectTest {
+        public final @NotNull String testString = "test";
+        public int testInt = 123;
     }
 
     public static final @NotNull String IDENTIFIER_KEY = "identifier";
@@ -57,6 +56,14 @@ public class TestRecord implements Record<TestRecord> {
 
     public @NotNull String getString() {
         return this.string;
+    }
+
+    public boolean getBool() {
+        return this.bool;
+    }
+
+    public @NotNull ObjectTest getObject() {
+        return this.object;
     }
 
     public @NotNull TestRecord setString(@NotNull String value) {

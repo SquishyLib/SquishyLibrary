@@ -31,12 +31,16 @@ import com.github.squishylib.database.field.PrimaryField;
 import com.github.squishylib.database.field.PrimaryFieldMap;
 import com.github.squishylib.database.field.RecordField;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * A database record.
@@ -197,21 +201,33 @@ public interface Record<R extends Record<R>> extends ConfigurationConvertible<R>
         return foreignFields;
     }
 
+    interface DataTypeConverter {
+        @Nullable Object convert(
+                @NotNull ResultSet results,
+                @NotNull String fieldName,
+                @NotNull DataType<?> dataType
+        );
+    }
+
     /**
      * Used to convert a result set into this class instance.
      *
      * @param results The results to convert.
      * @return This instance.
      */
-    default @NotNull R convert(@NotNull ResultSet results) {
+    default @NotNull R convert(@NotNull ResultSet results, @NotNull DataTypeConverter converter) {
         ConfigurationSection section = new MemoryConfigurationSection();
 
-        // Create the configuration section.
-        for (String fieldName : this.getFieldNameList()) {
+        for (RecordField field : this.getFieldList()) {
             try {
-                section.set(fieldName, results.getObject(fieldName));
+
+                section.set(
+                        field.getName(),
+                        converter.convert(results, field.getName(), field.getType())
+                );
+
             } catch (Exception exception) {
-                throw new DatabaseException(exception, this, "convert", "Unable to convert " + fieldName + " to an object.");
+                throw new DatabaseException(exception, this, "convert", "Unable to convert " + field.getName() + " to an object.");
             }
         }
 

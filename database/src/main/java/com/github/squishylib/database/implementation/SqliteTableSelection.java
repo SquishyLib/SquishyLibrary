@@ -148,7 +148,7 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
     private @Nullable R getFirstRecordSync(@Nullable Query query) {
 
         // Create this requests logger.
-        final Logger tempLogger = this.database.getLogger().extend(" &b.getFirstRecordSync(query) &7SqliteTableSelection.java:187");
+        final Logger tempLogger = this.database.getLogger().extend(" &b.getFirstRecordSync(query) &7SqliteTableSelection.java:148");
 
         // Create the sql statement.
         final String statement = (query == null ? "SELECT * FROM {table} LIMIT 1;" : "SELECT * FROM {table} WHERE {where} LIMIT 1;")
@@ -171,7 +171,7 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
             }
 
             R record = this.createEmpty(this.getPrimaryFieldMap(results))
-                    .convert(results);
+                    .convert(results, (results2, fieldName, dataType) -> dataType.fromSqlite(results2, fieldName));
 
             preparedStatement.close();
             tempLogger.debug("&d⎣ &7Final result is &b" + record.convertToMap());
@@ -214,7 +214,8 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
 
                 // Loop though all records.
                 while (results.next()) {
-                    R record = this.createEmpty(this.getPrimaryFieldMap(results)).convert(results);
+                    R record = this.createEmpty(this.getPrimaryFieldMap(results))
+                            .convert(results, (results2, fieldName, dataType) -> dataType.fromSqlite(results2, fieldName));
                     recordList.add(record);
                     tempLogger.debug("&d│ &7Added record &b" + record);
                 }
@@ -318,8 +319,9 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
             // Set the wild cards.
             int index = 1;
             for (final Map.Entry<RecordField, Object> entry : map.entrySet()) {
-                tempLogger.debug("&d│ &7Set wild card &b" + index + " to " + entry.getValue());
-                statement.setObject(index, entry.getValue());
+                final Object value = entry.getKey().getType().toSqlite(entry.getValue());
+                tempLogger.debug("&d│ &7Set wild card &b" + index + " to " + value);
+                statement.setObject(index, value);
                 index++;
             }
 
@@ -366,8 +368,9 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
             // Set the wild cards.
             int index = 1;
             for (final Map.Entry<RecordField, Object> entry : map.entrySet()) {
-                tempLogger.debug("&d│ &7Set wild card &b" + index + " to " + entry.getValue());
-                statement.setObject(index, entry.getValue());
+                final Object value = entry.getKey().getType().toSqlite(entry.getValue());
+                tempLogger.debug("&d│ &7Set wild card &b" + index + " to " + value);
+                statement.setObject(index, value);
                 index++;
             }
             for (final Map.Entry<String, Object> entry : recordQuery.getPatterns().entrySet()) {

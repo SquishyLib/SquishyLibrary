@@ -27,11 +27,6 @@ import java.sql.ResultSet;
 public class StringType implements DataType<String> {
 
     @Override
-    public boolean isType(@NotNull Object value) {
-        return value instanceof String;
-    }
-
-    @Override
     public @NotNull String getSqliteName() {
         return "TEXT";
     }
@@ -49,18 +44,18 @@ public class StringType implements DataType<String> {
     }
 
     @Override
-    public @Nullable String toSqlite(@Nullable Object object) {
+    public @Nullable Object toSqlite(@Nullable Object object) {
         if (!(object instanceof String)) throw new DatabaseException(this, "toSqlite", "Object is not a instance of a string.");
-        return (String) object;
-    }
-
-    @Override
-    public @Nullable Object toMySql(@Nullable Object object) {
         return object;
     }
 
     @Override
-    public @Nullable String fromSqlite(@Nullable ResultSet results, @NotNull String fieldName) {
+    public @Nullable Object toMySql(@Nullable Object object) {
+        return this.toSqlite(object);
+    }
+
+    @Override
+    public @Nullable String fromSqlite(@NotNull ResultSet results, @NotNull String fieldName) {
         try {
             return results.getString(fieldName);
         } catch (Exception exception) {
@@ -68,5 +63,10 @@ public class StringType implements DataType<String> {
                     "Unable to get the result value from the result set as a string. fieldName=" + fieldName
             );
         }
+    }
+
+    @Override
+    public @Nullable String fromMySql(@NotNull ResultSet results, @NotNull String fieldName) {
+        return this.fromSqlite(results, fieldName);
     }
 }

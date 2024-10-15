@@ -30,11 +30,6 @@ import java.util.Map;
 public class DefaultType implements DataType<Object> {
 
     @Override
-    public boolean isType(@NotNull Object value) {
-        return true;
-    }
-
-    @Override
     public @NotNull String getSqliteName() {
         return "TEXT";
     }
@@ -45,7 +40,7 @@ public class DefaultType implements DataType<Object> {
     }
 
     @Override
-    public @Nullable String toSqlite(@Nullable Object object) {
+    public @Nullable Object toSqlite(@Nullable Object object) {
         final Map<String, Object> map = new HashMap<>();
         map.put("value", object);
         return new Gson().toJson(map);
@@ -53,13 +48,11 @@ public class DefaultType implements DataType<Object> {
 
     @Override
     public @Nullable Object toMySql(@Nullable Object object) {
-        final Map<String, Object> map = new HashMap<>();
-        map.put("value", object);
-        return new Gson().toJson(map);
+        return toSqlite(object);
     }
 
     @Override
-    public @Nullable Object fromSqlite(@Nullable ResultSet results, @NotNull String fieldName) {
+    public @Nullable Object fromSqlite(@NotNull ResultSet results, @NotNull String fieldName) {
         try {
             return new Gson().fromJson(results.getString(fieldName), Map.class).get("value");
         } catch (Exception exception) {
@@ -67,5 +60,10 @@ public class DefaultType implements DataType<Object> {
                     "Unable to get the result value from the result set as a string. fieldName=" + fieldName
             );
         }
+    }
+
+    @Override
+    public @Nullable Object fromMySql(@NotNull ResultSet results, @NotNull String fieldName) {
+        return fromSqlite(results, fieldName);
     }
 }

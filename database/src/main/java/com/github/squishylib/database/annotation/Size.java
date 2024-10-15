@@ -26,14 +26,37 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The maximum size of a field.
+ * Specifies the maximum size of a field.
  * <p>
- * String: amount of characters
+ * By default, it will assign the maximum amount of space.
+ * Therefore, this annotation is suggested to save storage space.
+ * <pre>
+ * {@code
+ * String: Maximum amount of characters.
+ * Integer: Largest integer.
+ * }
+ * <p>
+ * Defaults to {@link Integer#MAX_VALUE}.
+ * <p>
+ * This annotation must be paired with the
+ * {@link Field} annotation.
  */
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 @Paired(Field.class)
 public @interface Size {
 
-    long value() default 4294967295L;
+    /**
+     * The maximum size of the field.
+     * <pre>
+     * {@code
+     * String: Maximum amount of characters.
+     * Integer: Largest integer.
+     * }
+     * <p>
+     * Defaults to {@link Integer#MAX_VALUE}.
+     *
+     * @return The maximum size of the field.
+     */
+    long value() default Integer.MAX_VALUE;
 }

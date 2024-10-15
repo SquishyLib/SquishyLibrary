@@ -130,7 +130,9 @@ public class DatabaseTester {
         new ResultChecker("testInsertAndGetFirstQuery")
                 .expect(record != null, "record != null")
                 .expect(record.getIdentifier().equals("testInsertAndGetFirstQuery"), "record.getIdentifier().equals(\"testInsertAndGetFirstQuery\")")
-                .expect(record.getString().equals("testInsertAndGetFirstQuery"), "record.getString().equals(\"testInsertAndGetFirstQuery\")");
+                .expect(record.getString().equals("testInsertAndGetFirstQuery"), "record.getString().equals(\"testInsertAndGetFirstQuery\")")
+                .expect(record.getBool(), true, "record.getBool() == true")
+                .expect(record.getObject().testInt, 123, "record.getObject().testInt == 123");
     }
 
     public void testGetRecordList() {

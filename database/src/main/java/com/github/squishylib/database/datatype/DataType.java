@@ -31,23 +31,54 @@ import java.sql.ResultSet;
  */
 public interface DataType<T> {
 
-    boolean isType(@NotNull Object value);
-
+    /**
+     * Get the data types name that can be
+     * used in a sqlite database.
+     *
+     * @return The sqlite data type name.
+     */
     @NotNull
     String getSqliteName();
 
+    /**
+     * Get the data types name that can be
+     * used in a mysql database.
+     *
+     * @param size The maximum size of the data type.
+     * @return The mysql data type name.
+     */
     @NotNull
     String getMySqlName(long size);
 
+    /**
+     * Converts an object into the sqlite type.
+     * <p>
+     * For example a boolean would be converted into
+     * an integer type as there are no booleans in sqlite.
+     *
+     * @param object The object to convert.
+     * @return The converted object.
+     */
     @Nullable
-    String toSqlite(@Nullable Object object);
+    Object toSqlite(@Nullable Object object);
 
+    /**
+     * Converts an object into the mysql type.
+     * <p>
+     * For example a boolean would be converted into
+     * an TINYINT(2) type as there are no booleans in mysql.
+     *
+     * @param object The object to convert.
+     * @return The converted object.
+     */
     @Nullable
     Object toMySql(@Nullable Object object);
 
+    @Nullable
+    T fromSqlite(@NotNull ResultSet results, @NotNull String fieldName);
 
     @Nullable
-    T fromSqlite(@Nullable ResultSet results, @NotNull String fieldName);
+    T fromMySql(@NotNull ResultSet results, @NotNull String fieldName);
 
     static @NotNull DataType<?> of(@NotNull Class<?> type) {
         return switch (type.getName()) {

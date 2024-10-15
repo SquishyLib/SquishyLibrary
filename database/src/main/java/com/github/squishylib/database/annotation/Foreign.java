@@ -31,6 +31,9 @@ import java.lang.annotation.Target;
  * <p>
  * This is mainly used, so you can match the create table
  * statement with your database table.
+ * <p>
+ * This annotation must be paired with the
+ * {@link Field} annotation.
  */
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)

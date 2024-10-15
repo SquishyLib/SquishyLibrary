@@ -29,8 +29,11 @@ import java.lang.annotation.Target;
  * Used to indicate which fields are
  * primary keys.
  * <p>
- * You can have multiple primary keys that
- * are final fields.
+ * You can have multiple primary keys to create
+ * a unique identifier.
+ * <p>
+ * This annotation must be paired with the
+ * {@link Field} annotation.
  */
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)

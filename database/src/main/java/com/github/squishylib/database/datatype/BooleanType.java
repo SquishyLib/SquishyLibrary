@@ -27,11 +27,6 @@ import java.sql.ResultSet;
 public class BooleanType implements DataType<Boolean> {
 
     @Override
-    public boolean isType(@NotNull Object value) {
-        return value instanceof Boolean;
-    }
-
-    @Override
     public @NotNull String getSqliteName() {
         return "INTEGER";
     }
@@ -42,25 +37,28 @@ public class BooleanType implements DataType<Boolean> {
     }
 
     @Override
-    public @Nullable String toSqlite(@Nullable Object object) {
-        if (!(object instanceof Boolean)) throw new DatabaseException(this, "toSqlite", "Object is not a boolean. object=" + object);
-        return Boolean.TRUE.equals(object) ? "1" : "0";
+    public @Nullable Object toSqlite(@Nullable Object object) {
+        if (object instanceof Boolean bool) return bool ? 1 : 0;
+        throw new DatabaseException(this, "toSqlite", "Object was not a boolean.");
     }
 
     @Override
     public @Nullable Object toMySql(@Nullable Object object) {
-        if (object instanceof Boolean bool) return bool ? 1 : 0;
-        return 0;
+        return this.toSqlite(object);
     }
 
     @Override
-    public @Nullable Boolean fromSqlite(@Nullable ResultSet results, @NotNull String fieldName) {
+    public @Nullable Boolean fromSqlite(@NotNull ResultSet results, @NotNull String fieldName) {
         try {
-            if (results == null) return null;
             final int value = results.getInt(fieldName);
             return value == 1 ? Boolean.TRUE : Boolean.FALSE;
         } catch (Exception exception) {
             throw new DatabaseException(this, "fromSqlite", "Unable to get integer from result set as a int. fieldName=" + fieldName);
         }
+    }
+
+    @Override
+    public @Nullable Boolean fromMySql(@NotNull ResultSet results, @NotNull String fieldName) {
+        return this.fromSqlite(results, fieldName);
     }
 }

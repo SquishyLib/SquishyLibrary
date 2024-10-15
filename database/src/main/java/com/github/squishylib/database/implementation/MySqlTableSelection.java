@@ -171,7 +171,7 @@ public class MySqlTableSelection<R extends Record<R>> implements TableSelection<
             }
 
             R record = this.createEmpty(this.getPrimaryFieldMap(results))
-                    .convert(results);
+                    .convert(results, (results2, fieldName, dataType) -> dataType.fromMySql(results2, fieldName));
 
             preparedStatement.close();
             tempLogger.debug("&d⎣ &7Final result is &b" + record.convertToMap());
@@ -214,7 +214,9 @@ public class MySqlTableSelection<R extends Record<R>> implements TableSelection<
 
                 // Loop though all records.
                 while (results.next()) {
-                    R record = this.createEmpty(this.getPrimaryFieldMap(results)).convert(results);
+                    R record = this.createEmpty(this.getPrimaryFieldMap(results))
+                            .convert(results, (results2, fieldName, dataType) -> dataType.fromMySql(results2, fieldName));
+
                     recordList.add(record);
                     tempLogger.debug("&d│ &7Added record &b" + record);
                 }
@@ -318,8 +320,9 @@ public class MySqlTableSelection<R extends Record<R>> implements TableSelection<
             // Set the wild cards.
             int index = 1;
             for (final Map.Entry<RecordField, Object> entry : map.entrySet()) {
-                tempLogger.debug("&d│ &7Set wild card &b" + index + " to " + entry.getValue());
-                statement.setObject(index, entry.getKey().getType().toMySql(entry.getValue()));
+                final Object value = entry.getKey().getType().toMySql(entry.getValue());
+                tempLogger.debug("&d│ &7Set wild card &b" + index + " to " + value);
+                statement.setObject(index, value);
                 index++;
             }
 
@@ -366,8 +369,9 @@ public class MySqlTableSelection<R extends Record<R>> implements TableSelection<
             // Set the wild cards.
             int index = 1;
             for (final Map.Entry<RecordField, Object> entry : map.entrySet()) {
-                tempLogger.debug("&d│ &7Set wild card &b" + index + " to " + entry.getValue());
-                statement.setObject(index, entry.getKey().getType().toMySql(entry.getValue()));
+                final Object value = entry.getKey().getType().toMySql(entry.getValue());
+                tempLogger.debug("&d│ &7Set wild card &b" + index + " to " + value);
+                statement.setObject(index, value);
                 index++;
             }
             for (final Map.Entry<String, Object> entry : recordQuery.getPatterns().entrySet()) {
