@@ -18,16 +18,21 @@
 
 package com.github.squishylib.configuration.test.tester;
 
+import com.github.squishylib.common.logger.Logger;
+import com.github.squishylib.common.testing.Testing;
 import com.github.squishylib.configuration.PreparedConfigurationFactory;
 import org.jetbrains.annotations.NotNull;
 
 public class ConfigurationTester {
 
-    private @NotNull
-    final PreparedConfigurationFactory factory;
+    private final @NotNull PreparedConfigurationFactory factory;
+    private final @NotNull Logger logger;
 
     public ConfigurationTester(@NotNull final PreparedConfigurationFactory factory) {
         this.factory = factory;
+        this.logger = new Logger("com.github.squishylib.configuration.test");
+
+        Testing.setupConsoleLogger();
     }
 
     public void testAll() {
@@ -35,7 +40,7 @@ public class ConfigurationTester {
     }
 
     public void testGetters() {
-        GetterTester tester = new GetterTester(factory);
+        GetterTester tester = new GetterTester(this.factory, this.logger);
         tester.testAll();
     }
 }

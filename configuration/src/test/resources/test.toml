@@ -1,4 +1,6 @@
 get = "test"
+getString = "testString"
+getInteger = 7
 
 [getClass]
 key = "value"
