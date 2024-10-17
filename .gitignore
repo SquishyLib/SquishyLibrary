@@ -23,3 +23,6 @@ buildNumber.properties
 
 # Mac
 .DS_Store
+
+# Database Library
+secret.yml

@@ -36,20 +36,20 @@ import java.util.List;
  */
 public class MySqlDatabase extends RequestQueueDatabase {
 
-    protected @NotNull Database.Status status;
-    protected final @NotNull Logger logger;
-    protected final boolean shouldReconnectEveryCycle;
-    protected final @NotNull Duration reconnectCooldown;
-    protected final boolean willReconnect;
-    protected final @NotNull Duration timeBetweenRequests;
-    protected final long maxRequestPending;
-    protected final @NotNull String connectionString;
-    protected final @NotNull String databaseName;
-    protected final @NotNull String username;
-    protected final @NotNull String password;
+    private @NotNull Database.Status status;
+    private final @NotNull Logger logger;
+    private final boolean shouldReconnectEveryCycle;
+    private final @NotNull Duration reconnectCooldown;
+    private final boolean willReconnect;
+    private final @NotNull Duration timeBetweenRequests;
+    private final long maxRequestPending;
+    private final @NotNull String connectionString;
+    private final @NotNull String databaseName;
+    private final @NotNull String username;
+    private final @NotNull String password;
 
-    protected final @NotNull List<Table<?>> tableList;
-    protected Connection connection;
+    private final @NotNull List<Table<?>> tableList;
+    private Connection connection;
 
     public MySqlDatabase(@NotNull Logger logger,
                          boolean shouldReconnectEveryCycle,
@@ -410,7 +410,7 @@ public class MySqlDatabase extends RequestQueueDatabase {
                     this.status = Status.RECONNECTING;
                     future.complete(this.status);
                     throw new DatabaseException(exception, this, "connectAsync",
-                            "Could not connect to MySql database. Attempting to reconnect in "
+                            "Could not connect to mysql database. Attempting to reconnect in "
                                     + this.reconnectCooldown.toSeconds() + "s."
                     );
                 }
@@ -421,7 +421,7 @@ public class MySqlDatabase extends RequestQueueDatabase {
                 this.status = Status.DISCONNECTED;
                 future.complete(this.status);
                 throw new DatabaseException(exception, this, "connectAsync",
-                        "Could not connect to MySql database. Reconnecting is set to false."
+                        "Could not connect to mysql database. Reconnecting is set to false."
                 );
             }
         }).start();

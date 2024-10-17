@@ -37,17 +37,17 @@ import java.util.List;
  */
 public class SqliteDatabase extends RequestQueueDatabase {
 
-    protected @NotNull Database.Status status;
-    protected final @NotNull Logger logger;
-    protected final boolean shouldReconnectEveryCycle;
-    protected final @NotNull Duration reconnectCooldown;
-    protected final boolean willReconnect;
-    protected final @NotNull Duration timeBetweenRequests;
-    protected final long maxRequestPending;
-    protected final @NotNull File file;
+    private @NotNull Database.Status status;
+    private final @NotNull Logger logger;
+    private final boolean shouldReconnectEveryCycle;
+    private final @NotNull Duration reconnectCooldown;
+    private final boolean willReconnect;
+    private final @NotNull Duration timeBetweenRequests;
+    private final long maxRequestPending;
+    private final @NotNull File file;
 
-    protected final @NotNull List<Table<?>> tableList;
-    protected Connection connection;
+    private final @NotNull List<Table<?>> tableList;
+    private Connection connection;
 
     public SqliteDatabase(@NotNull Logger logger,
                           boolean shouldReconnectEveryCycle,
@@ -372,7 +372,7 @@ public class SqliteDatabase extends RequestQueueDatabase {
                     this.status = Status.RECONNECTING;
                     future.complete(this.status);
                     throw new DatabaseException(exception, this, "connectAsync",
-                            "Could not connect to SQLite database. Attempting to reconnect in "
+                            "Could not connect to sqlite database. Attempting to reconnect in "
                                     + this.reconnectCooldown.toSeconds() + "s."
                     );
                 }
@@ -383,7 +383,7 @@ public class SqliteDatabase extends RequestQueueDatabase {
                 this.status = Status.DISCONNECTED;
                 future.complete(this.status);
                 throw new DatabaseException(exception, this, "connectAsync",
-                        "Could not connect to SQLite database. Reconnecting is set to false."
+                        "Could not connect to sqlite database. Reconnecting is set to false."
                 );
             }
         }).start();

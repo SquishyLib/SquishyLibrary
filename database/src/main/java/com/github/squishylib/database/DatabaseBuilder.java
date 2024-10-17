@@ -22,6 +22,7 @@ import com.github.squishylib.common.logger.Level;
 import com.github.squishylib.common.logger.Logger;
 import com.github.squishylib.configuration.ConfigurationSection;
 import com.github.squishylib.configuration.implementation.MemoryConfigurationSection;
+import com.github.squishylib.database.implementation.MongoDatabase;
 import com.github.squishylib.database.implementation.MySqlDatabase;
 import com.github.squishylib.database.implementation.SqliteDatabase;
 import org.jetbrains.annotations.NotNull;
@@ -61,6 +62,11 @@ public class DatabaseBuilder {
     public static final @NotNull String MYSQL_DATABASE_NAME_IDENTIFIER = "database_name";
     public static final @NotNull String MYSQL_USERNAME_IDENTIFIER = "username";
     public static final @NotNull String MYSQL_PASSWORD_IDENTIFIER = "password";
+
+    public static final @NotNull String MONGO_IDENTIFIER = "mongo";
+    public static final @NotNull String MONGO_ENABLED_IDENTIFIER = "enabled";
+    public static final @NotNull String MONGO_CONNECTION_STRING_IDENTIFIER = "connection_string";
+    public static final @NotNull String MONGO_DATABASE_NAME_IDENTIFIER = "database_name";
 
     private final @NotNull ConfigurationSection section;
     private @NotNull Logger logger;
@@ -229,6 +235,33 @@ public class DatabaseBuilder {
         return this;
     }
 
+    public boolean isMongoEnabled() {
+        return this.section.getSection(MONGO_IDENTIFIER).getBoolean(MONGO_ENABLED_IDENTIFIER, false);
+    }
+
+    public @NotNull DatabaseBuilder setMongoEnabled(boolean mongoEnabled) {
+        this.section.getSection(MONGO_IDENTIFIER).set(MONGO_ENABLED_IDENTIFIER, mongoEnabled);
+        return this;
+    }
+
+    public @Nullable String getMongoConnectionString() {
+        return this.section.getSection(MONGO_IDENTIFIER).getString(MONGO_CONNECTION_STRING_IDENTIFIER);
+    }
+
+    public @NotNull DatabaseBuilder setMongoConnectionString(@Nullable String connectionString) {
+        this.section.getSection(MONGO_IDENTIFIER).set(MONGO_CONNECTION_STRING_IDENTIFIER, connectionString);
+        return this;
+    }
+
+    public @Nullable String getMongoDatabaseName() {
+        return this.section.getSection(MONGO_IDENTIFIER).getString(MONGO_DATABASE_NAME_IDENTIFIER);
+    }
+
+    public @NotNull DatabaseBuilder setMongoDatabaseName(@Nullable String databaseName) {
+        this.section.getSection(MONGO_IDENTIFIER).set(MONGO_DATABASE_NAME_IDENTIFIER, databaseName);
+        return this;
+    }
+
     public @NotNull Database create() {
 
         if (this.isSqliteEnabled()) {
@@ -279,6 +312,31 @@ public class DatabaseBuilder {
                     databaseName,
                     username,
                     password
+            );
+        }
+
+        if (this.isMongoEnabled()) {
+
+            final String connectionString = this.getMongoConnectionString();
+            final String databaseName = this.getMongoDatabaseName();
+
+            if (connectionString == null) {
+                throw new DatabaseException(this, "create", "Connection string for mongo database is not defined.");
+            }
+
+            if (databaseName == null) {
+                throw new DatabaseException(this, "create", "Database name for mongo database is not defined.");
+            }
+
+            return new MongoDatabase(
+                    this.getLogger(),
+                    this.getShouldReconnectEveryCycle(),
+                    this.getReconnectCooldown(),
+                    this.getWillReconnect(),
+                    this.getTimeBetweenRequests(),
+                    this.getMaxRequestsPending(),
+                    connectionString,
+                    databaseName
             );
         }
 

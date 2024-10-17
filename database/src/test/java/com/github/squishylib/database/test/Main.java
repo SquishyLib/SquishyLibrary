@@ -66,4 +66,25 @@ public class Main {
         tester.testAll();
         tester.drop();
     }
+
+    @Test
+    public void testMongo() {
+        DatabaseTester tester = new DatabaseTester(new DatabaseBuilder()
+                .setReconnectCooldown(Duration.ofMillis(100))
+                .setShouldReconnectEveryCycle(true)
+                .setWillReconnect(true)
+                .setTimeBetweenRequests(Duration.ofMillis(1))
+                .setMaxRequestsPending(20)
+
+                .setMySqlEnabled(true)
+                .setMySqlConnectionString("localhost:3306")
+                .setMySqlDatabaseName("database" + UUID.randomUUID().toString().substring(0, 5))
+                .setMySqlUsername("admin")
+                .setMySqlPassword("123")
+
+                .setDebugMode(true)
+        );
+        tester.testAll();
+        tester.drop();
+    }
 }

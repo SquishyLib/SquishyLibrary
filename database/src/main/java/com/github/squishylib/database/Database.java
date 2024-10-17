@@ -38,7 +38,8 @@ public interface Database {
      */
     enum Type {
         SQLITE,
-        MYSQL
+        MYSQL,
+        MONGO
     }
 
     /**
@@ -162,7 +163,8 @@ public interface Database {
     List<Table<?>> getTableList();
 
     /**
-     * Used to get the amount of tables registered with this database.
+     * Used to get the amount of tables registered with
+     * this database instance.
      *
      * @return The amount of tables.
      */

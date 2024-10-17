@@ -27,7 +27,7 @@ import java.io.IOException;
 public class LoggerTests {
 
     @Test
-    public void testLoggerExtensions() throws IOException {
+    public void testLoggerExtensions() {
 
         // Create a new logger.
         Logger test1 = new Logger("com.github.smuddgge.squishy.common.test", "[Test1]");
