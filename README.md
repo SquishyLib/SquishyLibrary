@@ -4,6 +4,8 @@ description: Java tools, configuration and database library.
 author: Smuddgge and Contributors
 ```
 
+Wiki https://smuddgge.gitbook.io/squishy-library
+
 # Java Dependency
 
 [![](https://jitpack.io/v/squishylib/SquishyLibrary.svg)](https://jitpack.io/#squishylib/SquishyLibrary)
