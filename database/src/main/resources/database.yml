@@ -1,5 +1,6 @@
 # Database Library Author: Smudge
 # File: database.yml
+# Last Changed Library Version: 1.0.0
 
 should_reconnect_every_cycle: true
 reconnect_cooldown_millis: 2000

@@ -1,14 +1,14 @@
 ```yaml
 name: SquishyLibrary
-description: Java configuration and database library.
+description: Java tools, configuration and database library.
 author: Smuddgge and Contributors
-status: Beta
 ```
 
-# Using the Library
+# Java Dependency
 
 [![](https://jitpack.io/v/squishylib/SquishyLibrary.svg)](https://jitpack.io/#squishylib/SquishyLibrary)
 
+Below is examples for **maven**, there is a **gradle** example if you click the button above.
 ```xml
 <repositories>
     <repository>
@@ -18,18 +18,21 @@ status: Beta
 </repositories>
 ```
 ```xml
+<!-- Just Tools -->
 <dependency>
     <groupId>com.github.squishylib.SquishyLibrary</groupId>
     <artifactId>common</artifactId>
     <version>Tag</version>
 </dependency>
 
+<!-- Just Configuration and tools -->
 <dependency>
     <groupId>com.github.squishylib.SquishyLibrary</groupId>
     <artifactId>configuration</artifactId>
     <version>Tag</version>
 </dependency>
 
+<!-- Tools, Configuration and Database Library -->
 <dependency>
     <groupId>com.github.squishylib.SquishyLibrary</groupId>
     <artifactId>database</artifactId>
@@ -37,105 +40,109 @@ status: Beta
 </dependency>
 ```
 
-# Configuration File
+```xml
+<!-- Tools, Configuration and Database Library -->
+<dependency>
+    <groupId>com.github.squishylib</groupId>
+    <artifactId>SquishyLibrary</artifactId>
+    <version>Tag</version>
+</dependency>
+```
+
+# Configuration Library
 An easy way of getting and setting values in a config file.
 ```java
-// An example of a configuration file.
 Configuration config = new YamlConfiguration(new File("file.yml"));
-config.setResourcePath("file.yml"); // The name of the file in the resource folder.
+config.setResourcePath("file.yml"); // A file in the resource folder to copy.
 config.load();
 
-// An example of getting a string from the file.
-String hello = config.getString("hello", "hello world");
+String value = config.getString("hello", "hello world");
 
-// An example of putting a string into the file.
-config.set("hello", "hello again");
+config.set("hello", "A diffrent value");
 
-// Save the changes to the file.
 config.save();
 ```
+For more infomation visit the [wiki by clicking here](https://smuddgge.gitbook.io/squishy-library/configuration/configuration-file).
 
-# Configuration Factory
-A way of creating a config instance.
+# Database Library
+
+First [click here to add the database config](https://github.com/SquishyLib/SquishyLibrary/blob/main/database/src/main/resources/database.yml) to your project.\
+Next load the configuration file and connect to the database.
+
 ```java
-Configuration config = ConfigurationFactory.createConfiguration(new File("config.yml")).orElse(null);
-config.load();
-```
-```java 
-PreparedConfigurationFactory factory = new PreparedConfigurationFactory(
-        ConfigurationFactory.YAML, 
-        new File("config.yml")
+Configuration databaseConfig = new YamlConfiguration(
+    this.getPlugin().getDataFolder(),
+    "database.yml"
 );
+databaseConfig.setResourcePath("database.yml");
+databaseConfig.load();
 
-Configuration config = factory.create();
-config.load();
+Database database = new DatabaseBuilder(
+    this.databaseConfig
+).create().connect();
 ```
 
-# Configuration Directory
-Combines multiple config files into one big one.
+Here is an example of creating a record.
+
 ```java
-// An example of a configuration directory.
-ConfigurationDirectory directory = new ConfigurationDirectory(new File("directory"));
-directory.addResourcePath("example1.yml"); // Add default resource files.
-directory.addResourcePath("example2.yml");
-directory.load(true); // Loads all files in directory.
+public class ExampleRecord implements Record<Example2Record> {
 
-// You can get values from any file as if it was 1 big file.
-String string1 = directory.getString("from_file_2", "test");
-String string2 = directory.getString("from_file_1", "test");
+    public static final @NotNull String IDENTIFIER_KEY = "identifier";
+    public static final @NotNull String STRING_KEY = "value";
 
-// Set and save intelligently.
-directory.set("from_file_3", "test");
-directory.save(true);
-
-// Get the list of files being combined.
-List<Configuration> files = directory.getConfigurationFiles(true);
-```
-
-# Single Type Configuration Directory
-Combines multiple config files into one big one.\
-Each key represents a class.
-```java
-// A type example.
-public class Egg implements ConfigurationConvertible<Egg> {
-
-    private final @NotNull String identifier;
-    private boolean hasCracked;
-
-    public Egg(@NotNull String identifier) {
+    private final @Field(IDENTIFIER_KEY) @Primary @NotNull String identifier;
+    private @Field(STRING_KEY) String string;
+    
+    public ExampleRecord(@NotNull String identifier) {
         this.identifier = identifier;
     }
-
-    public void setHasCracked(boolean hasCracked) {
-        this.hasCracked = hasCracked;
-    }
-
+    
     @Override
     public @NotNull ConfigurationSection convert() {
-        ConfigurationSection section = new MemoryConfigurationSection();
-        section.set("has_cracked", hasCracked);
+        MemoryConfigurationSection section = new MemoryConfigurationSection();
+        section.set(STRING_KEY, string);
         return section;
     }
 
     @Override
-    public @NotNull Egg convert(@NotNull ConfigurationSection section) {
-        this.hasCracked = section.getBoolean("has_cracked");
+    public @NotNull Example2Record convert(
+        @NotNull ConfigurationSection section) {
+        
+        this.string = section.getString(STRING_KEY);
         return this;
     }
 }
 ```
+
+Here is the corresponding table for the example record.
 ```java
-// Directory examples.
-SingleTypeConfigurationDirectory<Egg> directory = new SingleTypeConfigurationDirectory<>(new File("directory"), Egg::new, false);
-directory.load();
+public class ExampleTable extends Table<ExampleRecord> {
 
-Egg egg = directory.get("first_egg").orElse(null);
+    public static final @NotNull String TABLE_NAME = "example";
 
-List<Egg> eggs = directory.getAll();
-        
-directory.set("second_egg", new Egg("second_egg"));
+    @Override
+    public @NotNull String getName() {
+        return ExampleTable.TABLE_NAME;
+    }
 
-directory.remove("third_egg");
+    @Override
+    public @NotNull ExampleRecord createEmpty(@NotNull PrimaryFieldMap identifiers) {
+        return new ExampleRecord(
+            identifiers.getString(ExampleRecord.IDENTIFIER_KEY)
+        );
+    }
+}
+```
 
-boolean contains = directory.contains("fourth_egg");
+Once you have created a table and record, add it to the database.
+
+```java
+database.createTable(new ExampleTable());
+```
+
+You can now query the database table.
+
+```java
+ExampleRecord record = database.getTable(ExampleTable.class)
+    .getFirstRecord();
 ```
