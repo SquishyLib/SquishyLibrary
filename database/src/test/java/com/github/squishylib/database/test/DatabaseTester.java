@@ -90,7 +90,7 @@ public class DatabaseTester {
         new ResultChecker("testCreateTable")
                 .expect(database.isConnected(), "database.isConnected()")
                 .expect(database.getAmountOfTables() == 1, "database.getTable(ExampleTable.class) != null")
-                .expect(database.getTable(TestTable.class).getColumnNames().waitAndGet().size() == 4, "Are there the correct number of columns?");
+                .expect(database.getTable(TestTable.class).getColumnNames().waitAndGet().size() == 8, "Are there the correct number of columns?");
     }
 
     public void testInsertAndGetFirst() {
@@ -109,7 +109,11 @@ public class DatabaseTester {
         new ResultChecker("testInsertAndGetFirst")
                 .expect(record != null, "record != null")
                 .expect(record.getIdentifier().equals("testInsertAndGetFirst"), "record.getIdentifier().equals(\"testInsertAndGetFirst\")")
-                .expect(record.getString().equals("testInsertAndGetFirst"), "record.getString().equals(\"testInsertAndGetFirst\")");
+                .expect(record.getString().equals("testInsertAndGetFirst"), "record.getString().equals(\"testInsertAndGetFirst\")")
+                .expect(record.getI(), 1, "record.i == 1")
+                .expect(record.getL(), 2L, "record.i == 2")
+                .expect(record.getF(), 3F, "record.i == 3")
+                .expect(record.getD(), 4D, "record.i == 4");
     }
 
     public void testInsertAndGetFirstQuery() {

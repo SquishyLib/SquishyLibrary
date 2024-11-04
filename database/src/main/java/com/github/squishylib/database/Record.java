@@ -48,8 +48,16 @@ import java.util.Map;
  */
 public interface Record<R extends Record<R>> extends ConfigurationConvertible<R> {
 
+    /**
+     * This includes primary and foreign keys.
+     *
+     * @return The list of record fields.
+     */
     default @NotNull List<RecordField> getFieldList() {
         final List<RecordField> fields = new ArrayList<>();
+
+        final List<PrimaryField> primaryFields = this.getPrimaryFieldList();
+        final List<ForeignField> foreignFields = this.getForeignFieldList();
 
         // Loop though java fields.
         for (java.lang.reflect.Field field : getClass().getDeclaredFields()) {
@@ -63,9 +71,25 @@ public interface Record<R extends Record<R>> extends ConfigurationConvertible<R>
             Size size = field.getAnnotation(Size.class);
             if (size != null) maxSize = size.value();
 
+            final String name = annotation.value();
+
+            // Is this field a primary field?
+            PrimaryField primaryField = primaryFields.stream().filter(f -> f.getName().equals(name)).findFirst().orElse(null);
+            if (primaryField != null) {
+                fields.add(primaryField);
+                continue;
+            }
+
+            // Is this field a foreign field?
+            ForeignField foreignField = foreignFields.stream().filter(f -> f.getName().equals(name)).findFirst().orElse(null);
+            if (foreignField != null) {
+                fields.add(foreignField);
+                continue;
+            }
+
             // Add the field to the list.
             fields.add(new RecordField(
-                    annotation.value(),
+                    name,
                     DataType.of(field.getType()),
                     maxSize
             ));

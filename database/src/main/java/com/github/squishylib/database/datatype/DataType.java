@@ -108,6 +108,10 @@ public interface DataType<T> {
         return switch (type.getName()) {
             case "boolean", "java.land.Boolean" -> new BooleanType();
             case "string", "java.lang.String" -> new StringType();
+            case "int", "java.lang.Integer" -> new IntegerType();
+            case "long", "java.lang.Long" -> new LongType();
+            case "float", "java.lang.Float" -> new FloatType();
+            case "double", "java.lang.Double" -> new DoubleType();
             default -> new DefaultType();
         };
     }

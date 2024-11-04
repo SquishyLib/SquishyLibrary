@@ -40,7 +40,7 @@ public class BooleanType implements DataType<Boolean> {
     @Override
     public @Nullable Object toSqlite(@Nullable Object object) {
         if (object instanceof Boolean bool) return bool ? 1 : 0;
-        throw new DatabaseException(this, "toSqlite", "Object was not a boolean.");
+        throw new DatabaseException(this, "toSqlite", "Object was not a boolean. object type: " + object.getClass().getName());
     }
 
     @Override

@@ -18,6 +18,8 @@
 
 package com.github.squishylib.database.test;
 
+import com.github.squishylib.common.annotation.Paired;
+import com.github.squishylib.common.testing.ResultChecker;
 import com.github.squishylib.configuration.Configuration;
 import com.github.squishylib.configuration.implementation.YamlConfiguration;
 import com.github.squishylib.database.DatabaseBuilder;
@@ -28,6 +30,15 @@ import java.time.Duration;
 import java.util.UUID;
 
 public class Main {
+
+    @Test
+    public void testPairedAnnotation() {
+        new ResultChecker("testPairedAnnotation")
+                .expect(
+                        Paired.Checker.isUsedCorrectly("com.github.squishylib.database"),
+                        "Paired annotation to be used correctly."
+                );
+    }
 
     @Test
     public void testSqlite() {

@@ -22,6 +22,8 @@ import com.github.squishylib.common.CompletableFuture;
 import com.github.squishylib.common.logger.Logger;
 import com.github.squishylib.database.Record;
 import com.github.squishylib.database.*;
+import com.github.squishylib.database.field.ForeignField;
+import com.github.squishylib.database.field.PrimaryField;
 import com.github.squishylib.database.field.PrimaryFieldMap;
 import com.github.squishylib.database.field.RecordField;
 import org.jetbrains.annotations.NotNull;
@@ -249,7 +251,7 @@ public class MySqlDatabase extends RequestQueueDatabase {
 
         // Loop though fields.
         record.getFieldList().stream()
-                .filter(field -> !builder.toString().contains(field.getName()))
+                .filter(field -> !(field instanceof PrimaryField) && !(field instanceof ForeignField))
                 .forEach(field -> builder.append(
                         "`{key}` {type},"
                                 .replace("{key}", field.getName())

@@ -37,20 +37,30 @@ public class TestRecord implements Record<TestRecord> {
     public static final @NotNull String STRING_KEY = "value";
     public static final @NotNull String BOOL_KEY = "bool";
     public static final @NotNull String OBJECT_KEY = "object";
+    public static final @NotNull String INTEGER_KEY = "i";
+    public static final @NotNull String LONG_KEY = "l";
+    public static final @NotNull String FLOAT_KEY = "f";
+    public static final @NotNull String DOUBLE_KEY = "d";
 
-    private final @Field(IDENTIFIER_KEY)
-    @Primary
-    @Size(255)
-    @NotNull String identifier;
+    private final @Field(IDENTIFIER_KEY) @Primary @Size(255) @NotNull String identifier;
     private @Field(STRING_KEY) String string;
     private @Field(BOOL_KEY) boolean bool;
     private @Field(OBJECT_KEY) ObjectTest object;
+    private @Field(INTEGER_KEY) int i;
+    private @Field(LONG_KEY) long l;
+    private @Field(FLOAT_KEY) float f;
+    private @Field(DOUBLE_KEY) double d;
+
 
     public TestRecord(@NotNull String identifier) {
         this.identifier = identifier;
         this.string = "The default value.";
         this.bool = true;
         this.object = new ObjectTest();
+        this.i = 1;
+        this.l = 2L;
+        this.f = 3F;
+        this.d = 4D;
     }
 
     public @NotNull String getIdentifier() {
@@ -69,6 +79,22 @@ public class TestRecord implements Record<TestRecord> {
         return this.object;
     }
 
+    public int getI() {
+        return this.i;
+    }
+
+    public long getL() {
+        return this.l;
+    }
+
+    public float getF() {
+        return this.f;
+    }
+
+    public double getD() {
+        return this.d;
+    }
+
     public @NotNull TestRecord setString(@NotNull String value) {
         this.string = value;
         return this;
@@ -82,6 +108,10 @@ public class TestRecord implements Record<TestRecord> {
         section.set(TestRecord.STRING_KEY, this.string);
         section.set(TestRecord.BOOL_KEY, this.bool);
         section.set(TestRecord.OBJECT_KEY, this.object);
+        section.set(TestRecord.INTEGER_KEY, this.i);
+        section.set(TestRecord.LONG_KEY, this.l);
+        section.set(TestRecord.FLOAT_KEY, this.f);
+        section.set(TestRecord.DOUBLE_KEY, this.d);
 
         return section;
     }
@@ -91,6 +121,11 @@ public class TestRecord implements Record<TestRecord> {
         this.string = section.getString(TestRecord.STRING_KEY);
         this.bool = section.getBoolean(TestRecord.BOOL_KEY);
         this.object = section.getClass(OBJECT_KEY, ObjectTest.class);
+
+        this.i = section.getInteger(TestRecord.INTEGER_KEY);
+        this.l = section.getLong(TestRecord.LONG_KEY);
+        this.f = section.getFloat(TestRecord.FLOAT_KEY);
+        this.d = section.getDouble(TestRecord.DOUBLE_KEY);
         return this;
     }
 }

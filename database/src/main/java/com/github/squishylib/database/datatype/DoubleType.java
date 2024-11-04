@@ -24,29 +24,21 @@ import org.jetbrains.annotations.Nullable;
 
 import java.sql.ResultSet;
 
-public class StringType implements DataType<String> {
+public class DoubleType implements DataType<Double> {
 
     @Override
     public @NotNull String getSqliteName() {
-        return "TEXT";
+        return "REAL";
     }
 
     @Override
     public @NotNull String getMySqlName(long size) {
-        if (size <= 255) {
-            return "CHAR(255)";
-        }
-        if (size <= 65535) {
-            return "VARCHAR(65535)";
-        }
-
-        return "LONGTEXT";
+        return "DECIMAL(65)";
     }
 
     @Override
     public @Nullable Object toSqlite(@Nullable Object object) {
-        if (!(object instanceof String))
-            throw new DatabaseException(this, "toSqlite", "Object is not a instance of a string. object type: " + object.getClass().getName());
+        if (!(object instanceof Double)) throw new DatabaseException(this, "toSqlite", "Object is not a instance of a double. object type: " + object.getClass().getName());
         return object;
     }
 
@@ -56,18 +48,18 @@ public class StringType implements DataType<String> {
     }
 
     @Override
-    public @Nullable String fromSqlite(@NotNull ResultSet results, @NotNull String fieldName) {
+    public @Nullable Double fromSqlite(@NotNull ResultSet results, @NotNull String fieldName) {
         try {
-            return results.getString(fieldName);
+            return results.getDouble(fieldName);
         } catch (Exception exception) {
             throw new DatabaseException(exception, this, "fromSqlite",
-                    "Unable to get the result value from the result set as a string. fieldName=" + fieldName
+                    "Unable to get the result value from the result set as a double. fieldName=" + fieldName
             );
         }
     }
 
     @Override
-    public @Nullable String fromMySql(@NotNull ResultSet results, @NotNull String fieldName) {
+    public @Nullable Double fromMySql(@NotNull ResultSet results, @NotNull String fieldName) {
         return this.fromSqlite(results, fieldName);
     }
 }
