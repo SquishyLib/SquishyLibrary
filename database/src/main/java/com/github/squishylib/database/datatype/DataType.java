@@ -18,6 +18,7 @@
 
 package com.github.squishylib.database.datatype;
 
+import org.bson.Document;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

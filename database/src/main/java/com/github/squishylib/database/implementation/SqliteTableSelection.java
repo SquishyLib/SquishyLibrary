@@ -50,8 +50,8 @@ public class SqliteTableSelection<R extends Record<R>> implements TableSelection
     }
 
     @Override
-    public @NotNull Optional<SqliteDatabase> getDatabase() {
-        return Optional.of(this.database);
+    public @NotNull SqliteDatabase getDatabase() {
+        return this.database;
     }
 
     @Override

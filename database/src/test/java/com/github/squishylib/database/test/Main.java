@@ -18,9 +18,12 @@
 
 package com.github.squishylib.database.test;
 
+import com.github.squishylib.configuration.Configuration;
+import com.github.squishylib.configuration.implementation.YamlConfiguration;
 import com.github.squishylib.database.DatabaseBuilder;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.time.Duration;
 import java.util.UUID;
 
@@ -69,19 +72,17 @@ public class Main {
 
     @Test
     public void testMongo() {
-        DatabaseTester tester = new DatabaseTester(new DatabaseBuilder()
+        Configuration databaseConfig = new YamlConfiguration(
+                new File("src/test/resources/secret.yml")
+        );
+        databaseConfig.load();
+
+        DatabaseTester tester = new DatabaseTester(new DatabaseBuilder(databaseConfig)
                 .setReconnectCooldown(Duration.ofMillis(100))
-                .setShouldReconnectEveryCycle(true)
+                .setShouldReconnectEveryCycle(false)
                 .setWillReconnect(true)
                 .setTimeBetweenRequests(Duration.ofMillis(1))
                 .setMaxRequestsPending(20)
-
-                .setMySqlEnabled(true)
-                .setMySqlConnectionString("localhost:3306")
-                .setMySqlDatabaseName("database" + UUID.randomUUID().toString().substring(0, 5))
-                .setMySqlUsername("admin")
-                .setMySqlPassword("123")
-
                 .setDebugMode(true)
         );
         tester.testAll();

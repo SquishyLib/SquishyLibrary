@@ -30,6 +30,8 @@ import com.github.squishylib.database.field.ForeignField;
 import com.github.squishylib.database.field.PrimaryField;
 import com.github.squishylib.database.field.PrimaryFieldMap;
 import com.github.squishylib.database.field.RecordField;
+import com.google.gson.Gson;
+import org.bson.Document;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -177,7 +179,7 @@ public interface Record<R extends Record<R>> extends ConfigurationConvertible<R>
         return foreignFields;
     }
 
-    interface DataTypeConverter {
+    interface ResultSetDataTypeConverter {
         @Nullable Object convert(
                 @NotNull ResultSet results,
                 @NotNull String fieldName,
@@ -191,7 +193,7 @@ public interface Record<R extends Record<R>> extends ConfigurationConvertible<R>
      * @param results The results to convert.
      * @return This instance.
      */
-    default @NotNull R convert(@NotNull ResultSet results, @NotNull DataTypeConverter converter) {
+    default @NotNull R convert(@NotNull ResultSet results, @NotNull ResultSetDataTypeConverter converter) {
         ConfigurationSection section = new MemoryConfigurationSection();
 
         for (RecordField field : this.getFieldList()) {
@@ -210,5 +212,27 @@ public interface Record<R extends Record<R>> extends ConfigurationConvertible<R>
         // Convert this object using the configuration section.
         this.convert(section);
         return (R) this;
+    }
+
+    default @NotNull R convert(@NotNull Document document) {
+        ConfigurationSection section = new MemoryConfigurationSection();
+
+        for (RecordField field : this.getFieldList()) {
+            try {
+                section.set(field.getName(), document.get(field.getName()));
+            } catch (Exception exception) {
+                throw new DatabaseException(exception, this, "convert", "Unable to convert " + field.getName() + " to an object.");
+            }
+        }
+
+        // Convert this object using the configuration section.
+        this.convert(section);
+        return (R) this;
+    }
+
+    default @NotNull Document convertToDocument() {
+        Gson gson = new Gson();
+        String json = gson.toJson(this.convert().getMap());
+        return Document.parse(json);
     }
 }

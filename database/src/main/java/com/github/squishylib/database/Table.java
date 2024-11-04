@@ -36,8 +36,8 @@ public abstract class Table<R extends Record<R>> implements TableSelection<R, Da
     private Database database;
 
     @Override
-    public @NotNull Optional<Database> getDatabase() {
-        return Optional.ofNullable(database);
+    public @NotNull Database getDatabase() {
+        return this.database;
     }
 
     @Override

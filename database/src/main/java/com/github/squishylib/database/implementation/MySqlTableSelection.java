@@ -50,8 +50,8 @@ public class MySqlTableSelection<R extends Record<R>> implements TableSelection<
     }
 
     @Override
-    public @NotNull Optional<MySqlDatabase> getDatabase() {
-        return Optional.of(this.database);
+    public @NotNull MySqlDatabase getDatabase() {
+        return this.database;
     }
 
     @Override

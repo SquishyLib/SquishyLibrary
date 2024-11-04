@@ -57,7 +57,7 @@ public class DatabaseTester {
 
     public void drop() {
         final Database database = this.builder.create().connect();
-        database.drop();
+        database.drop().waitAndGet();
     }
 
     public void testConnection() {

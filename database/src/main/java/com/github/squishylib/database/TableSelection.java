@@ -23,6 +23,7 @@ import com.github.squishylib.database.field.ForeignField;
 import com.github.squishylib.database.field.PrimaryField;
 import com.github.squishylib.database.field.PrimaryFieldMap;
 import com.github.squishylib.database.field.RecordField;
+import org.bson.Document;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -64,7 +65,7 @@ public interface TableSelection<R extends Record<?>, D extends Database> {
      * @return The linked database.
      */
     @NotNull
-    Optional<D> getDatabase();
+    D getDatabase();
 
     /**
      * Used to link this table selection to a database.
@@ -249,7 +250,21 @@ public interface TableSelection<R extends Record<?>, D extends Database> {
             try {
                 map.set(field.getName(), field.getMaxSize(), results.getObject(field.getName()));
             } catch (Exception exception) {
-                throw new DatabaseException(exception, this, "getPrimaryFieldMap", "Unable tp get field from result set. field=" + field);
+                throw new DatabaseException(exception, this, "getPrimaryFieldMap(ResultSet)", "Unable tp get field from result set. field=" + field);
+            }
+        }
+
+        return map;
+    }
+
+    default @NotNull PrimaryFieldMap getPrimaryFieldMap(@NotNull Document document) {
+        PrimaryFieldMap map = new PrimaryFieldMap(null);
+
+        for (RecordField field : this.getPrimaryFieldList()) {
+            try {
+                map.set(field.getName(), field.getMaxSize(), document.get(field.getName()));
+            } catch (Exception exception) {
+                throw new DatabaseException(exception, this, "getPrimaryFieldMap(Document)", "Unable tp get field from result set. field=" + field);
             }
         }
 

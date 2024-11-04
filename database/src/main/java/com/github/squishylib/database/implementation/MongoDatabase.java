@@ -30,26 +30,26 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.jetbrains.annotations.NotNull;
 
-import java.sql.DriverManager;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MongoDatabase extends RequestQueueDatabase {
 
-    protected @NotNull Database.Status status;
-    protected final @NotNull Logger logger;
-    protected final boolean shouldReconnectEveryCycle;
-    protected final @NotNull Duration reconnectCooldown;
-    protected final boolean willReconnect;
-    protected final @NotNull Duration timeBetweenRequests;
-    protected final long maxRequestPending;
-    protected final @NotNull String connectionString;
-    protected final @NotNull String databaseName;
+    private @NotNull Database.Status status;
+    private final @NotNull Logger logger;
+    private final boolean shouldReconnectEveryCycle;
+    private final @NotNull Duration reconnectCooldown;
+    private final boolean willReconnect;
+    private final @NotNull Duration timeBetweenRequests;
+    private final long maxRequestPending;
+    private final @NotNull String connectionString;
+    private final @NotNull String databaseName;
 
-    protected final @NotNull List<Table<?>> tableList;
-    protected MongoClient client;
-    protected com.mongodb.client.MongoDatabase database;
+    private final @NotNull List<Table<?>> tableList;
+    private MongoClient client;
+    private com.mongodb.client.MongoDatabase database;
 
     public MongoDatabase(@NotNull Logger logger,
                          boolean shouldReconnectEveryCycle,
@@ -146,29 +146,71 @@ public class MongoDatabase extends RequestQueueDatabase {
         return this.tableList.size();
     }
 
+    public @NotNull com.mongodb.client.MongoDatabase getDatabase() {
+        return this.database;
+    }
+
     @Override
     public @NotNull Database createTable(@NotNull Table<?> table) {
-        return null;
+
+        // Create this methods logger.
+        final Logger tempLogger = this.logger.extend(" &b.createTable() &7MongoDatabase.java:1 table=" + table.getName() + "&7");
+        tempLogger.debug("Creating table.");
+
+        // Link the table to this database.
+        table.setDatabase(this);
+
+        // Add the table to the list.
+        this.tableList.add(table);
+
+        // Does the table already exist in the database?
+        if (this.hasTable(table.getName())) {
+            tempLogger.debug("Table already exists in database.");
+            return this;
+        }
+
+        try {
+            tempLogger.debug("Creating table: " + table.getName());
+            this.database.createCollection(table.getName());
+            tempLogger.debug("Table has been created.");
+        } catch (Exception exception) {
+            throw new DatabaseException(exception, this, "createTable", "Failed to create the table &7" + table.getName() + ".");
+        }
+
+        return this;
     }
 
     @Override
     public <T extends Table<?>> @NotNull T getTable(@NotNull Class<T> clazz) {
-        return null;
+        for (final Table<?> table : this.tableList) {
+            if (clazz.isAssignableFrom(table.getClass())) return (T) table;
+        }
+
+        throw new DatabaseException(this, "getTable", "Table was not registered with the database: " + clazz.getName()
+                + ". Please use database.createTable(Table<?> table) before trying to get the table instance."
+        );
     }
 
     @Override
     public boolean hasTable(@NotNull String tableName) {
-        return false;
+        AtomicBoolean flag = new AtomicBoolean(false);
+        this.database.listCollectionNames().forEach(name -> {
+            if (tableName.equalsIgnoreCase(name)) flag.set(true);
+        });
+        return flag.get();
     }
 
     @Override
     public @NotNull <R extends Record<R>> TableSelection<R, ?> createTableSelection(@NotNull Table<R> table) {
-        return null;
+        return new MongoTableSelection<>(this, table);
     }
 
     @Override
     public @NotNull CompletableFuture<Boolean> drop() {
-        return null;
+        return this.addRequest(new Request<>(() -> {
+            this.database.drop();
+            return true;
+        }));
     }
 
     @Override

@@ -20,13 +20,13 @@ package com.github.squishylib.database;
 
 import com.github.squishylib.common.logger.Logger;
 import com.github.squishylib.database.field.PrimaryField;
+import com.mongodb.client.model.Filters;
+import org.bson.conversions.Bson;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.sql.PreparedStatement;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class Query {
 
@@ -105,5 +105,14 @@ public class Query {
         } catch (Exception exception) {
             throw new DatabaseException(exception, this, "appendSqlite", "Unable to append a query to a statement.");
         }
+    }
+
+    public @NotNull List<Bson> buildMongoFilter() {
+        List<Bson> filterList = new ArrayList<>();
+        for (Map.Entry<String, Object> entry : this.patterns.entrySet()) {
+            filterList.add(Filters.eq(entry.getKey(), entry.getValue()));
+        }
+
+        return filterList;
     }
 }
