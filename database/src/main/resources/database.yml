@@ -17,3 +17,8 @@ mysql:
   database_name: ""
   username: ""
   password: ""
+
+mongo:
+  enabled: false
+  connection_string: "" # example: "mongodb+srv://Name:Password@Name.?.mongodb.net/?retryWrites=true&w=majority"
+  database_name: ""
