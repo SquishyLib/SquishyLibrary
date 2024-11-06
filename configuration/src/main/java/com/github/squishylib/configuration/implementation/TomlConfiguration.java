@@ -28,19 +28,24 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class TomlConfiguration extends MemoryConfigurationSection implements Configuration {
 
     private final @NotNull File file;
     private @Nullable String resourcePath;
+    private @NotNull List<Listener> listenerList;
 
     public TomlConfiguration(@NotNull final File file) {
         this.file = file;
+        this.listenerList = new ArrayList<>();
     }
 
     public TomlConfiguration(@NotNull final File folder, @NotNull final String pathFromFile) {
         this.file = new File(folder.getAbsolutePath() + File.separator + pathFromFile);
+        this.listenerList = new ArrayList<>();
     }
 
     @Override
@@ -61,6 +66,12 @@ public class TomlConfiguration extends MemoryConfigurationSection implements Con
     @Override
     public @NotNull Configuration setResourcePath(@Nullable String path) {
         this.resourcePath = path;
+        return this;
+    }
+
+    @Override
+    public @NotNull Configuration addListener(@NotNull Listener listener) {
+        this.listenerList.add(listener);
         return this;
     }
 
@@ -120,6 +131,7 @@ public class TomlConfiguration extends MemoryConfigurationSection implements Con
                 Toml toml = new Toml().read(this.file);
                 this.data.clear();
                 this.data.putAll(toml.toMap());
+                this.listenerList.forEach(listener -> listener.onLoadFinished(this));
                 return true;
 
             } catch (Exception exception) {

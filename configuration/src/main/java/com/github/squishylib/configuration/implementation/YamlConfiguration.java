@@ -31,9 +31,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static org.yaml.snakeyaml.DumperOptions.FlowStyle.BLOCK;
 
@@ -41,15 +39,16 @@ public class YamlConfiguration extends MemoryConfigurationSection implements Con
 
     private final @NotNull File file;
     private @Nullable String resourcePath;
+    private final @NotNull List<Listener> listenerList;
 
     public YamlConfiguration(@NotNull final File file) {
-        super();
         this.file = file;
+        this.listenerList = new ArrayList<>();
     }
 
     public YamlConfiguration(@NotNull final File folder, @NotNull final String pathFromFile) {
-        super();
         this.file = new File(folder.getAbsolutePath() + File.separator + pathFromFile);
+        this.listenerList = new ArrayList<>();
     }
 
     @Override
@@ -70,6 +69,12 @@ public class YamlConfiguration extends MemoryConfigurationSection implements Con
     @Override
     public @NotNull Configuration setResourcePath(@Nullable String path) {
         this.resourcePath = path;
+        return this;
+    }
+
+    @Override
+    public @NotNull Configuration addListener(@NotNull Listener listener) {
+        this.listenerList.add(listener);
         return this;
     }
 
@@ -131,6 +136,7 @@ public class YamlConfiguration extends MemoryConfigurationSection implements Con
 
                 this.data.clear();
                 this.data.putAll(map == null ? new LinkedHashMap<>() : map);
+                this.listenerList.forEach(listener -> listener.onLoadFinished(this));
                 return true;
 
             } catch (Exception exception) {

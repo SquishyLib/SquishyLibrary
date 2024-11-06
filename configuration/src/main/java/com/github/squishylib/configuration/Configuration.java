@@ -30,6 +30,10 @@ import java.util.Optional;
 
 public interface Configuration extends ConfigurationSection {
 
+    interface Listener {
+        void onLoadFinished(@NotNull ConfigurationSection section);
+    }
+
     /**
      * Used to get the absolute file path.
      *
@@ -98,6 +102,17 @@ public interface Configuration extends ConfigurationSection {
      */
     @NotNull
     Configuration setResourcePath(@Nullable String path);
+
+    /**
+     * Adds a listener to the configuration instance.
+     * When the configuration instance is next loaded it
+     * will also run all the listeners.
+     *
+     * @param listener The instance of a listener.
+     * @return Tis instance.
+     */
+    @NotNull
+    Configuration addListener(@NotNull Listener listener);
 
     /**
      * Used to copy the configuration file into this class instance,
