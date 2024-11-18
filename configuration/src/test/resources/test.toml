@@ -1,6 +1,10 @@
 get = "test"
 getString = "testString"
 getInteger = 7
+getIntegerThatIsAFloat = 7.4
+getLong = 1231231231231231231
+getFloat = 0.5
+getDouble = 0.5
 
 [getClass]
 key = "value"

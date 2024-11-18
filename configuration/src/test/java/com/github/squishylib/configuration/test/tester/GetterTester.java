@@ -43,6 +43,13 @@ public class GetterTester {
         this.testGetStringDefault();
         this.testGetInteger();
         this.testGetIntegerDefault();
+        this.testGetIntegerThatIsAFloat();
+        this.testGetLong();
+        this.testGetLongDefault();
+        this.testGetFloat();
+        this.testGetFloatDefault();
+        this.testGetDouble();
+        this.testGetDoubleDefault();
         this.testGetClass();
         this.testGetConvertable();
     }
@@ -95,6 +102,78 @@ public class GetterTester {
         new ResultChecker("testGetIntegerDefault")
                 .fallBack("&etestGetIntegerDefault Failed")
                 .expect(i == 8, "i == 8");
+    }
+
+    public void testGetIntegerThatIsAFloat() {
+        logger.info("&aRunning test: &ftestGetIntegerThatIsAFloat");
+        final Configuration configuration = this.factory.create().load();
+        final int i = configuration.getInteger("getIntegerThatIsAFloat");
+
+        new ResultChecker("testGetIntegerThatIsAFloat")
+                .fallBack("&etestGetIntegerThatIsAFloat Failed")
+                .expect(i == 7, "i == 7");
+
+    }
+
+    public void testGetLong() {
+        logger.info("&aRunning test: &ftestGetLong");
+        final Configuration configuration = this.factory.create().load();
+        final long i = configuration.getLong("getLong");
+
+        new ResultChecker("testGetLong")
+                .fallBack("&etestGetLong Failed")
+                .expect(i == 1231231231231231231L, "i == 1231231231231231231L");
+    }
+
+    public void testGetLongDefault() {
+        logger.info("&aRunning test: &ftestGetLongDefault");
+        final Configuration configuration = this.factory.create().load();
+        final long i = configuration.getLong("getLongDefault", 2231231231231231231L);
+
+        new ResultChecker("testGetLongDefault")
+                .fallBack("&etestGetLongDefault Failed")
+                .expect(i == 2231231231231231231L, "i == 2231231231231231231L");
+    }
+
+    public void testGetFloat() {
+        logger.info("&aRunning test: &ftestGetFloat");
+        final Configuration configuration = this.factory.create().load();
+        System.out.println(configuration.getMap());
+        final float i = configuration.getFloat("getFloat");
+
+        new ResultChecker("testGetFloat")
+                .fallBack("&etestGetFloat Failed")
+                .expect(i, 0.5F, "i == 0.5F");
+    }
+
+    public void testGetFloatDefault() {
+        logger.info("&aRunning test: &ftestGetFloatDefault");
+        final Configuration configuration = this.factory.create().load();
+        final float i = configuration.getFloat("getFloatDefault", 0.25F);
+
+        new ResultChecker("testGetFloatDefault")
+                .fallBack("&etestGetFloatDefault Failed")
+                .expect(i == 0.25F, "i == 0.0.25F");
+    }
+
+    public void testGetDouble() {
+        logger.info("&aRunning test: &ftestGetDouble");
+        final Configuration configuration = this.factory.create().load();
+        final double i = configuration.getDouble("getDouble");
+
+        new ResultChecker("testGetDouble")
+                .fallBack("&etestGetDouble Failed")
+                .expect(i == 0.5D, "i == 0.5D");
+    }
+
+    public void testGetDoubleDefault() {
+        logger.info("&aRunning test: &ftestGetDoubleDefault");
+        final Configuration configuration = this.factory.create().load();
+        final double i = configuration.getDouble("getDoubleDefault", 0.25D);
+
+        new ResultChecker("testGetDoubleDefault")
+                .fallBack("&etestGetDoubleDefault Failed")
+                .expect(i == 0.25D, "i == 0.25D");
     }
 
     private static class Test {

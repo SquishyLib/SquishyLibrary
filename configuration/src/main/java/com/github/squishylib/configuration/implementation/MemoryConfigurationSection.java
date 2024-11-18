@@ -403,16 +403,22 @@ public class MemoryConfigurationSection implements ConfigurationSection {
         T parse(@NotNull String value);
     }
 
-    private @Nullable <T> T parseValue(@NotNull Object value, @NotNull StringParser<T> parser) {
+    private @Nullable <T> T parseValue(@NotNull Object value, @NotNull StringParser<T> parser, boolean shouldBeInt) {
         if (value instanceof Integer number) return parser.parse(Integer.toString(number));
         if (value instanceof Long number) return parser.parse(Long.toString(number));
-        if (value instanceof Double number) return parser.parse(Double.toString(number).split("\\.")[0]);
-        if (value instanceof Float number) return parser.parse(Float.toString(number).split("\\.")[0]);
-        if (value instanceof String string) return parser.parse(string.split("\\.")[0]);
+        if (value instanceof Double number) {
+            if (shouldBeInt) return parser.parse(Double.toString(number).split("\\.")[0]);
+            return parser.parse(Double.toString(number));
+        }
+        if (value instanceof Float number) {
+            if (shouldBeInt) return parser.parse(Float.toString(number).split("\\.")[0]);
+            return parser.parse(Float.toString(number));
+        }
+        if (value instanceof String string) return parser.parse(string);
         return null;
     }
 
-    private @Nullable <T> T parse(@Nullable String path, @NotNull StringParser<T> parser) {
+    private @Nullable <T> T parse(@Nullable String path, @NotNull StringParser<T> parser, boolean shouldBeInt) {
 
         // Get the value from the path.
         final Object value = this.get(path);
@@ -421,12 +427,12 @@ public class MemoryConfigurationSection implements ConfigurationSection {
         if (value == null) return null;
 
         // Parse the value into the object.
-        return this.parseValue(value, parser);
+        return this.parseValue(value, parser, shouldBeInt);
     }
 
     @Override
     public int getInteger(@Nullable String path, int alternative) {
-        final Integer number = this.parse(path, Integer::parseInt);
+        final Integer number = this.parse(path, Integer::parseInt, true);
         return number == null ? alternative : number;
     }
 
@@ -442,7 +448,7 @@ public class MemoryConfigurationSection implements ConfigurationSection {
 
     @Override
     public long getLong(@Nullable String path, long alternative) {
-        final Long number = this.parse(path, Long::parseLong);
+        final Long number = this.parse(path, Long::parseLong, true);
         return number == null ? alternative : number;
     }
 
@@ -458,7 +464,7 @@ public class MemoryConfigurationSection implements ConfigurationSection {
 
     @Override
     public double getDouble(@Nullable String path, double alternative) {
-        final Double number = this.parse(path, Double::parseDouble);
+        final Double number = this.parse(path, Double::parseDouble, false);
         return number == null ? alternative : number;
     }
 
@@ -474,7 +480,7 @@ public class MemoryConfigurationSection implements ConfigurationSection {
 
     @Override
     public float getFloat(@Nullable String path, float alternative) {
-        final Float number = this.parse(path, Float::parseFloat);
+        final Float number = this.parse(path, Float::parseFloat, false);
         return number == null ? alternative : number;
     }
 
@@ -528,7 +534,7 @@ public class MemoryConfigurationSection implements ConfigurationSection {
         return this.get(path) instanceof List<?>;
     }
 
-    private <T> List<T> getList(@Nullable String path, @Nullable List<T> alternative, @NotNull StringParser<T> parser) {
+    private <T> List<T> getList(@Nullable String path, @Nullable List<T> alternative, @NotNull StringParser<T> parser, boolean shouldBeInt) {
 
         // Is the location not a list?
         if (!this.isList(path)) return alternative;
@@ -539,7 +545,7 @@ public class MemoryConfigurationSection implements ConfigurationSection {
         // Loop though items in the list.
         for (final Object item : this.getList(path, new ArrayList<>())) {
 
-            final T parsed = this.parseValue(item, parser);
+            final T parsed = this.parseValue(item, parser, shouldBeInt);
 
             // Is the value not the correct type.
             if (parsed == null) {
@@ -555,7 +561,7 @@ public class MemoryConfigurationSection implements ConfigurationSection {
 
     @Override
     public List<String> getListString(@Nullable String path, @Nullable List<String> alternative) {
-        return this.getList(path, alternative, (string) -> string);
+        return this.getList(path, alternative, (string) -> string, false);
     }
 
     @Override
@@ -565,7 +571,7 @@ public class MemoryConfigurationSection implements ConfigurationSection {
 
     @Override
     public List<Integer> getListInteger(@Nullable String path, @Nullable List<Integer> alternative) {
-        return this.getList(path, alternative, Integer::parseInt);
+        return this.getList(path, alternative, Integer::parseInt, true);
     }
 
     @Override
@@ -575,7 +581,7 @@ public class MemoryConfigurationSection implements ConfigurationSection {
 
     @Override
     public List<Long> getListLong(@Nullable String path, @Nullable List<Long> alternative) {
-        return this.getList(path, alternative, Long::parseLong);
+        return this.getList(path, alternative, Long::parseLong, true);
     }
 
     @Override
@@ -585,7 +591,7 @@ public class MemoryConfigurationSection implements ConfigurationSection {
 
     @Override
     public List<Double> getListDouble(@Nullable String path, @Nullable List<Double> alternative) {
-        return this.getList(path, alternative, Double::parseDouble);
+        return this.getList(path, alternative, Double::parseDouble, false);
     }
 
     @Override
@@ -595,7 +601,7 @@ public class MemoryConfigurationSection implements ConfigurationSection {
 
     @Override
     public List<Float> getListFloat(@Nullable String path, @Nullable List<Float> alternative) {
-        return this.getList(path, alternative, Float::parseFloat);
+        return this.getList(path, alternative, Float::parseFloat, false);
     }
 
     @Override
