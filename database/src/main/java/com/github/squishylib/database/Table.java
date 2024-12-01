@@ -19,12 +19,12 @@
 package com.github.squishylib.database;
 
 import com.github.squishylib.common.CompletableFuture;
+import com.github.squishylib.database.field.PrimaryFieldMap;
 import com.github.squishylib.database.field.RecordField;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * This will be implemented by every table.
@@ -99,5 +99,54 @@ public abstract class Table<R extends Record<R>> implements TableSelection<R, Da
     @Override
     public @NotNull CompletableFuture<@NotNull Boolean> removeAllRecords(@NotNull Query query) {
         return this.database.createTableSelection(this).removeAllRecords(query);
+    }
+
+    public interface Resolvable<R> {
+        @NotNull R resolve(@NotNull R record);
+    }
+
+    /**
+     * First it attempts to get the record.
+     * If it doesn't exist it creates a new one.
+     * <p>
+     * Your changes are then applied to the record using {@link Resolvable}.
+     * <p>
+     * The record is then inserted into the database.
+     *
+     * @param primaryFieldMap The map of identifiers.
+     * @param resolvable      The update that should be applied to the record.
+     * @return The result of the operation.
+     */
+    public @NotNull CompletableFuture<@NotNull Boolean> resolveRecord(
+            final @NotNull PrimaryFieldMap primaryFieldMap,
+            final @NotNull Resolvable<R> resolvable
+    ) {
+
+        CompletableFuture<@NotNull Boolean> future = new CompletableFuture<>();
+
+        new Thread(() -> {
+
+            try {
+                R record = this.getFirstRecord(new Query().match(primaryFieldMap)).waitAndGet();
+
+                // Does the record not exist?
+                if (record == null) record = this.createEmpty(primaryFieldMap);
+
+                // Resolve the changes.
+                record = resolvable.resolve(record);
+
+                // Insert the updated record.
+                this.insertRecord(record);
+
+                // Complete the request.
+                future.complete(true);
+
+            } catch (Exception exception) {
+                future.complete(false);
+                throw new DatabaseException(exception, this.getClass(), "resolveRecord()", "Unable to resolve a database record update.");
+            }
+        });
+
+        return future;
     }
 }

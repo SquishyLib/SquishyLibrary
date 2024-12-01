@@ -20,6 +20,7 @@ package com.github.squishylib.database;
 
 import com.github.squishylib.common.logger.Logger;
 import com.github.squishylib.database.field.PrimaryField;
+import com.github.squishylib.database.field.PrimaryFieldMap;
 import com.mongodb.client.model.Filters;
 import org.bson.conversions.Bson;
 import org.jetbrains.annotations.NotNull;
@@ -63,6 +64,13 @@ public class Query {
 
     public @NotNull Query match(@NotNull Record<?> record) {
         for (final Map.Entry<PrimaryField, Object> entry : record.getPrimaryFieldMap().get().entrySet()) {
+            this.match(entry.getKey().getName(), entry.getValue());
+        }
+        return this;
+    }
+
+    public @NotNull Query match(@NotNull PrimaryFieldMap primaryFieldMap) {
+        for (final Map.Entry<PrimaryField, Object> entry : primaryFieldMap.get().entrySet()) {
             this.match(entry.getKey().getName(), entry.getValue());
         }
         return this;
