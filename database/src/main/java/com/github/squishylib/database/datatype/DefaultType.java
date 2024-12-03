@@ -18,6 +18,7 @@
 
 package com.github.squishylib.database.datatype;
 
+import com.github.squishylib.database.Database;
 import com.github.squishylib.database.DatabaseException;
 import com.google.gson.Gson;
 import org.jetbrains.annotations.NotNull;
@@ -30,40 +31,45 @@ import java.util.Map;
 public class DefaultType implements DataType<Object> {
 
     @Override
-    public @NotNull String getSqliteName() {
-        return "TEXT";
+    public @NotNull String getTypeName(Database.@NotNull Type type, long maxSize) {
+        return switch (type) {
+            case SQLITE -> "TEXT";
+            case MYSQL -> "LONGTEXT";
+            default -> "Database type not supported.";
+        };
     }
 
     @Override
-    public @NotNull String getMySqlName(long size) {
-        return "LONGTEXT";
-    }
-
-    @Override
-    public @Nullable Object toSqlite(@Nullable Object object) {
+    public @Nullable Object javaToDatabaseValue(@Nullable Object value, Database.@NotNull Type type) {
         final Map<String, Object> map = new HashMap<>();
-        map.put("value", object);
+        map.put("value", value);
         return new Gson().toJson(map);
     }
 
     @Override
-    public @Nullable Object toMySql(@Nullable Object object) {
-        return toSqlite(object);
-    }
-
-    @Override
-    public @Nullable Object fromSqlite(@NotNull ResultSet results, @NotNull String fieldName) {
+    public @Nullable Object databaseValueToJava(@NotNull ResultSet resultSet, @NotNull String fieldName, Database.@NotNull Type type) {
         try {
-            return new Gson().fromJson(results.getString(fieldName), Map.class).get("value");
-        } catch (Exception exception) {
-            throw new DatabaseException(exception, this, "fromSqlite",
-                    "Unable to get the result value from the result set as a string. fieldName=" + fieldName
-            );
-        }
-    }
 
-    @Override
-    public @Nullable Object fromMySql(@NotNull ResultSet results, @NotNull String fieldName) {
-        return fromSqlite(results, fieldName);
+            return new Gson().fromJson(
+                    resultSet.getString(fieldName),
+                    Map.class
+            ).get("value");
+
+        } catch (Exception exception) {
+            try {
+                throw new DatabaseException(exception, this, "databaseValueToJava",
+                        "Failed to convert field &e{field} &cwith value &e\"{value}\" &cinto &e{type}&c."
+                                .replace("{field}", fieldName)
+                                .replace("{value}", resultSet.getString(fieldName))
+                                .replace("{type}", this.getClass().getSimpleName())
+                );
+            } catch (Exception exception2) {
+                throw new DatabaseException(exception2, this, "databaseValueToJava",
+                        "Failed to convert field &e{field} &cwith incorrect value into {type}."
+                                .replace("{field}", fieldName)
+                                .replace("{type}", this.getClass().getSimpleName())
+                );
+            }
+        }
     }
 }

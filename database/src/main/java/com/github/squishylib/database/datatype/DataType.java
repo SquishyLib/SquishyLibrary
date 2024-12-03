@@ -18,7 +18,8 @@
 
 package com.github.squishylib.database.datatype;
 
-import org.bson.Document;
+import com.github.squishylib.database.Database;
+import com.github.squishylib.database.annotation.Size;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,70 +34,65 @@ import java.sql.ResultSet;
 public interface DataType<T> {
 
     /**
-     * Get the data types name that can be
-     * used in a sqlite database.
+     * The data type's name given the type of database.
+     * <p>
+     * For example, in Sqlite a String would be type TEXT
+     * and in mysql it would potentially be VARCHAR(65535).
      *
-     * @return The sqlite data type name.
+     * @param type    The type of database.
+     * @param maxSize The max size needed for the data type.
+     * @return The data type's name.
      */
     @NotNull
-    String getSqliteName();
+    String getTypeName(@NotNull Database.Type type, long maxSize);
 
     /**
-     * Get the data types name that can be
-     * used in a mysql database.
-     *
-     * @param size The maximum size of the data type.
-     * @return The mysql data type name.
-     */
-    @NotNull
-    String getMySqlName(long size);
-
-    /**
-     * Converts an object into the sqlite type.
+     * The data type's name given the type of database.
      * <p>
-     * For example a boolean would be converted into
-     * an integer type as there are no booleans in sqlite.
-     *
-     * @param object The object to convert.
-     * @return The converted object.
-     */
-    @Nullable
-    Object toSqlite(@Nullable Object object);
-
-    /**
-     * Converts an object into the mysql type.
+     * For example, in Sqlite a String would be type TEXT
+     * and in mysql it would potentially be VARCHAR(65535).
      * <p>
-     * For example a boolean would be converted into
-     * an TINYINT(2) type as there are no booleans in mysql.
+     * The max size of the data type will be
+     * {@link Size#DEFAULT_VALUE}.
      *
-     * @param object The object to convert.
-     * @return The converted object.
+     * @param type The type of database.
+     * @return The data type's name.
      */
-    @Nullable
-    Object toMySql(@Nullable Object object);
+    default @NotNull String getTypeName(@NotNull Database.Type type) {
+        return this.getTypeName(type, Size.DEFAULT_VALUE);
+    }
 
     /**
-     * Converts a sqlite result back into the datatype.
+     * Converts a java object into an appropriate
+     * format for the database.
+     * <p>
+     * For example, Sqlite doesn't support booleans out the box so
+     * the boolean data type would be converted into a 1 or 0.
      *
-     * @param results   The result set.
-     * @param fieldName The field's name.
-     * @return The original type.
+     * @param value The java value.
+     * @param type  The database type.
+     * @return The converted value that is suitable for the database.
      */
     @Nullable
-    T fromSqlite(@NotNull ResultSet results, @NotNull String fieldName);
+    Object javaToDatabaseValue(@Nullable Object value, @NotNull Database.Type type);
 
     /**
-     * Converts a mysql result back into the datatype.
+     * Converts a database value back into the java value.
+     * <p>
+     * For example, as the sqlite database doesn't support booleans,
+     * and they are being represented as integers. This method will
+     * convert them back into a boolean.
      *
-     * @param results   The result set.
-     * @param fieldName The field's name.
-     * @return The original type.
+     * @param resultSet The sql result set containing the values.
+     * @param fieldName The name of the field to extract.
+     * @param type      The database type.
+     * @return The java data type.
      */
     @Nullable
-    T fromMySql(@NotNull ResultSet results, @NotNull String fieldName);
+    T databaseValueToJava(@NotNull ResultSet resultSet, @NotNull String fieldName, @NotNull Database.Type type);
 
     /**
-     * Used to get the datatype class of a java type
+     * Used to get the datatype class of a java type.
      * <p>
      * This should not be used when converting a database
      * type back into a java type as they could be different.
@@ -105,14 +101,33 @@ public interface DataType<T> {
      * @return The data type.
      */
     static @NotNull DataType<?> of(@NotNull Class<?> type) {
-        return switch (type.getName()) {
-            case "boolean", "java.land.Boolean" -> new BooleanType();
-            case "string", "java.lang.String" -> new StringType();
-            case "int", "java.lang.Integer" -> new IntegerType();
-            case "long", "java.lang.Long" -> new LongType();
-            case "float", "java.lang.Float" -> new FloatType();
-            case "double", "java.lang.Double" -> new DoubleType();
+        return switch (type.getSimpleName()) {
+            case "boolean", "Boolean", "java.land.Boolean" -> new BooleanType();
+            case "string", "String", "java.lang.String" -> new StringType();
+            case "int", "Integer", "java.lang.Integer" -> new IntegerType();
+            case "long", "Long", "java.lang.Long" -> new LongType();
+            case "float", "Float", "java.lang.Float" -> new FloatType();
+            case "double", "Double", "java.lang.Double" -> new DoubleType();
             default -> new DefaultType();
         };
+    }
+
+    /**
+     * Used to get the datatype class of a java type.
+     * <p>
+     * This should not be used when converting a database
+     * type back into a java type as they could be different.
+     *
+     * @param object The instance of the object.
+     * @return The data type.
+     */
+    static @NotNull DataType<?> of(@Nullable Object object) {
+        if (object instanceof Boolean) return new BooleanType();
+        if (object instanceof String) return new StringType();
+        if (object instanceof Integer) return new IntegerType();
+        if (object instanceof Long) return new LongType();
+        if (object instanceof Float) return new FloatType();
+        if (object instanceof Double) return new DoubleType();
+        return new DefaultType();
     }
 }

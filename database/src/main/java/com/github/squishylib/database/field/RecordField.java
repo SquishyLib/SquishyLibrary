@@ -18,6 +18,7 @@
 
 package com.github.squishylib.database.field;
 
+import com.github.squishylib.database.annotation.Size;
 import com.github.squishylib.database.datatype.DataType;
 import org.jetbrains.annotations.NotNull;
 
@@ -34,6 +35,10 @@ public class RecordField {
         this.name = name;
         this.type = type;
         this.maxSize = maxSize;
+    }
+
+    public RecordField(final @NotNull String name, final @NotNull DataType<?> type) {
+        this(name, type, Size.DEFAULT_VALUE);
     }
 
     public @NotNull String getName() {

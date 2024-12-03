@@ -24,7 +24,7 @@ import org.jetbrains.annotations.NotNull;
 public class DatabaseException extends RuntimeException {
 
     public DatabaseException(@NotNull final Object clazzInstance, @NotNull final String method, @NotNull final String reason) {
-        super(ConsoleColor.parse("\n&7----------------------------------------------------------------------" +
+        System.out.println(ConsoleColor.parse("\n&7----------------------------------------------------------------------" +
                 "\n&7class= &c" + clazzInstance.getClass().getName() +
                 "\n&7method= &c" + method +
                 "\n&7reason= &c" + reason
@@ -32,11 +32,11 @@ public class DatabaseException extends RuntimeException {
     }
 
     public DatabaseException(@NotNull final Exception exception, @NotNull final Object clazzInstance, @NotNull final String method, @NotNull final String reason) {
-        super(ConsoleColor.parse("\n&7----------------------------------------------------------------------" +
+        super(exception);
+        System.out.println(ConsoleColor.parse("&7----------------------------------------------------------------------" +
                 "\n&7class= &c" + clazzInstance.getClass().getName() +
                 "\n&7method= &c" + method +
-                "\n&7reason= &c" + reason +
-                "\n&7exception= &c" + exception
-        ), exception);
+                "\n&7reason= &c" + reason
+        ));
     }
 }

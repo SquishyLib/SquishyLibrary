@@ -29,4 +29,8 @@ public class PrimaryField extends RecordField {
 
         super(name, type, maxSize);
     }
+
+    public PrimaryField(final @NotNull String name, final @NotNull DataType<?> type) {
+        super(name, type);
+    }
 }

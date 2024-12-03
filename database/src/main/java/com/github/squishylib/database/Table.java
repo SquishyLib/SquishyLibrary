@@ -19,8 +19,8 @@
 package com.github.squishylib.database;
 
 import com.github.squishylib.common.CompletableFuture;
-import com.github.squishylib.database.field.PrimaryFieldMap;
 import com.github.squishylib.database.field.RecordField;
+import com.github.squishylib.database.field.RecordFieldPool;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -113,24 +113,24 @@ public abstract class Table<R extends Record<R>> implements TableSelection<R, Da
      * <p>
      * The record is then inserted into the database.
      *
-     * @param primaryFieldMap The map of identifiers.
-     * @param resolvable      The update that should be applied to the record.
+     * @param query      The query used to find the record.
+     * @param resolvable The update that should be applied to the record.
      * @return The result of the operation.
      */
     public @NotNull CompletableFuture<@NotNull Boolean> resolveRecord(
-            final @NotNull PrimaryFieldMap primaryFieldMap,
+            final @NotNull Query query,
             final @NotNull Resolvable<R> resolvable
     ) {
 
         CompletableFuture<@NotNull Boolean> future = new CompletableFuture<>();
 
         new Thread(() -> {
-
             try {
-                R record = this.getFirstRecord(new Query().match(primaryFieldMap)).waitAndGet();
+
+                R record = this.getFirstRecord(query).waitAndGet();
 
                 // Does the record not exist?
-                if (record == null) record = this.createEmpty(primaryFieldMap);
+                if (record == null) record = this.createEmptyRecord(new RecordFieldPool());
 
                 // Resolve the changes.
                 record = resolvable.resolve(record);

@@ -19,8 +19,10 @@
 package com.github.squishylib.database;
 
 import com.github.squishylib.common.logger.Logger;
+import com.github.squishylib.database.datatype.DataType;
 import com.github.squishylib.database.field.PrimaryField;
-import com.github.squishylib.database.field.PrimaryFieldMap;
+import com.github.squishylib.database.field.RecordField;
+import com.github.squishylib.database.field.RecordFieldPool;
 import com.mongodb.client.model.Filters;
 import org.bson.conversions.Bson;
 import org.jetbrains.annotations.NotNull;
@@ -37,7 +39,7 @@ public class Query {
     private Comparator<?> orderByComparator;
 
     public Query() {
-        this.patterns = new HashMap<>();
+        this.patterns = new LinkedHashMap<>();
         this.limit = -1;
     }
 
@@ -62,15 +64,15 @@ public class Query {
         return this;
     }
 
-    public @NotNull Query match(@NotNull Record<?> record) {
-        for (final Map.Entry<PrimaryField, Object> entry : record.getPrimaryFieldMap().get().entrySet()) {
+    public @NotNull Query match(@NotNull Map<RecordField, Object> map) {
+        for (Map.Entry<RecordField, Object> entry : map.entrySet()) {
             this.match(entry.getKey().getName(), entry.getValue());
         }
         return this;
     }
 
-    public @NotNull Query match(@NotNull PrimaryFieldMap primaryFieldMap) {
-        for (final Map.Entry<PrimaryField, Object> entry : primaryFieldMap.get().entrySet()) {
+    public @NotNull Query match(@NotNull RecordFieldPool recordFieldPool) {
+        for (final Map.Entry<RecordField, Object> entry : recordFieldPool.get().entrySet()) {
             this.match(entry.getKey().getName(), entry.getValue());
         }
         return this;
@@ -100,13 +102,25 @@ public class Query {
         return builder.toString();
     }
 
-    public void setSqliteWildCards(PreparedStatement statement, Logger logger) {
+    public void setWildCards(@NotNull PreparedStatement statement, @NotNull Logger logger, @NotNull Database.Type type) {
         try {
 
             int index = 1;
             for (Map.Entry<String, Object> map : this.patterns.entrySet()) {
-                logger.debug("&d│ &7Set wild card &b" + index + " to " + map.getValue());
-                statement.setObject(index, map.getValue());
+
+                final DataType<?> dataType = DataType.of(map.getValue());
+                final Object sqliteObject = dataType.javaToDatabaseValue(map.getValue(), type);
+
+                logger.debug("&d| &7Set wild card &b{number} to {value} ({type}) &7 using {converter} + {old_value} ({old_type})"
+                        .replace("{number}", String.valueOf(index))
+                        .replace("{value}", String.valueOf(sqliteObject))
+                        .replace("{type}", sqliteObject == null ? "null" : sqliteObject.getClass().getSimpleName())
+                        .replace("{converter}", dataType.getClass().getSimpleName())
+                        .replace("{old_value}", String.valueOf(map.getValue()))
+                        .replace("{old_type}", map.getValue() == null ? "null" : map.getValue().getClass().getSimpleName())
+                );
+
+                statement.setObject(index, DataType.of(map.getValue()).javaToDatabaseValue(map.getValue(), type));
                 index++;
             }
 

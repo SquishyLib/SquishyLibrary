@@ -24,8 +24,8 @@ import com.github.squishylib.database.Record;
 import com.github.squishylib.database.*;
 import com.github.squishylib.database.field.ForeignField;
 import com.github.squishylib.database.field.PrimaryField;
-import com.github.squishylib.database.field.PrimaryFieldMap;
 import com.github.squishylib.database.field.RecordField;
+import com.github.squishylib.database.field.RecordFieldPool;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.*;
@@ -240,13 +240,13 @@ public class MySqlDatabase extends RequestQueueDatabase {
         );
 
         // Create a new record.
-        Record<?> record = table.createEmpty(new PrimaryFieldMap("temp"));
+        Record<?> record = table.createEmptyRecord(new RecordFieldPool("temp generated record for create table statement"));
 
         // Loop though primary keys.
         record.getPrimaryFieldList().forEach(primaryField -> builder.append(
                 "`{key}` {type} PRIMARY KEY,"
                         .replace("{key}", primaryField.getName())
-                        .replace("{type}", primaryField.getType().getMySqlName(primaryField.getMaxSize()))
+                        .replace("{type}", primaryField.getType().getTypeName(Type.MYSQL, primaryField.getMaxSize()))
         ));
 
         // Loop though fields.
@@ -255,14 +255,14 @@ public class MySqlDatabase extends RequestQueueDatabase {
                 .forEach(field -> builder.append(
                         "`{key}` {type},"
                                 .replace("{key}", field.getName())
-                                .replace("{type}", field.getType().getMySqlName(field.getMaxSize()))
+                                .replace("{type}", field.getType().getTypeName(Type.MYSQL, field.getMaxSize()))
                 ));
 
         // Loop though foreign keys.
         record.getForeignFieldList().forEach(foreignField -> builder.append(
                 "`{key}` {type} REFERENCES {reference}({reference_field}),"
                         .replace("{key}", foreignField.getName())
-                        .replace("{type}", foreignField.getType().getMySqlName(foreignField.getMaxSize()))
+                        .replace("{type}", foreignField.getType().getTypeName(Type.MYSQL, foreignField.getMaxSize()))
                         .replace("{reference}", foreignField.getForeignTableName())
                         .replace("{reference_field}", foreignField.getForeignName())
         ));

@@ -72,8 +72,8 @@ public class Main {
                 .setMySqlEnabled(true)
                 .setMySqlConnectionString("localhost:3306")
                 .setMySqlDatabaseName("database" + UUID.randomUUID().toString().substring(0, 5))
-                .setMySqlUsername("admin")
-                .setMySqlPassword("123")
+                .setMySqlUsername("root")
+                .setMySqlPassword("123456789")
 
                 .setDebugMode(true)
         );
@@ -89,7 +89,7 @@ public class Main {
         databaseConfig.load();
 
         DatabaseTester tester = new DatabaseTester(new DatabaseBuilder(databaseConfig)
-                .setReconnectCooldown(Duration.ofMillis(100))
+                .setReconnectCooldown(Duration.ofMillis(1000))
                 .setShouldReconnectEveryCycle(false)
                 .setWillReconnect(true)
                 .setTimeBetweenRequests(Duration.ofMillis(1))

@@ -206,7 +206,9 @@ public class DatabaseTester {
         assert record != null;
         database.getTable(TestTable.class).removeRecord(record);
 
-        TestRecord recordRemoved = database.getTable(TestTable.class).getFirstRecord(new Query().match(record)).waitAndGet();
+        TestRecord recordRemoved = database.getTable(TestTable.class)
+                .getFirstRecord(new Query().match(record.getFieldPool().onlyPrimaryKeys()))
+                .waitAndGet();
 
         // Check if the records are the same.
         new ResultChecker("testRemoveRecord")

@@ -19,7 +19,7 @@
 package com.github.squishylib.database.test;
 
 import com.github.squishylib.database.Table;
-import com.github.squishylib.database.field.PrimaryFieldMap;
+import com.github.squishylib.database.field.RecordFieldPool;
 import org.jetbrains.annotations.NotNull;
 
 public class TestTable extends Table<TestRecord> {
@@ -32,8 +32,8 @@ public class TestTable extends Table<TestRecord> {
     }
 
     @Override
-    public @NotNull TestRecord createEmpty(@NotNull PrimaryFieldMap identifiers) {
-        return new TestRecord(identifiers.getString(TestRecord.IDENTIFIER_KEY));
+    public @NotNull TestRecord createEmptyRecord(@NotNull RecordFieldPool pool) {
+        return new TestRecord(pool.getString(TestRecord.IDENTIFIER_KEY));
     }
 
     public @NotNull String getFirstValue() {

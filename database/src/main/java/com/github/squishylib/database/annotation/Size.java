@@ -46,6 +46,8 @@ import java.lang.annotation.Target;
 @Paired(Field.class)
 public @interface Size {
 
+    long DEFAULT_VALUE = Integer.MAX_VALUE;
+
     /**
      * The maximum size of the field.
      * <pre>
@@ -58,5 +60,5 @@ public @interface Size {
      *
      * @return The maximum size of the field.
      */
-    long value() default Integer.MAX_VALUE;
+    long value() default DEFAULT_VALUE;
 }

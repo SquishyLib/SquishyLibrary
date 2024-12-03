@@ -24,8 +24,8 @@ import com.github.squishylib.database.Record;
 import com.github.squishylib.database.*;
 import com.github.squishylib.database.field.ForeignField;
 import com.github.squishylib.database.field.PrimaryField;
-import com.github.squishylib.database.field.PrimaryFieldMap;
 import com.github.squishylib.database.field.RecordField;
+import com.github.squishylib.database.field.RecordFieldPool;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -235,13 +235,13 @@ public class SqliteDatabase extends RequestQueueDatabase {
         );
 
         // Create a new record.
-        Record<?> record = table.createEmpty(new PrimaryFieldMap("temp"));
+        Record<?> record = table.createEmptyRecord(new RecordFieldPool("temp generated for create table statement"));
 
         // Loop though primary keys.
         record.getPrimaryFieldList().forEach(primaryField -> builder.append(
                 "`{key}` {type} PRIMARY KEY,"
                         .replace("{key}", primaryField.getName())
-                        .replace("{type}", primaryField.getType().getSqliteName())
+                        .replace("{type}", primaryField.getType().getTypeName(Type.SQLITE))
         ));
 
         // Loop though fields.
@@ -250,14 +250,14 @@ public class SqliteDatabase extends RequestQueueDatabase {
                 .forEach(field -> builder.append(
                         "`{key}` {type},"
                                 .replace("{key}", field.getName())
-                                .replace("{type}", field.getType().getSqliteName())
+                                .replace("{type}", field.getType().getTypeName(Type.SQLITE))
                 ));
 
         // Loop though foreign keys.
         record.getForeignFieldList().forEach(foreignField -> builder.append(
                 "`{key}` {type} REFERENCES {reference}({reference_field}),"
                         .replace("{key}", foreignField.getName())
-                        .replace("{type}", foreignField.getType().getSqliteName())
+                        .replace("{type}", foreignField.getType().getTypeName(Type.SQLITE))
                         .replace("{reference}", foreignField.getForeignTableName())
                         .replace("{reference_field}", foreignField.getForeignName())
         ));

@@ -18,6 +18,7 @@
 
 package com.github.squishylib.database.datatype;
 
+import com.github.squishylib.database.Database;
 import com.github.squishylib.database.DatabaseException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -27,16 +28,19 @@ import java.sql.ResultSet;
 public class IntegerType implements DataType<Integer> {
 
     @Override
-    public @NotNull String getSqliteName() {
-        return "INTEGER";
+    public @NotNull String getTypeName(Database.@NotNull Type type, long maxSize) {
+        return switch (type) {
+            case SQLITE -> "INTEGER";
+            case MYSQL -> this.getMySqlTypeName(maxSize);
+            default -> "Database type not supported.";
+        };
     }
 
-    @Override
-    public @NotNull String getMySqlName(long size) {
-        if (size <= 64 && size > 0) {
+    private @NotNull String getMySqlTypeName(long maxSize) {
+        if (maxSize <= 64 && maxSize > 0) {
             return "BIT(64)";
         }
-        if (size <= 32767 && size >= -32768) {
+        if (maxSize <= 32767 && maxSize >= -32768) {
             return "SMALLINT(255)";
         }
 
@@ -44,29 +48,29 @@ public class IntegerType implements DataType<Integer> {
     }
 
     @Override
-    public @Nullable Object toSqlite(@Nullable Object object) {
-        if (!(object instanceof Integer)) throw new DatabaseException(this, "toSqlite", "Object is not a instance of a integer. object type: " + object.getClass().getName());
-        return object;
+    public @Nullable Object javaToDatabaseValue(@Nullable Object value, Database.@NotNull Type type) {
+        if (value instanceof Integer) return value;
+
+        // Otherwise the object is not a boolean.
+        throw new DatabaseException(this, "javaToDatabaseValue",
+                "Value is not the correct type. The correct type is {correct} and it was {type}"
+                        .replace("{correct}", this.getClass().getSimpleName())
+                        .replace("{type}", (value == null ? "null" : value.getClass().getName()))
+        );
     }
 
     @Override
-    public @Nullable Object toMySql(@Nullable Object object) {
-        return this.toSqlite(object);
-    }
-
-    @Override
-    public @Nullable Integer fromSqlite(@NotNull ResultSet results, @NotNull String fieldName) {
+    public @Nullable Integer databaseValueToJava(@NotNull ResultSet resultSet, @NotNull String fieldName, Database.@NotNull Type type) {
         try {
-            return results.getInt(fieldName);
+
+            return resultSet.getInt(fieldName);
+
         } catch (Exception exception) {
-            throw new DatabaseException(exception, this, "fromSqlite",
-                    "Unable to get the result value from the result set as a integer. fieldName=" + fieldName
+            throw new DatabaseException(this, "databaseValueToJava",
+                    "Failed to convert field {field} into {type}."
+                            .replace("{field}", fieldName)
+                            .replace("{type}", this.getClass().getSimpleName())
             );
         }
-    }
-
-    @Override
-    public @Nullable Integer fromMySql(@NotNull ResultSet results, @NotNull String fieldName) {
-        return this.fromSqlite(results, fieldName);
     }
 }

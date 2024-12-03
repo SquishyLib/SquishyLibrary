@@ -21,15 +21,15 @@ package com.github.squishylib.database;
 import com.github.squishylib.common.CompletableFuture;
 import com.github.squishylib.database.field.ForeignField;
 import com.github.squishylib.database.field.PrimaryField;
-import com.github.squishylib.database.field.PrimaryFieldMap;
 import com.github.squishylib.database.field.RecordField;
+import com.github.squishylib.database.field.RecordFieldPool;
 import org.bson.Document;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Represents a table interface.
@@ -83,11 +83,15 @@ public interface TableSelection<R extends Record<?>, D extends Database> {
      * Used to create an empty record.
      * This will be used when getting a record from the database.
      *
-     * @param identifiers The list of primary keys.
+     * @param pool The pool of record fields with values.
      * @return The empty record.
      */
     @NotNull
-    R createEmpty(@NotNull PrimaryFieldMap identifiers);
+    R createEmptyRecord(@NotNull RecordFieldPool pool);
+
+    default @NotNull R createRecord(@NotNull ResultSet resultSet, @NotNull Database.Type type) throws SQLException {
+        return (R) this.createEmptyRecord(this.getFieldPool(resultSet)).convert(resultSet, type);
+    }
 
     /**
      * Used to get the field names currently in
@@ -208,7 +212,7 @@ public interface TableSelection<R extends Record<?>, D extends Database> {
      */
     default @NotNull
     CompletableFuture<@NotNull Boolean> removeRecord(@NotNull R record) {
-        return this.removeAllRecords(new Query().match(record));
+        return this.removeAllRecords(new Query().match(record.getFieldPool().onlyPrimaryKeys()));
     }
 
     /**
@@ -223,32 +227,28 @@ public interface TableSelection<R extends Record<?>, D extends Database> {
     @NotNull
     CompletableFuture<@NotNull Boolean> removeAllRecords(@NotNull Query query);
 
-    @SuppressWarnings("unchecked")
     default @NotNull List<RecordField> getFieldList() {
-        return this.createEmpty(new PrimaryFieldMap("null")).getFieldList();
+        return this.createEmptyRecord(new RecordFieldPool("temp generated to get record data")).getFieldList();
     }
 
-    @SuppressWarnings("unchecked")
     default @NotNull List<String> getFieldNameList() {
-        return this.createEmpty(new PrimaryFieldMap("null")).getFieldNameList();
+        return this.createEmptyRecord(new RecordFieldPool("temp generated to get record data")).getFieldNameList();
     }
 
-    @SuppressWarnings("unchecked")
     default @NotNull List<PrimaryField> getPrimaryFieldList() {
-        return this.createEmpty(new PrimaryFieldMap("null")).getPrimaryFieldList();
+        return this.createEmptyRecord(new RecordFieldPool("temp generated to get record data")).getPrimaryFieldList();
     }
 
-    @SuppressWarnings("unchecked")
     default @NotNull List<ForeignField> getForeignFieldList() {
-        return this.createEmpty(new PrimaryFieldMap("null")).getForeignFieldList();
+        return this.createEmptyRecord(new RecordFieldPool("temp generated to get record data")).getForeignFieldList();
     }
 
-    default @NotNull PrimaryFieldMap getPrimaryFieldMap(@NotNull ResultSet results) {
-        PrimaryFieldMap map = new PrimaryFieldMap(null);
+    default @NotNull RecordFieldPool getFieldPool(@NotNull ResultSet results) {
+        RecordFieldPool map = new RecordFieldPool();
 
-        for (RecordField field : this.getPrimaryFieldList()) {
+        for (RecordField field : this.getFieldList()) {
             try {
-                map.set(field.getName(), field.getMaxSize(), results.getObject(field.getName()));
+                map.set(field.getName(), results.getObject(field.getName()), field.getMaxSize());
             } catch (Exception exception) {
                 throw new DatabaseException(exception, this, "getPrimaryFieldMap(ResultSet)", "Unable tp get field from result set. field=" + field);
             }
@@ -257,12 +257,12 @@ public interface TableSelection<R extends Record<?>, D extends Database> {
         return map;
     }
 
-    default @NotNull PrimaryFieldMap getPrimaryFieldMap(@NotNull Document document) {
-        PrimaryFieldMap map = new PrimaryFieldMap(null);
+    default @NotNull RecordFieldPool getFieldPool(@NotNull Document document) {
+        RecordFieldPool map = new RecordFieldPool();
 
         for (RecordField field : this.getPrimaryFieldList()) {
             try {
-                map.set(field.getName(), field.getMaxSize(), document.get(field.getName()));
+                map.set(field.getName(), document.get(field.getName()),  field.getMaxSize());
             } catch (Exception exception) {
                 throw new DatabaseException(exception, this, "getPrimaryFieldMap(Document)", "Unable tp get field from result set. field=" + field);
             }

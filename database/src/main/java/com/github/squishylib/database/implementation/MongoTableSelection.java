@@ -22,8 +22,8 @@ import com.github.squishylib.common.CompletableFuture;
 import com.github.squishylib.common.logger.Logger;
 import com.github.squishylib.database.*;
 import com.github.squishylib.database.Record;
-import com.github.squishylib.database.field.PrimaryFieldMap;
 import com.github.squishylib.database.field.RecordField;
+import com.github.squishylib.database.field.RecordFieldPool;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
@@ -66,8 +66,8 @@ public class MongoTableSelection<R extends Record<R>> implements TableSelection<
     }
 
     @Override
-    public @NotNull R createEmpty(@NotNull PrimaryFieldMap identifiers) {
-        return this.table.createEmpty(identifiers);
+    public @NotNull R createEmptyRecord(@NotNull RecordFieldPool pool) {
+        return this.table.createEmptyRecord(pool);
     }
 
     /**
@@ -82,7 +82,7 @@ public class MongoTableSelection<R extends Record<R>> implements TableSelection<
         // Create this requests logger.
         final Logger tempLogger = this.database.getLogger().extend(" &b.getColumnNames &7MongoTableSelection.java:80");
         CompletableFuture<List<String>> future = new CompletableFuture<>();
-        future.complete(this.createEmpty(new PrimaryFieldMap("null")).getFieldNameList());
+        future.complete(this.getFieldNameList());
         tempLogger.debug("Column names: " + future.waitAndGet());
         return future;
     }
@@ -112,7 +112,7 @@ public class MongoTableSelection<R extends Record<R>> implements TableSelection<
                 tempLogger.debug("No query, getting first record.");
                 Document document = this.getCollection().find().first();
                 if (document == null) return null;
-                R record = this.createEmpty(this.getPrimaryFieldMap(document)).convert(document);
+                final R record = this.createEmptyRecord(this.getFieldPool(document)).convert(document);
                 tempLogger.debug("Found record: &b" + record.convertToMap());
                 return record;
             }
@@ -124,7 +124,7 @@ public class MongoTableSelection<R extends Record<R>> implements TableSelection<
             // Get the document.
             Document document = this.getCollection().find(Filters.and(filter)).first();
             if (document == null) return null;
-            R record = this.createEmpty(this.getPrimaryFieldMap(document)).convert(document);
+            R record = this.createEmptyRecord(this.getFieldPool(document)).convert(document);
             tempLogger.debug("Found record: &b" + record.convertToMap());
             return record;
         }));
@@ -141,7 +141,7 @@ public class MongoTableSelection<R extends Record<R>> implements TableSelection<
                 FindIterable<Document> documentList = this.getCollection().find();
                 List<R> records = new ArrayList<>();
                 for (Document document : documentList) {
-                    R record = this.createEmpty(this.getPrimaryFieldMap(document)).convert(document);
+                    R record = this.createEmptyRecord(this.getFieldPool(document)).convert(document);
                     records.add(record);
                     tempLogger.debug("Added record: &b" + record.convertToMap());
                 }
@@ -156,7 +156,7 @@ public class MongoTableSelection<R extends Record<R>> implements TableSelection<
             FindIterable<Document> documentList = this.getCollection().find(Filters.and(filter));
             List<R> records = new ArrayList<>();
             for (Document document : documentList) {
-                R record = this.createEmpty(this.getPrimaryFieldMap(document)).convert(document);
+                R record = this.createEmptyRecord(this.getFieldPool(document)).convert(document);
                 records.add(record);
                 tempLogger.debug("Added record: &b" + record.convertToMap());
             }
@@ -191,7 +191,7 @@ public class MongoTableSelection<R extends Record<R>> implements TableSelection<
 
             final Logger tempLogger = this.database.getLogger().extend(" &b.insertRecord(query) &7MongoTableSelection.java:188");
 
-            List<Bson> filter = new Query().match(record).buildMongoFilter();
+            List<Bson> filter = new Query().match(record.getFieldPool().onlyPrimaryKeys()).buildMongoFilter();
             tempLogger.debug("Removing record &b" + record.convertToMap() + ": &7with filter &b" + filter);
             DeleteResult result = this.getCollection().deleteMany(Filters.and(filter));
             tempLogger.debug("Amount of records deleted: &b" + result.getDeletedCount());

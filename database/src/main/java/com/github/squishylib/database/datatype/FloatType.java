@@ -18,6 +18,7 @@
 
 package com.github.squishylib.database.datatype;
 
+import com.github.squishylib.database.Database;
 import com.github.squishylib.database.DatabaseException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -27,39 +28,38 @@ import java.sql.ResultSet;
 public class FloatType implements DataType<Float> {
 
     @Override
-    public @NotNull String getSqliteName() {
-        return "REAL";
+    public @NotNull String getTypeName(Database.@NotNull Type type, long maxSize) {
+        return switch (type) {
+            case SQLITE -> "REAL";
+            case MYSQL -> "DECIMAL(65)";
+            default -> "Database type not supported.";
+        };
     }
 
     @Override
-    public @NotNull String getMySqlName(long size) {
-        return "DECIMAL(65)";
+    public @Nullable Object javaToDatabaseValue(@Nullable Object value, Database.@NotNull Type type) {
+        if (value instanceof Float) return value;
+
+        // Otherwise the object is not a boolean.
+        throw new DatabaseException(this, "javaToDatabaseValue",
+                "Value is not the correct type. The correct type is {correct} and it was {type}"
+                        .replace("{correct}", this.getClass().getSimpleName())
+                        .replace("{type}", (value == null ? "null" : value.getClass().getName()))
+        );
     }
 
     @Override
-    public @Nullable Object toSqlite(@Nullable Object object) {
-        if (!(object instanceof Float)) throw new DatabaseException(this, "toSqlite", "Object is not a instance of a float. object type: " + object.getClass().getName());
-        return object;
-    }
-
-    @Override
-    public @Nullable Object toMySql(@Nullable Object object) {
-        return this.toSqlite(object);
-    }
-
-    @Override
-    public @Nullable Float fromSqlite(@NotNull ResultSet results, @NotNull String fieldName) {
+    public @Nullable Float databaseValueToJava(@NotNull ResultSet resultSet, @NotNull String fieldName, Database.@NotNull Type type) {
         try {
-            return results.getFloat(fieldName);
+
+            return resultSet.getFloat(fieldName);
+
         } catch (Exception exception) {
-            throw new DatabaseException(exception, this, "fromSqlite",
-                    "Unable to get the result value from the result set as a float. fieldName=" + fieldName
+            throw new DatabaseException(this, "databaseValueToJava",
+                    "Failed to convert field {field} into {type}."
+                            .replace("{field}", fieldName)
+                            .replace("{type}", this.getClass().getSimpleName())
             );
         }
-    }
-
-    @Override
-    public @Nullable Float fromMySql(@NotNull ResultSet results, @NotNull String fieldName) {
-        return this.fromSqlite(results, fieldName);
     }
 }

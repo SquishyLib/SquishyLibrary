@@ -28,8 +28,8 @@ import com.github.squishylib.database.annotation.Size;
 import com.github.squishylib.database.datatype.DataType;
 import com.github.squishylib.database.field.ForeignField;
 import com.github.squishylib.database.field.PrimaryField;
-import com.github.squishylib.database.field.PrimaryFieldMap;
 import com.github.squishylib.database.field.RecordField;
+import com.github.squishylib.database.field.RecordFieldPool;
 import com.google.gson.Gson;
 import org.bson.Document;
 import org.jetbrains.annotations.NotNull;
@@ -160,17 +160,6 @@ public interface Record<R extends Record<R>> extends ConfigurationConvertible<R>
         return primaryFields;
     }
 
-    default @NotNull PrimaryFieldMap getPrimaryFieldMap() {
-        final ConfigurationSection section = this.convert();
-        final PrimaryFieldMap map = new PrimaryFieldMap(null);
-
-        for (final PrimaryField field : this.getPrimaryFieldList()) {
-            map.set(field, section.get(field.getName(), null));
-        }
-
-        return map;
-    }
-
     default @NotNull List<ForeignField> getForeignFieldList() {
         final List<ForeignField> foreignFields = new ArrayList<>();
 
@@ -203,12 +192,15 @@ public interface Record<R extends Record<R>> extends ConfigurationConvertible<R>
         return foreignFields;
     }
 
-    interface ResultSetDataTypeConverter {
-        @Nullable Object convert(
-                @NotNull ResultSet results,
-                @NotNull String fieldName,
-                @NotNull DataType<?> dataType
-        );
+    default @NotNull RecordFieldPool getFieldPool() {
+        final ConfigurationSection section = this.convert();
+        final RecordFieldPool map = new RecordFieldPool();
+
+        for (final RecordField field : this.getFieldList()) {
+            map.set(field, section.get(field.getName(), null));
+        }
+
+        return map;
     }
 
     /**
@@ -217,7 +209,7 @@ public interface Record<R extends Record<R>> extends ConfigurationConvertible<R>
      * @param results The results to convert.
      * @return This instance.
      */
-    default @NotNull R convert(@NotNull ResultSet results, @NotNull ResultSetDataTypeConverter converter) {
+    default @NotNull R convert(@NotNull ResultSet results, @NotNull Database.Type type) {
         ConfigurationSection section = new MemoryConfigurationSection();
 
         for (RecordField field : this.getFieldList()) {
@@ -225,11 +217,11 @@ public interface Record<R extends Record<R>> extends ConfigurationConvertible<R>
 
                 section.set(
                         field.getName(),
-                        converter.convert(results, field.getName(), field.getType())
+                        field.getType().databaseValueToJava(results, field.getName(), type)
                 );
 
             } catch (Exception exception) {
-                throw new DatabaseException(exception, this, "convert", "Unable to convert " + field.getName() + " to an object.");
+                throw new DatabaseException(exception, this, "convert", "Unable to convert field &e{field}&c.");
             }
         }
 
