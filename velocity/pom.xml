@@ -4,6 +4,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
+  <parent>
+    <groupId>com.github.squishylib</groupId>
+    <artifactId>SquishyLibrary</artifactId>
+    <version>HIDDEN</version>
+  </parent>
+
   <groupId>com.github.squishylib.velocity</groupId>
   <artifactId>velocity</artifactId>
   <version>1.0.0</version>
@@ -24,6 +30,13 @@
   </repositories>
 
   <dependencies>
+    <!-- Database + Configuration + Common -->
+    <dependency>
+      <groupId>com.github.squishylib</groupId>
+      <artifactId>database</artifactId>
+      <version>HIDDEN</version>
+    </dependency>
+
     <dependency>
       <groupId>com.velocitypowered</groupId>
       <artifactId>velocity-api</artifactId>

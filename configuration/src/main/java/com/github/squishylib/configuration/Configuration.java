@@ -19,6 +19,7 @@
 package com.github.squishylib.configuration;
 
 import com.github.squishylib.common.CompletableFuture;
+import com.github.squishylib.common.logger.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -202,9 +203,13 @@ public interface Configuration extends ConfigurationSection {
         future.completeAsync(() -> {
 
             // Attempt to copy the default resource file to the configuration location.
-            try (InputStream input = Configuration.class.getResourceAsStream("/" + resourcePath)) {
+            try (InputStream input = ConfigurationFactory.class.getResourceAsStream("/" + resourcePath)) {
 
-                if (input == null) return false;
+                if (input == null) {
+                    Logger logger = new Logger(this.getClass().getPackageName());
+                    logger.info("&c[Configuration] Could not load resource &f" + resourcePath);
+                    return false;
+                }
                 Files.copy(input, this.getFile().toPath());
                 return true;
 
