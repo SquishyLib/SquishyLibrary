@@ -44,7 +44,7 @@ public class StringType implements DataType<String> {
             return "VARCHAR(65532)";
         }
 
-        return "LONGTEXT";
+        return "VARCHAR(65532)";
     }
 
     @Override
