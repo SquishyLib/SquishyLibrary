@@ -357,6 +357,13 @@ public class MySqlDatabase extends RequestQueueDatabase {
 
                 this.logger.info("Attempting to connect to the &bmysql database.");
 
+                try {
+                    Class.forName("com.mysql.jdbc.Driver");
+                }
+                catch (ClassNotFoundException e) {
+                    throw new DatabaseException(e, this, "connectAsync", "Cannot find MySQL driver.");
+                }
+
                 // Create database connection url.
                 String url = "jdbc:mysql://{address}/?user={username}&password={password}"
                         .replace("{address}", this.connectionString)

@@ -10,7 +10,6 @@
         <version>HIDDEN</version>
     </parent>
 
-    <groupId>com.github.squishylib</groupId>
     <artifactId>spigot</artifactId>
     <version>0.3.0</version>
     <packaging>jar</packaging>
