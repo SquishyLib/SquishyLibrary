@@ -50,12 +50,13 @@ public class StringType implements DataType<String> {
     @Override
     public @Nullable Object javaToDatabaseValue(@Nullable Object value, Database.@NotNull Type type) {
         if (value instanceof String) return value;
+        if (value == null) return null;
 
         // Otherwise the object is not a boolean.
         throw new DatabaseException(this, "javaToDatabaseValue",
                 "Value is not the correct type. The correct type is {correct} and it was {type}"
                         .replace("{correct}", this.getClass().getSimpleName())
-                        .replace("{type}", (value == null ? "null" : value.getClass().getName()))
+                        .replace("{type}", value.getClass().getName())
         );
     }
 
