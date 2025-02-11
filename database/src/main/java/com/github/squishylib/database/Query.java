@@ -34,12 +34,14 @@ import java.util.*;
 public class Query {
 
     private final @NotNull Map<String, Object> patterns;
+    private final @NotNull Map<RecordField, Object> fieldPatterns;
     private int limit;
     private String orderByKey;
     private Comparator<?> orderByComparator;
 
     public Query() {
         this.patterns = new LinkedHashMap<>();
+        this.fieldPatterns = new LinkedHashMap<>();
         this.limit = -1;
     }
 
@@ -68,6 +70,7 @@ public class Query {
         for (Map.Entry<RecordField, Object> entry : map.entrySet()) {
             this.match(entry.getKey().getName(), entry.getValue());
         }
+        this.fieldPatterns.putAll(map);
         return this;
     }
 
@@ -75,6 +78,7 @@ public class Query {
         for (final Map.Entry<RecordField, Object> entry : recordFieldPool.get().entrySet()) {
             this.match(entry.getKey().getName(), entry.getValue());
         }
+        this.fieldPatterns.putAll(recordFieldPool.get());
         return this;
     }
 
@@ -105,23 +109,57 @@ public class Query {
     public void setWildCards(@NotNull PreparedStatement statement, @NotNull Logger logger, @NotNull Database.Type type) {
         try {
 
-            int index = 1;
-            for (Map.Entry<String, Object> map : this.patterns.entrySet()) {
+            // Check if the patterns are not record fields.
+            if (this.fieldPatterns.isEmpty()) {
 
-                final DataType<?> dataType = DataType.of(map.getValue());
-                final Object sqliteObject = dataType.javaToDatabaseValue(map.getValue(), type);
+                int index = 1;
 
-                logger.debug("&d| &7Set wild card &b{number} to {value} ({type}) &7 using {converter} + {old_value} ({old_type})"
+                for (Map.Entry<String, Object> map : this.patterns.entrySet()) {
+
+                    final DataType<?> dataType = DataType.of(map.getValue());
+                    final Object sqliteObject = dataType.javaToDatabaseValue(map.getValue(), type);
+
+                    logger.debug("&d| &7Set wild card &b{number} to {value} ({type}) &7 using {converter} + {old_value} ({old_type})"
                         .replace("{number}", String.valueOf(index))
                         .replace("{value}", String.valueOf(sqliteObject))
                         .replace("{type}", sqliteObject == null ? "null" : sqliteObject.getClass().getSimpleName())
                         .replace("{converter}", dataType.getClass().getSimpleName())
                         .replace("{old_value}", String.valueOf(map.getValue()))
                         .replace("{old_type}", map.getValue() == null ? "null" : map.getValue().getClass().getSimpleName())
-                );
+                    );
 
-                statement.setObject(index, DataType.of(map.getValue()).javaToDatabaseValue(map.getValue(), type));
-                index++;
+                    statement.setObject(
+                        index,
+                        dataType.javaToDatabaseValue(map.getValue(), type)
+                    );
+
+                    index++;
+                }
+            } else {
+
+                int index = 1;
+
+                for (Map.Entry<RecordField, Object> map : this.fieldPatterns.entrySet()) {
+
+                    final DataType<?> dataType = map.getKey().getType();
+                    final Object sqliteObject = dataType.javaToDatabaseValue(map.getValue(), type);
+
+                    logger.debug("&d| &7Set wild card &b{number} to {value} ({type}) &7 using {converter} + {old_value} ({old_type})"
+                        .replace("{number}", String.valueOf(index))
+                        .replace("{value}", String.valueOf(sqliteObject))
+                        .replace("{type}", sqliteObject == null ? "null" : sqliteObject.getClass().getSimpleName())
+                        .replace("{converter}", dataType.getClass().getSimpleName())
+                        .replace("{old_value}", String.valueOf(map.getValue()))
+                        .replace("{old_type}", map.getValue() == null ? "null" : map.getValue().getClass().getSimpleName())
+                    );
+
+                    statement.setObject(
+                        index,
+                        dataType.javaToDatabaseValue(map.getValue(), type)
+                    );
+
+                    index++;
+                }
             }
 
         } catch (Exception exception) {
