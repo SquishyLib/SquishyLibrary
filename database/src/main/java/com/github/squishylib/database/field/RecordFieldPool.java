@@ -65,7 +65,7 @@ public class RecordFieldPool {
     }
 
     public @NotNull RecordFieldPool set(final @NotNull String fieldName, final @NotNull Object value, final long maxSize) {
-        this.map.put(new RecordField(fieldName, DataType.of(value.getClass()), maxSize), value);
+        this.map.put(new RecordField(fieldName, DataType.of(value), maxSize), value);
         return this;
     }
 
