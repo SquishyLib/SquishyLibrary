@@ -34,7 +34,7 @@ public class DefaultType implements DataType<Object> {
     public @NotNull String getTypeName(Database.@NotNull Type type, long maxSize) {
         return switch (type) {
             case SQLITE -> "TEXT";
-            case MYSQL -> "LONGTEXT";
+            case MYSQL -> "VARCHAR(255)";
             default -> "Database type not supported.";
         };
     }

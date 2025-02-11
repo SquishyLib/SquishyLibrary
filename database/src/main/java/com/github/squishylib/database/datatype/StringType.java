@@ -41,10 +41,10 @@ public class StringType implements DataType<String> {
             return "CHAR(255)";
         }
         if (maxSize <= 65535) {
-            return "VARCHAR(65532)";
+            return "VARCHAR(255)";
         }
 
-        return "VARCHAR(65532)";
+        return "VARCHAR(255)";
     }
 
     @Override
