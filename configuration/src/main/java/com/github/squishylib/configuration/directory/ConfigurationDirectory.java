@@ -126,8 +126,8 @@ public class ConfigurationDirectory extends MemoryConfigurationSection {
 
         // Otherwise, create the data store file.
         YamlConfiguration configuration = new YamlConfiguration(
-                this.getDirectory(),
-                ConfigurationDirectory.DATA_FILE_EXTENSION
+            this.getDirectory(),
+            ConfigurationDirectory.DATA_FILE_EXTENSION
         );
         configuration.load();
         return configuration;
@@ -224,8 +224,14 @@ public class ConfigurationDirectory extends MemoryConfigurationSection {
         for (final File file : this.getFiles(true, onlyThisDirectory)) {
 
             final Configuration configuration = ConfigurationFactory.createConfiguration(file).orElseThrow(
-                    () -> new ConfigurationException(this, "getConfigurationFiles", "File may not be supported. Unable to create configuration instance from file with path " + file.getAbsolutePath() + ".")
+                () -> new ConfigurationException(
+                    new RuntimeException(),
+                    "ConfigurationDirectory.getConfigurationFiles(onlyThisDirectory)",
+                    "File may not be supported. Unable to create configuration instance from file with path.",
+                    "File absolute path: " + file.getAbsolutePath()
+                )
             );
+
             configuration.load();
             configurationList.add(configuration);
         }
@@ -300,7 +306,12 @@ public class ConfigurationDirectory extends MemoryConfigurationSection {
 
         // Create the configuration file.
         final Configuration configuration = ConfigurationFactory.createConfiguration(file).orElseThrow(
-                () -> new ConfigurationException(this, "appendFile", "File may not be supported. Unable to create configuration instance from file with path " + file.getAbsolutePath() + ".")
+            () -> new ConfigurationException(
+                new RuntimeException(),
+                "ConfigurationDirectory.getConfigurationFiles(onlyThisDirectory)",
+                "File may not be supported. Unable to create configuration instance from file with path.",
+                "File absolute path: " + file.getAbsolutePath()
+            )
         );
 
         // Load the configuration file.
@@ -333,7 +344,7 @@ public class ConfigurationDirectory extends MemoryConfigurationSection {
 
             // Get the name of the file.
             final String name = resourcePath.substring(
-                    resourcePath.lastIndexOf('/') + 1
+                resourcePath.lastIndexOf('/') + 1
             );
 
             // Create the file within the directory.
@@ -344,10 +355,20 @@ public class ConfigurationDirectory extends MemoryConfigurationSection {
                 return this;
             }
 
-            throw new ConfigurationException(this, "createResource", "Unable to create resource as the input was null . The resource path was " + resourcePath + ".");
+            throw new ConfigurationException(
+                new RuntimeException(),
+                "ConfigurationDirectory.createResource(resourcePath)",
+                "Unable to create resource as the input stream was null.",
+                "The resource path is " + resourcePath + "."
+            );
 
         } catch (IOException exception) {
-            throw new ConfigurationException(this, "createResource", "Unable to create resource. The resource path was " + resourcePath + ".");
+            throw new ConfigurationException(
+                exception,
+                "ConfigurationDirectory.createResource(resourcePath)",
+                "Unable to copy and paste the resource file.",
+                "The resource path was" + resourcePath + "."
+            );
         }
     }
 
@@ -435,7 +456,12 @@ public class ConfigurationDirectory extends MemoryConfigurationSection {
                 configuration.set(key, this.get(key));
 
             } catch (Exception exception) {
-                throw new ConfigurationException(exception, this, "save", "Unable to save key " + key + ".");
+                throw new ConfigurationException(
+                    exception,
+                    "ConfigurationDirectory.save(onlyThisDirectory)",
+                    "Unable to set a key to a value.",
+                    "The key is " + key + "."
+                );
             }
         }
 
@@ -457,7 +483,11 @@ public class ConfigurationDirectory extends MemoryConfigurationSection {
                 configuration.remove(key);
 
             } catch (Exception exception) {
-                throw new ConfigurationException(exception, this, "save", "Unable to remove key " + key + ".");
+                throw new ConfigurationException(
+                    exception,
+                    "ConfigurationDirectory.save(onlyThisDirectory)",
+                    "Unable to remove the key " + key + "."
+                );
             }
         }
 

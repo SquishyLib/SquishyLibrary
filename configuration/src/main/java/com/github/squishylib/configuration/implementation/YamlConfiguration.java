@@ -106,7 +106,11 @@ public class YamlConfiguration extends MemoryConfigurationSection implements Con
 
                 // Was it not able to create the parent directories?
                 if (!success) {
-                    throw new ConfigurationException(this, "loadAsync", "Could not create parent directory's.");
+                    throw new ConfigurationException(
+                        new RuntimeException(),
+                        "YamlConfiguration.loadAsync()",
+                        "Could not create parent directory's."
+                    );
                 }
             }
 
@@ -120,10 +124,18 @@ public class YamlConfiguration extends MemoryConfigurationSection implements Con
 
                     // Was there a problem while creating the file?
                     if (!success.get()) {
-                        throw new ConfigurationException(this, "loadAsync", "Could not create the file.");
+                        throw new ConfigurationException(
+                            new RuntimeException(),
+                            "YamlConfiguration.loadAsync()",
+                            "Could create the file."
+                        );
                     }
                 } catch (Exception exception) {
-                    throw new ConfigurationException(exception, this, "loadAsync", "Could not get the completable future result for creating the file.");
+                    throw new ConfigurationException(
+                        exception,
+                        "YamlConfiguration.loadAsync()",
+                        "Could not get the completable future result for creating the file."
+                    );
                 }
             }
 
@@ -140,7 +152,11 @@ public class YamlConfiguration extends MemoryConfigurationSection implements Con
                 return true;
 
             } catch (Exception exception) {
-                throw new ConfigurationException(exception, this, "loadAsync", "Could not get the content and replace the data map.");
+                throw new ConfigurationException(
+                    exception,
+                    "YamlConfiguration.loadAsync()",
+                    "Could not get the content and replace the data map."
+                );
             }
         });
 
@@ -181,7 +197,11 @@ public class YamlConfiguration extends MemoryConfigurationSection implements Con
                 return true;
 
             } catch (IOException exception) {
-                throw new ConfigurationException(this, "save", "Could not write the data into the file.");
+                throw new ConfigurationException(
+                    exception,
+                    "YamlConfiguration.saveAsync()",
+                    "Could not write the data into the file."
+                );
             }
         });
 

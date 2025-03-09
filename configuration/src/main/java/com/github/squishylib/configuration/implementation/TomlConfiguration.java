@@ -103,7 +103,11 @@ public class TomlConfiguration extends MemoryConfigurationSection implements Con
 
                 // Was it not able to create the parent directories?
                 if (!success) {
-                    throw new ConfigurationException(this, "load", "Could not create parent directory's.");
+                    throw new ConfigurationException(
+                        new RuntimeException(),
+                        "TomlConfiguration.loadAsync()",
+                        "Could not create parent directory's."
+                    );
                 }
             }
 
@@ -117,10 +121,18 @@ public class TomlConfiguration extends MemoryConfigurationSection implements Con
 
                     // Was there a problem while creating the file?
                     if (!success.get()) {
-                        throw new ConfigurationException(this, "load", "Could not create the file.");
+                        throw new ConfigurationException(
+                            new RuntimeException(),
+                            "TomlConfiguration.loadAsync()",
+                            "Could not create the file."
+                        );
                     }
                 } catch (Exception exception) {
-                    throw new ConfigurationException(this, "load", "Could not get the completable future result for creating the file.");
+                    throw new ConfigurationException(
+                        exception,
+                        "TomlConfiguration.loadAsync()",
+                        "Could not get the completable future result for creating the file."
+                    );
                 }
             }
 
@@ -135,7 +147,10 @@ public class TomlConfiguration extends MemoryConfigurationSection implements Con
                 return true;
 
             } catch (Exception exception) {
-                throw new ConfigurationException(this, "load", "Could not get the content and replace the data map.");
+                throw new ConfigurationException(exception,
+                    "TomlConfiguration.loadAsync()",
+                    "Could not get the content and replace the data map."
+                );
             }
         });
 
@@ -166,7 +181,11 @@ public class TomlConfiguration extends MemoryConfigurationSection implements Con
                 return true;
 
             } catch (IOException exception) {
-                throw new ConfigurationException(this, "save", "Could not write the data into the file.");
+                throw new ConfigurationException(
+                    exception,
+                    "TomlConfiguration.loadAsync()",
+                    "Could not write the data into the file."
+                );
             }
         });
 

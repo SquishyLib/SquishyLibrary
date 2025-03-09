@@ -139,7 +139,12 @@ public class MemoryConfigurationSection implements ConfigurationSection {
                 return this;
 
             } catch (Exception exception) {
-                throw new ConfigurationException(this, "setInSection", "Unable to create section above and update data. remaining_path=" + remainingPath + ".");
+                throw new ConfigurationException(
+                    exception,
+                    "MemoryConfigurationSection.setInSection(path, value)",
+                    "Unable to create section above and update data. remaining_path=" + remainingPath + ".",
+                    "path=" + path + "\n value=" + value + "\n convertedValue=" + convertedValue
+                );
             }
         }
 
@@ -243,7 +248,11 @@ public class MemoryConfigurationSection implements ConfigurationSection {
             return this.data.getOrDefault(path, alternative);
 
         } catch (Exception exception) {
-            throw new ConfigurationException(this, "get", "Unable to get value from " + this.getPathFromBase(path) + ". The alternative value was " + alternative + ".");
+            throw new ConfigurationException(
+                exception,
+                "MemoryConfiguraitonSection.get(path, alternative)",
+                "Unable to get value from " + this.getPathFromBase(path) + ". The alternative value was " + alternative + "."
+            );
         }
     }
 
@@ -275,7 +284,11 @@ public class MemoryConfigurationSection implements ConfigurationSection {
             return type;
 
         } catch (Exception exception) {
-            throw new ConfigurationException(this, "getClass", "Unable to convert map " + map + " located " + this.getPathFromBase(path) + " into the class type " + clazz + ".");
+            throw new ConfigurationException(
+                exception,
+                "MemoryConfigurationSection.getClass(path, alternative)",
+                "Unable to convert map " + map + " located " + this.getPathFromBase(path) + " into the class type " + clazz + "."
+            );
         }
     }
 

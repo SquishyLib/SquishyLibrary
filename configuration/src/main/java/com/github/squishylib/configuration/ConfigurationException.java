@@ -18,26 +18,39 @@
 
 package com.github.squishylib.configuration;
 
-import com.github.squishylib.common.logger.ConsoleColor;
+import com.github.squishylib.common.logger.Logger;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class ConfigurationException extends RuntimeException {
 
-    public ConfigurationException(@NotNull final Object clazzInstance, @NotNull final String method, @NotNull final String reason) {
-        super(ConsoleColor.parse("\n&7----------------------------------------------------------------------" +
-                "\n&7class= &c" + clazzInstance.getClass().getName() +
-                (clazzInstance instanceof Configuration configuration ? "\n&7path= &c " + configuration.getPath() : "") +
-                "\n&7method= &c" + method +
-                "\n&7reason= &c" + reason
-        ));
-    }
+    public static long lastErrorTimeStamp;
 
-    public ConfigurationException(@NotNull final Exception exception, @NotNull final Object clazzInstance, @NotNull final String method, @NotNull final String reason) {
-        super(ConsoleColor.parse("\n&7----------------------------------------------------------------------" +
-                "\n&7class= &c" + clazzInstance.getClass().getName() +
-                "\n&7method= &c" + method +
-                "\n&7reason= &c" + reason +
-                "\n&7exception= &c" + exception
-        ), exception);
+    /**
+     * @param exception   The optional instance of the exception.
+     * @param source      For example: Leaf.get()
+     * @param reason      If there is a specific reason.
+     * @param helpMessage A way of solving the problem.
+     */
+    public ConfigurationException(@Nullable Exception exception, @NotNull final String source, @Nullable final String reason, @Nullable final String... helpMessage) {
+
+        // Stop lots of errors.
+        // Solve the first one first.
+        if (lastErrorTimeStamp != -1 && System.currentTimeMillis() - lastErrorTimeStamp < 1000) {
+            return;
+        }
+
+        lastErrorTimeStamp = System.currentTimeMillis();
+
+        Logger logger = new Logger("com.github.squishylib.configuration");
+        logger.error("source: &f" + source);
+        if (reason != null) logger.error("reason: &f" + reason);
+        if (helpMessage != null) logger.error("&7" + String.join("\n&7", helpMessage));
+        logger.error("&c");
+
+        for (StackTraceElement element : exception.getStackTrace()) {
+            logger.error("[Trace] " + element.getMethodName() + ":" + element.getLineNumber());
+        }
     }
 }
+
