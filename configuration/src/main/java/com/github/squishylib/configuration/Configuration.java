@@ -224,7 +224,7 @@ public interface Configuration extends ConfigurationSection {
             future.completeAsync(() -> {
 
                 // Attempt to copy the default resource file to the configuration location.
-                try (InputStream input = ConfigurationFactory.class.getResourceAsStream("/" + resourcePath)) {
+                try (InputStream input = this.getProjectClass().getResourceAsStream("/" + resourcePath)) {
 
                     if (input == null) {
                         Logger logger = ConfigurationException.getLogger();
