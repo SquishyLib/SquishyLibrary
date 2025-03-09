@@ -52,8 +52,8 @@ public class SingleTypeConfigurationDirectory<T extends ConfigurationConvertible
     private final @NotNull Factory<T> factory;
     private final boolean onlyThisDirectory;
 
-    public SingleTypeConfigurationDirectory(@NotNull File directory, @NotNull Factory<T> factory, boolean onlyThisDirectory) {
-        this.directory = new ConfigurationDirectory(directory);
+    public SingleTypeConfigurationDirectory(@NotNull File directory, @NotNull Factory<T> factory, boolean onlyThisDirectory, @NotNull Class<?> clazz) {
+        this.directory = new ConfigurationDirectory(directory, clazz);
         this.factory = factory;
         this.onlyThisDirectory = onlyThisDirectory;
     }
@@ -115,11 +115,11 @@ public class SingleTypeConfigurationDirectory<T extends ConfigurationConvertible
      * @param type       The type to insert.
      * @return This instance.
      */
-    public @NotNull SingleTypeConfigurationDirectory<T> set(@NotNull String identifier, @NotNull T type) {
+    public @NotNull SingleTypeConfigurationDirectory<T> set(@NotNull String identifier, @NotNull T type, @NotNull Class<?> clazz) {
 
         // Get the instance of the configuration to use.
         Configuration configuration = this.directory.getConfiguration(identifier, this.onlyThisDirectory).orElseGet(() -> {
-            Configuration temp = new YamlConfiguration(this.directory.getDirectory(), "default.yml");
+            Configuration temp = new YamlConfiguration(this.directory.getDirectory(), "default.yml", clazz);
             temp.load();
             return temp;
         });

@@ -34,10 +34,10 @@ public class Main {
     @Test
     public void testPairedAnnotation() {
         new ResultChecker("testPairedAnnotation")
-                .expect(
-                        Paired.Checker.isUsedCorrectly("com.github.squishylib.database"),
-                        "Paired annotation to be used correctly."
-                );
+            .expect(
+                Paired.Checker.isUsedCorrectly("com.github.squishylib.database"),
+                "Paired annotation to be used correctly."
+            );
     }
 
     @Test
@@ -45,16 +45,16 @@ public class Main {
         UUID uuid = UUID.randomUUID();
 
         DatabaseTester tester = new DatabaseTester(new DatabaseBuilder()
-                .setReconnectCooldown(Duration.ofMillis(100))
-                .setShouldReconnectEveryCycle(true)
-                .setWillReconnect(true)
-                .setTimeBetweenRequests(Duration.ofMillis(1))
-                .setMaxRequestsPending(20)
+            .setReconnectCooldown(Duration.ofMillis(100))
+            .setShouldReconnectEveryCycle(true)
+            .setWillReconnect(true)
+            .setTimeBetweenRequests(Duration.ofMillis(1))
+            .setMaxRequestsPending(20)
 
-                .setSqliteEnabled(true)
-                .setSqlitePath("src/test/resources/{uuid}.sqlite3".replace("{uuid}", uuid.toString()))
+            .setSqliteEnabled(true)
+            .setSqlitePath("src/test/resources/{uuid}.sqlite3".replace("{uuid}", uuid.toString()))
 
-                .setDebugMode(true)
+            .setDebugMode(true)
         );
         tester.testAll();
         tester.drop();
@@ -63,19 +63,19 @@ public class Main {
     @Test
     public void testMySql() {
         DatabaseTester tester = new DatabaseTester(new DatabaseBuilder()
-                .setReconnectCooldown(Duration.ofMillis(100))
-                .setShouldReconnectEveryCycle(true)
-                .setWillReconnect(true)
-                .setTimeBetweenRequests(Duration.ofMillis(1))
-                .setMaxRequestsPending(20)
+            .setReconnectCooldown(Duration.ofMillis(100))
+            .setShouldReconnectEveryCycle(true)
+            .setWillReconnect(true)
+            .setTimeBetweenRequests(Duration.ofMillis(1))
+            .setMaxRequestsPending(20)
 
-                .setMySqlEnabled(true)
-                .setMySqlConnectionString("localhost:3306")
-                .setMySqlDatabaseName("database" + UUID.randomUUID().toString().substring(0, 5))
-                .setMySqlUsername("root")
-                .setMySqlPassword("123456789")
+            .setMySqlEnabled(true)
+            .setMySqlConnectionString("localhost:3306")
+            .setMySqlDatabaseName("database" + UUID.randomUUID().toString().substring(0, 5))
+            .setMySqlUsername("root")
+            .setMySqlPassword("123456789")
 
-                .setDebugMode(true)
+            .setDebugMode(true)
         );
         tester.testAll();
         tester.drop();
@@ -84,17 +84,18 @@ public class Main {
     @Test
     public void testMongo() {
         Configuration databaseConfig = new YamlConfiguration(
-                new File("src/test/resources/secret.yml")
+            new File("src/test/resources/secret.yml"),
+            this.getClass()
         );
         databaseConfig.load();
 
         DatabaseTester tester = new DatabaseTester(new DatabaseBuilder(databaseConfig)
-                .setReconnectCooldown(Duration.ofMillis(1000))
-                .setShouldReconnectEveryCycle(false)
-                .setWillReconnect(true)
-                .setTimeBetweenRequests(Duration.ofMillis(1))
-                .setMaxRequestsPending(20)
-                .setDebugMode(true)
+            .setReconnectCooldown(Duration.ofMillis(1000))
+            .setShouldReconnectEveryCycle(false)
+            .setWillReconnect(true)
+            .setTimeBetweenRequests(Duration.ofMillis(1))
+            .setMaxRequestsPending(20)
+            .setDebugMode(true)
         );
         tester.testAll();
         tester.drop();

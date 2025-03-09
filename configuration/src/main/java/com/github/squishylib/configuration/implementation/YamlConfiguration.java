@@ -38,17 +38,20 @@ import static org.yaml.snakeyaml.DumperOptions.FlowStyle.BLOCK;
 public class YamlConfiguration extends MemoryConfigurationSection implements Configuration {
 
     private final @NotNull File file;
+    private final @NotNull Class<?> clazz;
     private @Nullable String resourcePath;
     private final @NotNull List<Listener> listenerList;
 
-    public YamlConfiguration(@NotNull final File file) {
+    public YamlConfiguration(@NotNull final File file, @NotNull Class<?> clazz) {
         this.file = file;
         this.listenerList = new ArrayList<>();
+        this.clazz = clazz;
     }
 
-    public YamlConfiguration(@NotNull final File folder, @NotNull final String pathFromFile) {
+    public YamlConfiguration(@NotNull final File folder, @NotNull final String pathFromFile, @NotNull Class<?> clazz) {
         this.file = new File(folder.getAbsolutePath() + File.separator + pathFromFile);
         this.listenerList = new ArrayList<>();
+        this.clazz = clazz;
     }
 
     @Override
@@ -59,6 +62,11 @@ public class YamlConfiguration extends MemoryConfigurationSection implements Con
     @Override
     public @NotNull File getFile() {
         return this.file;
+    }
+
+    @Override
+    public @NotNull Class<?> getProjectClass() {
+        return this.clazz;
     }
 
     @Override
@@ -108,7 +116,7 @@ public class YamlConfiguration extends MemoryConfigurationSection implements Con
                 if (!success) {
                     throw new ConfigurationException(
                         new RuntimeException(),
-                        "YamlConfiguration.loadAsync()",
+                        "YamlConfiguration.loadAsync() if (!success) {",
                         "Could not create parent directory's."
                     );
                 }
@@ -123,17 +131,17 @@ public class YamlConfiguration extends MemoryConfigurationSection implements Con
                 try {
 
                     // Was there a problem while creating the file?
-                    if (!success.get()) {
+                    if (Boolean.FALSE.equals(success.waitAndGet())) {
                         throw new ConfigurationException(
                             new RuntimeException(),
-                            "YamlConfiguration.loadAsync()",
-                            "Could create the file."
+                            "YamlConfiguration.loadAsync() if (Boolean.FALSE.equals(success.waitAndGet())) {",
+                            "Could not create the file."
                         );
                     }
                 } catch (Exception exception) {
                     throw new ConfigurationException(
                         exception,
-                        "YamlConfiguration.loadAsync()",
+                        "YamlConfiguration.loadAsync() } catch (Exception exception) {",
                         "Could not get the completable future result for creating the file."
                     );
                 }

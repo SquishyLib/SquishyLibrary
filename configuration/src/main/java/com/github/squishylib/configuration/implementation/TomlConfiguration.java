@@ -35,17 +35,20 @@ import java.util.Optional;
 public class TomlConfiguration extends MemoryConfigurationSection implements Configuration {
 
     private final @NotNull File file;
+    private final @NotNull Class<?> clazz;
     private @Nullable String resourcePath;
-    private @NotNull List<Listener> listenerList;
+    private final @NotNull List<Listener> listenerList;
 
-    public TomlConfiguration(@NotNull final File file) {
+    public TomlConfiguration(@NotNull final File file, @NotNull Class<?> clazz) {
         this.file = file;
         this.listenerList = new ArrayList<>();
+        this.clazz = clazz;
     }
 
-    public TomlConfiguration(@NotNull final File folder, @NotNull final String pathFromFile) {
+    public TomlConfiguration(@NotNull final File folder, @NotNull final String pathFromFile, @NotNull Class<?> clazz) {
         this.file = new File(folder.getAbsolutePath() + File.separator + pathFromFile);
         this.listenerList = new ArrayList<>();
+        this.clazz = clazz;
     }
 
     @Override
@@ -56,6 +59,11 @@ public class TomlConfiguration extends MemoryConfigurationSection implements Con
     @Override
     public @NotNull File getFile() {
         return this.file;
+    }
+
+    @Override
+    public @NotNull Class<?> getProjectClass() {
+        return this.clazz;
     }
 
     @Override

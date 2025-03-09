@@ -30,8 +30,9 @@ public class TomlConfigurationTest {
     @Test
     public void test() {
         PreparedConfigurationFactory factory = new PreparedConfigurationFactory(
-                ConfigurationFactory.TOML,
-                new File("src/test/resources/test.toml")
+            ConfigurationFactory.TOML,
+            new File("src/test/resources/test.toml"),
+            this.getClass()
         );
 
         ConfigurationTester tester = new ConfigurationTester(factory);

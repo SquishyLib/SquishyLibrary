@@ -26,13 +26,15 @@ public class PreparedConfigurationFactory {
 
     private final @NotNull ConfigurationFactory factory;
     private final @NotNull File file;
+    private final @NotNull Class<?> clazz;
 
-    public PreparedConfigurationFactory(@NotNull ConfigurationFactory factory, @NotNull File file) {
+    public PreparedConfigurationFactory(@NotNull ConfigurationFactory factory, @NotNull File file, @NotNull Class<?> clazz) {
         this.factory = factory;
         this.file = file;
+        this.clazz = clazz;
     }
 
     public @NotNull Configuration create() {
-        return this.factory.create(this.file);
+        return this.factory.create(this.file, this.clazz);
     }
 }

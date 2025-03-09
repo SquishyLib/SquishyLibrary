@@ -18,13 +18,17 @@
 
 package com.github.squishylib.configuration;
 
-import com.github.squishylib.common.logger.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class ConfigurationException extends RuntimeException {
 
-    public static long lastErrorTimeStamp;
+    private static Logger logger;
+    private static long lastErrorTimeStamp;
 
     /**
      * @param exception   The optional instance of the exception.
@@ -42,15 +46,26 @@ public class ConfigurationException extends RuntimeException {
 
         lastErrorTimeStamp = System.currentTimeMillis();
 
-        Logger logger = new Logger("com.github.squishylib.configuration");
-        logger.error("source: &f" + source);
-        if (reason != null) logger.error("reason: &f" + reason);
-        if (helpMessage != null) logger.error("&7" + String.join("\n&7", helpMessage));
-        logger.error("&c");
+        if (logger == null) {
+            System.out.println("Squishy library logger is null!");
+            return;
+        }
+
+        logger.severe("source: " + source);
+        if (reason != null) logger.severe("reason: " + reason);
+        if (helpMessage != null) logger.severe(String.join("\n", helpMessage));
 
         for (StackTraceElement element : exception.getStackTrace()) {
-            logger.error("[Trace] " + element.getMethodName() + ":" + element.getLineNumber());
+            logger.severe("[Trace] " + element.getMethodName() + ":" + element.getLineNumber());
         }
+    }
+
+    public static void useLogger(Logger logger) {
+        ConfigurationException.logger = logger;
+    }
+
+    public static Logger getLogger() {
+        return ConfigurationException.logger;
     }
 }
 

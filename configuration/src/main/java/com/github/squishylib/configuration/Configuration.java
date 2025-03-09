@@ -19,7 +19,6 @@
 package com.github.squishylib.configuration;
 
 import com.github.squishylib.common.CompletableFuture;
-import com.github.squishylib.common.logger.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -28,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 public interface Configuration extends ConfigurationSection {
 
@@ -82,6 +82,14 @@ public interface Configuration extends ConfigurationSection {
         if (index > extensions.length) return Optional.empty();
         return Optional.of(extensions[index + 1]);
     }
+
+    /**
+     * A class within the module where the
+     * resource file exists.
+     *
+     * @return The project class.
+     */
+    @NotNull Class<?> getProjectClass();
 
     /**
      * Used to get the default resource file's path
@@ -181,42 +189,67 @@ public interface Configuration extends ConfigurationSection {
      */
     @SuppressWarnings("all")
     default @NotNull CompletableFuture<@NotNull Boolean> createFile() {
+        try {
+            // Set up the future value provider.
+            CompletableFuture<Boolean> future = new CompletableFuture<>();
 
-        // Set up the future value provider.
-        CompletableFuture<Boolean> future = new CompletableFuture<>();
+            // Get the resource file path.
+            String resourcePath = this.getResourcePath().orElse(null);
 
-        // Get the resource file path.
-        String resourcePath = this.getResourcePath().orElse(null);
+            // Check if the path doesnt exist.
+            if (resourcePath == null) {
+                future.completeAsync(() -> {
+                    try {
+                        boolean success = this.getFile().createNewFile();
+                        if (!success) {
+                            throw new ConfigurationException(
+                                new RuntimeException(),
+                                "Configuration.createFile()",
+                                "Failed to create the file.",
+                                "Unable to create a empty file with path " + this.getPath()
+                            );
+                        }
+                        return success;
+                    } catch (IOException exception) {
+                        throw new ConfigurationException(
+                            exception,
+                            "Configuration.createFile() create empty file",
+                            "Unable to create a empty file with path " + this.getPath()
+                        );
+                    }
+                });
+                return future;
+            }
 
-        // Check if the path doesnt exist.
-        if (resourcePath == null) {
             future.completeAsync(() -> {
-                try {
-                    return this.getFile().createNewFile();
+
+                // Attempt to copy the default resource file to the configuration location.
+                try (InputStream input = ConfigurationFactory.class.getResourceAsStream("/" + resourcePath)) {
+
+                    if (input == null) {
+                        Logger logger = ConfigurationException.getLogger();
+                        logger.info("[Configuration] Could not load resource " + resourcePath);
+                        return false;
+                    }
+
+                    Files.copy(input, this.getFile().toPath());
+                    return true;
+
                 } catch (IOException exception) {
-                    throw new RuntimeException(exception.getMessage());
+                    throw new ConfigurationException(
+                        exception,
+                        "Configuration.createFile() create resource",
+                        "Unable to copy the resource file with path " + this.getResourcePath()
+                    );
                 }
             });
             return future;
+        } catch (Exception exception) {
+            throw new ConfigurationException(
+                exception,
+                "Configuration.createFile()",
+                "Somthing occured while creating the config file. "
+            );
         }
-
-        future.completeAsync(() -> {
-
-            // Attempt to copy the default resource file to the configuration location.
-            try (InputStream input = ConfigurationFactory.class.getResourceAsStream("/" + resourcePath)) {
-
-                if (input == null) {
-                    Logger logger = new Logger(this.getClass().getPackageName());
-                    logger.info("&c[Configuration] Could not load resource &f" + resourcePath);
-                    return false;
-                }
-                Files.copy(input, this.getFile().toPath());
-                return true;
-
-            } catch (IOException exception) {
-                throw new RuntimeException(exception);
-            }
-        });
-        return future;
     }
 }

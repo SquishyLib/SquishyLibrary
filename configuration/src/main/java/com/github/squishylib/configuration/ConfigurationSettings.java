@@ -16,26 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.github.squishylib.configuration.test;
+package com.github.squishylib.configuration;
 
-import com.github.squishylib.configuration.ConfigurationFactory;
-import com.github.squishylib.configuration.PreparedConfigurationFactory;
-import com.github.squishylib.configuration.test.tester.ConfigurationTester;
-import org.junit.jupiter.api.Test;
+import java.util.logging.Logger;
 
-import java.io.File;
+public class ConfigurationSettings {
 
-public class YamlConfigurationTest {
+    private static Logger logger;
 
-    @Test
-    public void test() {
-        PreparedConfigurationFactory factory = new PreparedConfigurationFactory(
-            ConfigurationFactory.YAML,
-            new File("src/test/resources/test.yaml"),
-            this.getClass()
-        );
-
-        ConfigurationTester tester = new ConfigurationTester(factory);
-        tester.testAll();
-    }
 }

@@ -29,24 +29,24 @@ import java.util.Optional;
 public enum ConfigurationFactory {
     YAML(List.of("yaml", "yml")) {
         @Override
-        public @NotNull Configuration create(@NotNull File file) {
-            return new YamlConfiguration(file);
+        public @NotNull Configuration create(@NotNull File file, @NotNull Class<?> clazz) {
+            return new YamlConfiguration(file, clazz);
         }
 
         @Override
-        public @NotNull Configuration create(@NotNull File folder, @NotNull String pathFromFolder) {
-            return new YamlConfiguration(folder, pathFromFolder);
+        public @NotNull Configuration create(@NotNull File folder, @NotNull String pathFromFolder, @NotNull Class<?> clazz) {
+            return new YamlConfiguration(folder, pathFromFolder, clazz);
         }
     },
     TOML(List.of("toml")) {
         @Override
-        public @NotNull Configuration create(@NotNull File file) {
-            return new TomlConfiguration(file);
+        public @NotNull Configuration create(@NotNull File file, @NotNull Class<?> clazz) {
+            return new TomlConfiguration(file, clazz);
         }
 
         @Override
-        public @NotNull Configuration create(@NotNull File folder, @NotNull String pathFromFolder) {
-            return new TomlConfiguration(folder, pathFromFolder);
+        public @NotNull Configuration create(@NotNull File folder, @NotNull String pathFromFolder, @NotNull Class<?> clazz) {
+            return new TomlConfiguration(folder, pathFromFolder, clazz);
         }
     };
 
@@ -60,25 +60,25 @@ public enum ConfigurationFactory {
         return this.extensions;
     }
 
-    public abstract @NotNull Configuration create(@NotNull File file);
+    public abstract @NotNull Configuration create(@NotNull File file, @NotNull Class<?> clazz);
 
-    public abstract @NotNull Configuration create(@NotNull File folder, @NotNull String pathFromFolder);
+    public abstract @NotNull Configuration create(@NotNull File folder, @NotNull String pathFromFolder, @NotNull Class<?> clazz);
 
-    public static @NotNull Optional<Configuration> createConfiguration(@NotNull String extension, @NotNull File file) {
+    public static @NotNull Optional<Configuration> createConfiguration(@NotNull String extension, @NotNull File file, @NotNull Class<?> clazz) {
         for (ConfigurationFactory factory : ConfigurationFactory.values()) {
-            if (factory.extensions.contains(extension)) return Optional.of(factory.create(file));
+            if (factory.extensions.contains(extension)) return Optional.of(factory.create(file, clazz));
         }
         return Optional.empty();
     }
 
-    public static @NotNull Optional<Configuration> createConfiguration(@NotNull String extension, @NotNull File folder, @NotNull String pathFromFolder) {
+    public static @NotNull Optional<Configuration> createConfiguration(@NotNull String extension, @NotNull File folder, @NotNull String pathFromFolder, @NotNull Class<?> clazz) {
         for (ConfigurationFactory factory : ConfigurationFactory.values()) {
-            if (factory.extensions.contains(extension)) return Optional.of(factory.create(folder, pathFromFolder));
+            if (factory.extensions.contains(extension)) return Optional.of(factory.create(folder, pathFromFolder, clazz));
         }
         return Optional.empty();
     }
 
-    public static @NotNull Optional<Configuration> createConfiguration(@NotNull File file) {
-        return ConfigurationFactory.createConfiguration(file.getName().split("\\.")[file.getName().split("\\.").length - 1], file);
+    public static @NotNull Optional<Configuration> createConfiguration(@NotNull File file, @NotNull Class<?> clazz) {
+        return ConfigurationFactory.createConfiguration(file.getName().split("\\.")[file.getName().split("\\.").length - 1], file, clazz);
     }
 }

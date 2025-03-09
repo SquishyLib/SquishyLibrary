@@ -57,11 +57,13 @@ public class ConfigurationDirectory extends MemoryConfigurationSection {
     public static final @NotNull String DATA_FILE_EXTENSION = ".squishystore.yml";
 
     private final @NotNull File directory;
+    private final @NotNull Class<?> clazz;
     private final @NotNull List<String> resourcePathList;
 
-    public ConfigurationDirectory(@NotNull final File directory) {
+    public ConfigurationDirectory(@NotNull final File directory, @NotNull final Class<?> clazz) {
         this.directory = directory;
         this.resourcePathList = new ArrayList<>();
+        this.clazz = clazz;
     }
 
     public @NotNull File getDirectory() {
@@ -77,7 +79,7 @@ public class ConfigurationDirectory extends MemoryConfigurationSection {
      */
     public @NotNull ConfigurationDirectory getDirectory(@NotNull String pathFromThisDirectory) {
         if (pathFromThisDirectory.isEmpty()) return this;
-        return new ConfigurationDirectory(new File(this.directory, pathFromThisDirectory));
+        return new ConfigurationDirectory(new File(this.directory, pathFromThisDirectory), clazz);
     }
 
     public @NotNull String getDirectoryName() {
@@ -119,7 +121,7 @@ public class ConfigurationDirectory extends MemoryConfigurationSection {
             if (!file.getName().endsWith(DATA_FILE_EXTENSION)) continue;
 
             // Load the configuration file.
-            YamlConfiguration configuration = new YamlConfiguration(file);
+            YamlConfiguration configuration = new YamlConfiguration(file, this.clazz);
             configuration.load();
             return configuration;
         }
@@ -127,7 +129,8 @@ public class ConfigurationDirectory extends MemoryConfigurationSection {
         // Otherwise, create the data store file.
         YamlConfiguration configuration = new YamlConfiguration(
             this.getDirectory(),
-            ConfigurationDirectory.DATA_FILE_EXTENSION
+            ConfigurationDirectory.DATA_FILE_EXTENSION,
+            this.clazz
         );
         configuration.load();
         return configuration;
@@ -223,7 +226,7 @@ public class ConfigurationDirectory extends MemoryConfigurationSection {
 
         for (final File file : this.getFiles(true, onlyThisDirectory)) {
 
-            final Configuration configuration = ConfigurationFactory.createConfiguration(file).orElseThrow(
+            final Configuration configuration = ConfigurationFactory.createConfiguration(file, this.clazz).orElseThrow(
                 () -> new ConfigurationException(
                     new RuntimeException(),
                     "ConfigurationDirectory.getConfigurationFiles(onlyThisDirectory)",
@@ -259,7 +262,7 @@ public class ConfigurationDirectory extends MemoryConfigurationSection {
             if (factory == null) {
 
                 // Attempt to create the configuration.
-                final Configuration configuration = ConfigurationFactory.createConfiguration(file).orElseThrow();
+                final Configuration configuration = ConfigurationFactory.createConfiguration(file, this.clazz).orElseThrow();
                 configuration.load();
 
                 if (configuration.getKeys().contains(key)) return Optional.of(configuration);
@@ -270,7 +273,7 @@ public class ConfigurationDirectory extends MemoryConfigurationSection {
             if (!factory.getExtensions().contains(extension)) continue;
 
             // Create the configuration.
-            Configuration configuration = factory.create(file);
+            Configuration configuration = factory.create(file, this.clazz);
             configuration.load();
 
             if (configuration.getKeys().contains(key)) return Optional.of(configuration);
@@ -305,7 +308,7 @@ public class ConfigurationDirectory extends MemoryConfigurationSection {
     public @NotNull ConfigurationDirectory appendFile(@NotNull final File file) {
 
         // Create the configuration file.
-        final Configuration configuration = ConfigurationFactory.createConfiguration(file).orElseThrow(
+        final Configuration configuration = ConfigurationFactory.createConfiguration(file, this.clazz).orElseThrow(
             () -> new ConfigurationException(
                 new RuntimeException(),
                 "ConfigurationDirectory.getConfigurationFiles(onlyThisDirectory)",
@@ -447,7 +450,7 @@ public class ConfigurationDirectory extends MemoryConfigurationSection {
 
                 // Does the configuration not exist?
                 if (configuration == null) {
-                    Configuration temp = new YamlConfiguration(this.getDirectory(), "lost_keys.yml").load();
+                    Configuration temp = new YamlConfiguration(this.getDirectory(), "lost_keys.yml", this.clazz).load();
                     temp.set(key, this.get(key));
                     continue;
                 }
