@@ -86,6 +86,10 @@ public class ConfigurationDirectory extends MemoryConfigurationSection {
         return this.directory.getName().split("\\.")[0];
     }
 
+    public @NotNull Class<?> getProjectClass() {
+        return this.clazz;
+    }
+
     public @NotNull List<String> getResourcePathList() {
         return this.resourcePathList;
     }
